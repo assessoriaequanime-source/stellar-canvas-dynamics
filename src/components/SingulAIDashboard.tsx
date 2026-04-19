@@ -363,66 +363,88 @@ export default function SingulAIDashboard() {
             </div>
           </div>
 
-          {/* RIGHT PANEL */}
-          <aside id="right-panel" className={panelOpen ? "" : "hidden"}>
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></Icon>
-                Sincronização Neural
+          {/* SUBPANEL — renderizado on-demand pelo rail (Memórias / Sync / Emo / Wallet / PRO / Settings) */}
+          {subpanel && (
+            <aside id="subpanel" onClick={(e) => e.stopPropagation()}>
+              <header className="sp-hdr">
+                <span className="sp-title">
+                  {subpanel === "memories" && "Memórias Recentes"}
+                  {subpanel === "sync" && "Sincronização Neural"}
+                  {subpanel === "emo" && "Absorção Emocional"}
+                  {subpanel === "wallet" && "Carteira"}
+                  {subpanel === "pro" && "Plano PRO"}
+                  {subpanel === "settings" && "Configurações"}
+                </span>
+                <button className="sp-x" onClick={() => setSubpanel(null)} aria-label="Fechar">
+                  <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
+                </button>
+              </header>
+              <div className="sp-body">
+                {subpanel === "sync" && (
+                  <div id="sync-bars">
+                    {bars.map((lv, i) => (
+                      <div key={i} className="sbar" style={{ ["--lv" as never]: `${lv}%` }} />
+                    ))}
+                  </div>
+                )}
+                {subpanel === "emo" && (
+                  <div className="emo-row">
+                    <div className="emo-labels">
+                      <span className="emo-lbl">FEEDBACK</span>
+                      <span className="emo-lbl">CONHECIMENTO</span>
+                    </div>
+                    <div className="emo-track">
+                      <div className="emo-fill" style={{ width: `${emo}%` }} />
+                      <div className="emo-thumb" style={{ left: `${emo}%` }} />
+                    </div>
+                  </div>
+                )}
+                {subpanel === "memories" && (
+                  <>
+                    <div className="abs-wrap">
+                      <div className="abs-bar"><div className="abs-fill" style={{ width: `${absorption}%` }} /></div>
+                      <div className="abs-meta">
+                        <span className="abs-label">Absorção</span>
+                        <span className="abs-pct">{absorption}%</span>
+                      </div>
+                    </div>
+                    {[
+                      { name: "Memória_Base_01", type: ".syn" },
+                      { name: "Legado_Digital", type: ".eth" },
+                      { name: "Valores_Familiares", type: ".dat" },
+                    ].map((m) => (
+                      <div className="mem-item" key={m.name}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        <span className="mem-name">{m.name}</span>
+                        <span className="mem-type">{m.type}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {subpanel === "wallet" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>Endereço</span><code>0xaf99…7686</code></div>
+                    <div className="sp-row"><span>Saldo SGL</span><code>2 480</code></div>
+                    <div className="sp-row"><span>Rede</span><code>SingulAI Mainnet</code></div>
+                  </div>
+                )}
+                {subpanel === "pro" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>Plano</span><code>PRO</code></div>
+                    <div className="sp-row"><span>Cápsulas</span><code>ilimitadas</code></div>
+                    <div className="sp-row"><span>Renovação</span><code>12/2026</code></div>
+                  </div>
+                )}
+                {subpanel === "settings" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>Tema</span><code>Dark Tech</code></div>
+                    <div className="sp-row"><span>Idioma</span><code>pt-BR</code></div>
+                    <div className="sp-row"><span>Notificações</span><code>ativadas</code></div>
+                  </div>
+                )}
               </div>
-              <div id="sync-bars">
-                {bars.map((lv, i) => (
-                  <div key={i} className="sbar" style={{ ["--lv" as never]: `${lv}%` }} />
-                ))}
-              </div>
-            </div>
-
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></Icon>
-                Absorção Emocional
-              </div>
-              <div className="emo-row">
-                <div className="emo-labels">
-                  <span className="emo-lbl">FEEDBACK</span>
-                  <span className="emo-lbl">CONHECIMENTO</span>
-                </div>
-                <div className="emo-track">
-                  <div className="emo-fill" style={{ width: `${emo}%` }} />
-                  <div className="emo-thumb" style={{ left: `${emo}%` }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Ações foram movidas para o ActionRail lateral progressivo */}
-
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></Icon>
-                Memórias Recentes
-              </div>
-              <div className="abs-wrap">
-                <div className="abs-bar">
-                  <div className="abs-fill" style={{ width: `${absorption}%` }} />
-                </div>
-                <div className="abs-meta">
-                  <span className="abs-label">Absorção</span>
-                  <span className="abs-pct">{absorption}%</span>
-                </div>
-              </div>
-              {[
-                { name: "Memória_Base_01", type: ".syn", icon: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></> },
-                { name: "Legado_Digital", type: ".eth", icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
-                { name: "Valores_Familiares", type: ".dat", icon: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /> },
-              ].map((m) => (
-                <div className="mem-item" key={m.name}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">{m.icon}</svg>
-                  <span className="mem-name">{m.name}</span>
-                  <span className="mem-type">{m.type}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
+            </aside>
+          )}
 
           {/* CHAT */}
           <div id="chat-area">
@@ -466,14 +488,7 @@ export default function SingulAIDashboard() {
         <ActionRail actions={railActions} onReorder={setRailActions} />
       </div>
 
-      {/* MOBILE */}
-      <button id="mobile-menu-btn" onClick={() => setPanelOpen((o) => !o)} aria-label="Menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
+      {/* (sidebar removida — navegação totalmente migrada para o rail) */}
 
       <button
         id="rail-fab"
