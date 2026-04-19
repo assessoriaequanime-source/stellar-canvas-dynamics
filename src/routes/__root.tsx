@@ -1,6 +1,14 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect, useState, useRef } from "react";
 
 import appCss from "../styles.css?url";
+
+const AUTH_START_URL = "https://singulai.site/api/auth/google";
+const VERIFY_SESSION_URL = "https://singulai.site/api/auth/verify-session";
+const LOCAL_SESSION_KEY = "singulai_session";
+const LOCAL_USER_KEY = "singulai_user";
+const LOCAL_WALLET_KEY = "singulai_wallet";
+const REDIRECT_ATTEMPT_KEY = "singulai_auth_redirect_attempt";
 
 function NotFoundComponent() {
   return (
@@ -22,6 +30,45 @@ function NotFoundComponent() {
       </div>
     </div>
   );
+}
+
+function parseJsonParam(value: string | null) {
+  if (!value) return null;
+  try {
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    return null;
+  }
+}
+
+function removeQueryParams() {
+  const url = new URL(window.location.href);
+  url.search = "";
+  window.history.replaceState({}, document.title, url.toString());
+}
+
+function redirectToAuth() {
+  if (sessionStorage.getItem(REDIRECT_ATTEMPT_KEY)) return;
+  sessionStorage.setItem(REDIRECT_ATTEMPT_KEY, "1");
+  window.location.href = AUTH_START_URL;
+}
+
+async function verifySession(sessionToken: string) {
+  try {
+    const response = await fetch(VERIFY_SESSION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ sessionToken }),
+    });
+
+    if (!response.ok) return null;
+
+    return await response.json();
+  } catch {
+    return null;
+  }
 }
 
 export const Route = createRootRoute({
@@ -70,5 +117,75 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const [ready, setReady] = useState(false);
+  const triedRedirect = useRef(false);
+
+  useEffect(() => {
+    const handleAuth = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const authSource = params.get("auth");
+      const session = params.get("session");
+      const userParam = params.get("user");
+      const walletParam = params.get("wallet");
+
+      if (authSource === "google" && session) {
+        localStorage.setItem(LOCAL_SESSION_KEY, session);
+
+        const user = parseJsonParam(userParam);
+        if (user) {
+          localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
+        }
+
+        const wallet = parseJsonParam(walletParam);
+        if (wallet) {
+          localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(wallet));
+        }
+
+        removeQueryParams();
+      }
+
+      const sessionToken = localStorage.getItem(LOCAL_SESSION_KEY);
+      if (!sessionToken) {
+        redirectToAuth();
+        return;
+      }
+
+      const verification = await verifySession(sessionToken);
+      const sessionValid =
+        verification?.valid === true ||
+        (verification?.user && typeof verification.user === "object");
+
+      if (!verification || !sessionValid) {
+        localStorage.removeItem(LOCAL_SESSION_KEY);
+        localStorage.removeItem(LOCAL_USER_KEY);
+        localStorage.removeItem(LOCAL_WALLET_KEY);
+        redirectToAuth();
+        return;
+      }
+
+      if (verification.user) {
+        localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(verification.user));
+      }
+      if (verification.wallet) {
+        localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(verification.wallet));
+      }
+
+      setReady(true);
+    };
+
+    if (!triedRedirect.current) {
+      triedRedirect.current = true;
+      handleAuth();
+    }
+  }, []);
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="text-center text-sm text-muted-foreground">Validating session…</div>
+      </div>
+    );
+  }
+
   return <Outlet />;
 }
