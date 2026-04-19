@@ -281,9 +281,7 @@ export default function SingulAIDashboard() {
   }, []);
 
   const prof = PROFILES[profile];
-  const accentRGB = `${prof.rgb[0]},${prof.rgb[1]},${prof.rgb[2]}`;
-  const accentStr = `rgb(${accentRGB})`;
-  const offset = CIRC * (1 - omegaPct / 100);
+  const accentStr = `rgb(${prof.rgb[0]},${prof.rgb[1]},${prof.rgb[2]})`;
 
   return (
     <div className={`p-${profile}`}>
