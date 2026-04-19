@@ -3,12 +3,11 @@ import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 
-const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modePrefix: string; modeName: string; desc: string; omega: number }> = {
+const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modeName: string; desc: string; omega: number }> = {
   pedro: {
     rgb: [59, 130, 246],
     hex: "#3b82f6",
     avatarName: "Pedro",
-    modePrefix: "Modo",
     modeName: "safe quantum",
     desc: "Absorção de Conhecimento",
     omega: 79.1,
@@ -17,7 +16,6 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     rgb: [236, 72, 153],
     hex: "#ec4899",
     avatarName: "Laura",
-    modePrefix: "Modo",
     modeName: "difusão atômica",
     desc: "Segurança & Privacidade",
     omega: 68.4,
@@ -26,7 +24,6 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     rgb: [234, 179, 8],
     hex: "#eab308",
     avatarName: "Letícia",
-    modePrefix: "Modo",
     modeName: "Spin analítico",
     desc: "Expertise Profissional",
     omega: 91.3,
@@ -323,11 +320,8 @@ export default function SingulAIDashboard() {
                 data-p={p}
                 onClick={() => switchProfile(p)}
               >
-                <span className="av-dot" data-p={p} />
-                <span className="mode-label">
-                  <span className="mode-prefix">{PROFILES[p].modePrefix}</span>
-                  <span className="mode-suffix">{PROFILES[p].modeName}</span>
-                </span>
+                <span className="mode-name">{PROFILES[p].modeName}</span>
+                <span className={`mode-badge ${profile === p ? "active" : ""}`}>MODO</span>
               </button>
             ))}
           </div>
@@ -461,7 +455,6 @@ export default function SingulAIDashboard() {
             <div id="chat-footer">
               <span className="footer-avatar-name" style={{ color: accentStr }}>
                 {prof.avatarName}
-                <span className="footer-avatar-desc">{prof.desc}</span>
               </span>
             </div>
           </div>
