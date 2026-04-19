@@ -456,6 +456,9 @@ export default function SingulAIDashboard() {
           actions={railActions}
           onReorder={setRailActions}
           onClose={() => setRailOpen(false)}
+          omegaPct={omegaPct}
+          omegaStatus={omegaStatus}
+          online
         />
       </div>
 
