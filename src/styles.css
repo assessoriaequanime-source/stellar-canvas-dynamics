@@ -622,30 +622,170 @@
 .btn-amber svg { width: 13px; height: 13px; }
 .wa-note { font-size: 9px; color: var(--text-lo); letter-spacing: 0.05em; margin-top: 4px; }
 
+/* ════ Action Rail (curved progressive side modal) ════ */
+.rail-shell {
+  position: fixed;
+  top: calc(var(--topbar-h) + 8px);
+  right: 0;
+  bottom: 0;
+  width: 240px;
+  z-index: 22;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.32s var(--spring), transform 0.42s var(--spring);
+}
+.rail-shell-open { opacity: 1; transform: translateX(0); pointer-events: auto; }
+
+.rail {
+  position: relative;
+  width: 100%; height: 100%;
+}
+.rail-path {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.rail-list {
+  position: absolute; inset: 0;
+  list-style: none;
+  display: flex; flex-direction: column;
+  align-items: flex-end;
+  padding: 8px 14px 80px 0;
+  gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rail-list::-webkit-scrollbar { display: none; }
+
+@keyframes railIn {
+  from { opacity: 0; transform: translateX(28px) scale(0.94); filter: blur(4px); }
+  to   { opacity: 1; transform: translateX(0) scale(1); filter: blur(0); }
+}
+.rail-item {
+  animation: railIn 0.42s var(--spring) both;
+  flex-shrink: 0;
+}
+.rail-item.rail-dragging { opacity: 0.4; }
+
+.rail-btn {
+  width: 100%;
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(20, 20, 26, 0.92), rgba(12, 12, 18, 0.92));
+  border: 1px solid var(--border-md);
+  color: var(--text-md);
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: left;
+  backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+  transition: all var(--dur) var(--ease);
+  cursor: grab;
+}
+.rail-btn:active { cursor: grabbing; }
+.rail-btn:hover {
+  background: linear-gradient(135deg, rgba(28, 28, 36, 0.95), rgba(18, 18, 24, 0.95));
+  border-color: rgba(var(--accent-rgb), 0.32);
+  color: var(--text-hi);
+  transform: translateX(-3px);
+}
+.rail-ico {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  color: rgb(var(--accent-rgb));
+  flex-shrink: 0;
+}
+.rail-ico svg { width: 12px; height: 12px; }
+.rail-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.rail-more {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--s1);
+  border: 1px dashed var(--border-md);
+  color: var(--text-lo);
+  font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  transition: all var(--dur);
+}
+.rail-more:hover { color: rgb(var(--accent-rgb)); border-color: rgba(var(--accent-rgb), 0.4); }
+.rail-more svg { width: 12px; height: 12px; }
+
+.rail-toggle {
+  position: absolute; bottom: 18px; right: 14px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(10, 10, 14, 0.92);
+  border: 1px solid var(--border-md);
+  color: var(--text-md);
+  transition: all var(--dur);
+}
+.rail-toggle:hover { color: rgb(var(--accent-rgb)); border-color: rgba(var(--accent-rgb), 0.4); }
+.rail-toggle svg { width: 14px; height: 14px; }
+
+/* FAB to open the rail */
+#rail-fab {
+  position: fixed;
+  top: calc(var(--topbar-h) + 14px);
+  right: 14px;
+  z-index: 23;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-rgb), 0.08));
+  border: 1px solid rgba(var(--accent-rgb), 0.4);
+  color: rgb(var(--accent-rgb));
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+  transition: all var(--dur) var(--spring);
+}
+#rail-fab:hover { transform: scale(1.08); box-shadow: 0 8px 28px rgba(var(--accent-rgb), 0.32); }
+#rail-fab[aria-pressed="true"] { background: rgb(var(--accent-rgb)); color: #000; }
+#rail-fab svg { width: 16px; height: 16px; }
+
 /* ════ Responsive ════ */
 @media (max-width: 767px) {
   :root { --sidebar-w: 0px; --topbar-h: 50px; --panel-w: 100%; }
   #sidebar, #av-online, #omega-widget { display: none; }
   #app { grid-template-columns: 1fr; grid-template-areas: "topbar" "main"; }
-  #topbar { padding: 0 10px 0 52px; gap: 8px; }
-  .chip-status span:not(.status-led), .chip-wallet { display: none; }
-  .topbar-divider { display: none; }
+  #topbar { padding: 0 8px 0 50px; gap: 6px; }
+  .chip-status span:not(.status-led), .chip-wallet, .topbar-divider { display: none; }
+  .chip-pro { padding: 4px 8px; font-size: 9px; height: 26px; }
   .av-tab { padding: 4px 9px; font-size: 10.5px; letter-spacing: 0.04em; }
-  #avatar-tabs { gap: 2px; overflow-x: auto; scrollbar-width: none; }
+  #avatar-tabs { gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; }
   #avatar-tabs::-webkit-scrollbar { display: none; }
   #mobile-menu-btn { display: flex; }
-  #chat-area { padding: 10px 12px env(safe-area-inset-bottom, 10px); }
-  .stream-msg { width: 92vw; bottom: 92px; }
+  #chat-area { padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 14px); }
+  .stream-msg { width: 92vw; bottom: 88px; }
   .stream-msg .bubble { font-size: 12.5px; padding: 8px 12px; max-width: 88%; }
-  #right-panel { top: 0; height: 100%; width: min(320px, 88vw); }
+  #right-panel {
+    top: 0; height: 100dvh; width: min(300px, 86vw);
+    padding: 14px 14px calc(env(safe-area-inset-bottom, 0px) + 16px);
+    gap: 12px;
+  }
   #av-info { display: none; }
-  #chat-footer { font-size: 8.5px; gap: 6px; }
+  #chat-footer { font-size: 8.5px; gap: 6px; flex-wrap: wrap; }
+  #chat-bar { max-width: 100%; }
+
+  /* Rail on mobile: full-width drawer from right */
+  .rail-shell { width: min(280px, 86vw); top: calc(var(--topbar-h) + 4px); }
+  .rail-list { padding: 6px 10px calc(env(safe-area-inset-bottom, 0px) + 70px) 0; }
+  #rail-fab { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); right: 12px; }
 }
 @media (min-width: 768px) and (max-width: 1024px) {
   :root { --panel-w: 240px; }
   .chip-wallet .wallet-addr { display: none; }
   .chip { padding: 4px 8px; }
   .stream-msg { bottom: 100px; }
+  .rail-shell { width: 220px; }
 }
 @media (min-width: 1025px) {
   .stream-msg { right: var(--panel-w); }
