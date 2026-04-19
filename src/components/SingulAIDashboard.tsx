@@ -131,6 +131,55 @@ export default function SingulAIDashboard() {
     return () => clearInterval(id);
   }, []);
 
+  // Initialize rail actions ordered by logical use coherence
+  useEffect(() => {
+    setRailActions([
+      {
+        id: "create",
+        label: "Criar Cápsula",
+        hint: "Novo legado digital",
+        svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+        onClick: () => setModalOpen(true),
+      },
+      {
+        id: "consult",
+        label: "Consultar",
+        hint: "Buscar memória",
+        svg: <><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
+        onClick: () => setInput("Consultar memória recente"),
+      },
+      {
+        id: "recalibrate",
+        label: "Recalibrar",
+        hint: "Reorganizar atlas neural",
+        svg: <><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></>,
+        onClick: () => {
+          engineRef.current?.morphTo(profileRef.current);
+          const t = Math.min(99.9, omegaLiveRef.current + 2);
+          animateOmega(t, omegaLiveRef.current, 800);
+        },
+      },
+      {
+        id: "docs",
+        label: "Documentos",
+        hint: "Acervo notarial",
+        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+      },
+      {
+        id: "security",
+        label: "Segurança",
+        hint: "Chaves & permissões",
+        svg: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></>,
+      },
+      {
+        id: "export",
+        label: "Exportar",
+        hint: "Snapshot do legado",
+        svg: <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+      },
+    ]);
+  }, [animateOmega]);
+
   // Profile switch
   const switchProfile = (p: Profile) => {
     if (p === profile) return;
