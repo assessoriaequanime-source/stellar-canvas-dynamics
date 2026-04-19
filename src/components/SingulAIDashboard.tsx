@@ -58,7 +58,7 @@ export default function SingulAIDashboard() {
   const [input, setInput] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
   // Particle engine boot
