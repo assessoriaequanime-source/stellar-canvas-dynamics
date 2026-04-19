@@ -374,28 +374,35 @@
 
 .stream-msg .bubble {
   max-width: 78%;
-  padding: 9px 14px;
-  font-size: 13px;
+  padding: 10px 15px;
+  font-size: 13.5px;
   line-height: 1.55;
-  letter-spacing: 0.005em;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  letter-spacing: 0.003em;
+  font-weight: 400;
+  backdrop-filter: blur(14px) saturate(115%);
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 .stream-msg.from-ai .bubble {
-  background: rgba(20, 20, 26, 0.72);
-  border: 1px solid var(--border);
-  border-left: 1px solid rgba(var(--accent-rgb), 0.55);
+  background: rgba(14, 14, 20, 0.82);
+  border: 1px solid var(--border-md);
+  border-left: 1.5px solid rgba(var(--accent-rgb), 0.7);
   border-radius: 2px 14px 14px 14px;
-  color: var(--text-hi);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 6px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .stream-msg.from-user .bubble {
-  background: rgba(28, 28, 34, 0.78);
+  background: rgba(22, 22, 28, 0.86);
   border: 1px solid var(--border-md);
-  border-right: 1px solid rgba(var(--accent-rgb), 0.42);
+  border-right: 1.5px solid rgba(var(--accent-rgb), 0.55);
   border-radius: 14px 2px 14px 14px;
-  color: var(--text-hi);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 6px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 @keyframes msgBirth {
