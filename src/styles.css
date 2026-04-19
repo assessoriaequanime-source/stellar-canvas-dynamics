@@ -787,13 +787,75 @@
   #rail-fab { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 80px); right: 12px; }
 }
 @media (min-width: 768px) and (max-width: 1024px) {
-  :root { --panel-w: 240px; }
-  .chip-wallet .wallet-addr { display: none; }
-  .chip { padding: 4px 8px; }
   .stream-msg { bottom: 100px; }
   .rail-shell { width: 220px; }
 }
 @media (min-width: 1025px) {
-  .stream-msg { right: var(--panel-w); }
-  #right-panel.hidden ~ #chat-area .stream-msg { right: 0; }
+  .stream-msg { right: 0; }
+}
+
+/* ════ Subpanel (substitui o painel direito; abre on-demand pelo rail) ════ */
+#subpanel {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 280px;
+  max-height: calc(100% - 28px);
+  z-index: 12;
+  display: flex; flex-direction: column;
+  border-radius: var(--r-lg);
+  background: rgba(8, 8, 12, 0.92);
+  border: 1px solid var(--border-md);
+  backdrop-filter: var(--blur-lg); -webkit-backdrop-filter: var(--blur-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: spIn 0.32s var(--spring) both;
+  overflow: hidden;
+}
+@keyframes spIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.sp-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+.sp-title {
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(var(--accent-rgb), 0.75);
+}
+.sp-x {
+  width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border);
+  background: var(--s1); color: var(--text-lo);
+  transition: all var(--dur);
+}
+.sp-x:hover { background: var(--s2); color: var(--text-hi); }
+.sp-x svg { width: 11px; height: 11px; stroke-width: 1.6; }
+.sp-body {
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.sp-body::-webkit-scrollbar { display: none; }
+.sp-info { display: flex; flex-direction: column; gap: 8px; }
+.sp-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 11px;
+  border-radius: var(--r-sm);
+  background: var(--gray-800);
+  border: 1px solid var(--border);
+}
+.sp-row span {
+  font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-lo);
+}
+.sp-row code {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text-hi);
 }
