@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
 import ChatStream from "./ChatStream";
+import ActionRail, { type RailAction } from "./ActionRail";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; name: string; desc: string; omega: number }> = {
   pedro: { rgb: [59, 130, 246], hex: "#3b82f6", name: "Pedro", desc: "Absorção de Conhecimento", omega: 79.1 },
