@@ -196,7 +196,7 @@
   font-size: 9.5px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.35;
+  opacity: 0;
   color: var(--text-lo);
   transition: transform 0.28s ease, opacity 0.28s ease, color 0.28s ease;
 }
@@ -457,6 +457,7 @@
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  padding-inline: 12px;
 }
 
 /* Each message is positioned and transformed individually via inline style */
@@ -464,7 +465,7 @@
   position: absolute;
   left: 50%;
   bottom: 110px;
-  width: min(560px, 86vw);
+  width: min(560px, calc(100vw - 48px));
   min-width: 0;
   display: flex;
   pointer-events: none;
@@ -474,11 +475,12 @@
     opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
     filter 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.stream-msg.from-user { justify-content: flex-end; }
-.stream-msg.from-ai { justify-content: flex-start; }
+.stream-msg.from-user { justify-content: flex-end; padding-right: 12px; }
+.stream-msg.from-ai { justify-content: flex-start; padding-left: 12px; }
 
 .stream-msg .bubble {
-  max-width: 78%;
+  width: fit-content;
+  max-width: min(100%, 88vw);
   padding: 10px 15px;
   font-size: 13.5px;
   line-height: 1.55;
@@ -492,6 +494,7 @@
   overflow-wrap: anywhere;
   word-break: break-word;
   white-space: pre-wrap;
+  box-sizing: border-box;
 }
 .stream-msg.from-ai .bubble {
   background: rgba(14, 14, 20, 0.82);
@@ -567,23 +570,24 @@
   box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.18);
 }
 #chat-footer {
+  width: 100%;
+  max-width: 600px;
   display: flex; align-items: center; justify-content: center;
-  margin-top: 8px; position: relative; z-index: 2;
+  margin-top: 12px; position: relative; z-index: 2;
 }
 .footer-avatar-name {
-  display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+  display: inline-flex; align-items: center; justify-content: center;
   font-family: var(--font-mono);
   font-size: 11px; font-weight: 700;
   letter-spacing: 0.22em; text-transform: uppercase;
   transition: color 0.4s var(--ease);
   text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.35);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .footer-avatar-desc {
-  font-family: var(--font-ui);
-  font-size: 8.5px; font-weight: 500;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--text-lo);
-  text-shadow: none;
+  display: none;
 }
 
 .typing { display: flex; gap: 4px; align-items: center; padding: 2px 0; }
