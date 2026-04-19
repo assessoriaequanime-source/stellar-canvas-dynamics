@@ -400,12 +400,9 @@ export default function SingulAIDashboard() {
       </div>
 
       {/* ACTION RAIL — trilha lateral progressiva curva */}
-      <ActionRailWrapper
-        open={railOpen}
-        setOpen={setRailOpen}
-        actions={railActions}
-        setActions={setRailActions}
-      />
+      <div className={`rail-shell ${railOpen ? "rail-shell-open" : ""}`} aria-hidden={!railOpen}>
+        <ActionRail actions={railActions} onReorder={setRailActions} />
+      </div>
 
       {/* MOBILE */}
       <button id="mobile-menu-btn" onClick={() => setPanelOpen((o) => !o)} aria-label="Menu">
