@@ -146,7 +146,7 @@ export default function SingulAIDashboard() {
     const userId = ++msgIdRef.current;
     const typingId = ++msgIdRef.current;
     setMessages((m) =>
-      [...m, { role: "user", text, id: userId }, { role: "typing", id: typingId } as Msg].slice(-MAX_STREAM),
+      ([...m, { role: "user" as const, text, id: userId }, { role: "typing" as const, id: typingId }] as Msg[]).slice(-MAX_STREAM),
     );
 
     await new Promise((r) => setTimeout(r, 1100 + Math.random() * 900));
