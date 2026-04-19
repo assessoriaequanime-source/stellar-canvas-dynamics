@@ -398,12 +398,32 @@ export default function SingulAIDashboard() {
         </main>
       </div>
 
+      {/* ACTION RAIL — trilha lateral progressiva curva */}
+      <ActionRailWrapper
+        open={railOpen}
+        setOpen={setRailOpen}
+        actions={railActions}
+        setActions={setRailActions}
+      />
+
       {/* MOBILE */}
       <button id="mobile-menu-btn" onClick={() => setPanelOpen((o) => !o)} aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
           <line x1="3" y1="6" x2="21" y2="6" />
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <button
+        id="rail-fab"
+        onClick={() => setRailOpen((v) => !v)}
+        aria-pressed={railOpen}
+        aria-label="Trilha de ações"
+        title="Ações rápidas"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       </button>
 
