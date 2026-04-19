@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Profile } from "@/lib/avatar-engine";
 import type { AvatarEngine } from "@/lib/avatar-engine";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export type StreamMsg = {
   id: number;
@@ -29,7 +30,7 @@ type Props = {
  */
 const VISIBLE_DEPTH = 5; // depths 0..4 are rendered; 5+ are hidden
 
-function trajectoryFor(profile: Profile, depth: number, fromUser: boolean) {
+function trajectoryFor(profile: Profile, depth: number, fromUser: boolean, mobile = false) {
   if (depth >= VISIBLE_DEPTH) {
     return { opacity: 0, scale: 0.12, x: 0, y: -340, blur: 8, hidden: true };
   }
@@ -38,26 +39,27 @@ function trajectoryFor(profile: Profile, depth: number, fromUser: boolean) {
   // Vertical lift toward the particle core
   const liftY = -t * 300;
 
-  // Lane bias keeps user on right, AI on left while still readable
-  const sideBias = fromUser ? 60 * Math.pow(1 - t, 1.3) : -60 * Math.pow(1 - t, 1.3);
+  // Lane bias — reduced on mobile to keep bubbles in viewport
+  const biasScale = mobile ? 0.3 : 1;
+  const sideBias = (fromUser ? 60 : -60) * Math.pow(1 - t, 1.3) * biasScale;
 
   let driftX = 0;
   let extraY = 0;
   switch (profile) {
     case "pedro": {
       const angle = depth * 0.5;
-      driftX = Math.sin(angle) * 14 * t + sideBias;
+      driftX = Math.sin(angle) * (mobile ? 6 : 14) * t + sideBias;
       extraY = -Math.cos(angle) * 5 * t;
       break;
     }
     case "laura": {
       const angle = depth * 0.78;
-      driftX = Math.sin(angle) * 70 * t * (1 - t * 0.5) + sideBias;
+      driftX = Math.sin(angle) * (mobile ? 28 : 70) * t * (1 - t * 0.5) + sideBias;
       extraY = Math.sin(angle * 1.4) * 12 * t;
       break;
     }
     case "leticia": {
-      driftX = (fromUser ? -1 : 1) * 22 * t + sideBias;
+      driftX = (fromUser ? -1 : 1) * (mobile ? 8 : 22) * t + sideBias;
       extraY = -t * 10;
       break;
     }
@@ -76,6 +78,7 @@ function trajectoryFor(profile: Profile, depth: number, fromUser: boolean) {
 }
 
 export default function ChatStream({ messages, profile, engineRef }: Props) {
+  const isMobile = useIsMobile();
   const indexed = useMemo(() => {
     const arr = [...messages];
     return arr.map((m, i) => ({ msg: m, depth: arr.length - 1 - i }));
@@ -116,7 +119,7 @@ export default function ChatStream({ messages, profile, engineRef }: Props) {
     <div id="chat-stream" aria-live="polite">
       {indexed.map(({ msg, depth }) => {
         const fromUser = msg.role === "user";
-        const tr = trajectoryFor(profile, depth, fromUser);
+        const tr = trajectoryFor(profile, depth, fromUser, isMobile);
         const isVanished = vanished.has(msg.id);
         const opacity = isVanished ? 0 : tr.opacity;
         const blur = isVanished ? 6 : tr.blur;

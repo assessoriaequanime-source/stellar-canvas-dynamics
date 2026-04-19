@@ -310,33 +310,40 @@ export default function SingulAIDashboard() {
       <div id="canvas-bg" ref={canvasRef} />
 
       <div id="app">
-        {/* TOPBAR — apenas avatares centralizados. Ativo iluminado, demais opacos sem cor. */}
+        {/* TOPBAR — carousel orbital selector */}
         <header id="topbar">
-          <div id="model-tabs" key={sigmaFlash}>
-            {(Object.keys(PROFILES) as Profile[]).map((p) => (
-              <button
-                key={p}
-                className={`av-tab ${profile === p ? "av-active" : "av-dim"}`}
-                data-p={p}
-                onClick={() => switchProfile(p)}
-              >
-                <span className="mode-name">{PROFILES[p].modeName}</span>
-              </button>
-            ))}
-          </div>
-          <div id="mode-divider">
-            <span className="divider-line" aria-hidden="true" />
-            <div className="mode-indicator-row">
-              {(Object.keys(PROFILES) as Profile[]).map((p) => (
-                <span
-                  key={`${p}-mode`}
-                  className={`mode-badge ${profile === p ? "active" : ""}`}
+          <div id="model-carousel">
+            {(Object.keys(PROFILES) as Profile[]).map((p, i) => {
+              const keys = Object.keys(PROFILES) as Profile[];
+              const activeIdx = keys.indexOf(profile);
+              // Calculate carousel position: -1 = left, 0 = center, 1 = right
+              let pos = i - activeIdx;
+              if (pos > 1) pos -= 3;
+              if (pos < -1) pos += 3;
+              return (
+                <button
+                  key={p}
+                  className={`carousel-item ${pos === 0 ? "carousel-active" : "carousel-side"}`}
+                  data-p={p}
+                  data-pos={pos}
+                  onClick={() => switchProfile(p)}
+                  style={{
+                    transform: `translateX(${pos * 140}px) scale(${pos === 0 ? 1 : 0.82})`,
+                    opacity: pos === 0 ? 1 : 0.4,
+                    zIndex: pos === 0 ? 20 : 10,
+                  }}
                 >
-                  MODO
-                </span>
-              ))}
-            </div>
+                  <span className="carousel-label">{PROFILES[p].modeName}</span>
+                </button>
+              );
+            })}
           </div>
+          <span
+            className="carousel-modo"
+            style={{ color: accentStr }}
+          >
+            MODO
+          </span>
         </header>
 
         {/* Sigma flash — partículas claras formam o ícone matemático e somem com fade-out */}
