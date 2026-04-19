@@ -225,24 +225,28 @@ export default function SingulAIDashboard() {
               </button>
             ))}
           </div>
-          <div className="chip">
-            <Icon><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" /></Icon>
-            singulAI
+          <div className="topbar-cluster">
+            <div className="chip chip-status">
+              <span className="status-led" />
+              <span>singulAI</span>
+            </div>
+            <div className="chip chip-wallet" id="chip-wallet">
+              <Icon><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></Icon>
+              <span className="wallet-addr">0xaf99…7686</span>
+            </div>
+            <div className="chip chip-pro" id="chip-pro">PRO</div>
+            <div className="topbar-divider" />
+            <button
+              className="icon-btn"
+              id="btn-panel-toggle"
+              title="Painel de controle"
+              aria-label="Painel"
+              aria-pressed={panelOpen}
+              onClick={() => setPanelOpen((o) => !o)}
+            >
+              <Icon><line x1="21" y1="10" x2="7" y2="10" /><line x1="21" y1="6" x2="3" y2="6" /><line x1="21" y1="14" x2="3" y2="14" /><line x1="21" y1="18" x2="7" y2="18" /></Icon>
+            </button>
           </div>
-          <div className="chip" id="chip-wallet">
-            <Icon><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></Icon>
-            0xaf99…7686
-          </div>
-          <div className="chip chip-pro" id="chip-pro">PRO</div>
-          <button
-            className="icon-btn"
-            id="btn-panel-toggle"
-            title="Painel de controle"
-            aria-label="Painel"
-            onClick={() => setPanelOpen((o) => !o)}
-          >
-            <Icon><line x1="21" y1="10" x2="7" y2="10" /><line x1="21" y1="6" x2="3" y2="6" /><line x1="21" y1="14" x2="3" y2="14" /><line x1="21" y1="18" x2="7" y2="18" /></Icon>
-          </button>
         </header>
 
         <main id="main">
@@ -330,28 +334,35 @@ export default function SingulAIDashboard() {
                 <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
                 Ações Rápidas
               </div>
-              <button
-                className="qa"
-                onClick={() => setInput("Consultar memória recente")}
-              >
-                <Icon><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></Icon>
-                Consultar Memória
-              </button>
-              <button
-                className="qa"
-                onClick={() => {
-                  engineRef.current?.morphTo(profile);
-                  const t = Math.min(99.9, omegaLiveRef.current + 2);
-                  animateOmega(t, omegaLiveRef.current, 800);
-                }}
-              >
-                <Icon><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></Icon>
-                Reconfigurar Atlas
-              </button>
-              <button className="qa qa-legacy" onClick={() => setModalOpen(true)}>
+              <button className="qa qa-primary" onClick={() => setModalOpen(true)}>
                 <Icon><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></Icon>
-                Criar Legado Digital
+                <span className="qa-text">
+                  <span className="qa-title">Criar Legado Digital</span>
+                  <span className="qa-sub">Cápsula segura com entrega programada</span>
+                </span>
               </button>
+              <div className="qa-grid">
+                <button
+                  className="qa qa-compact"
+                  onClick={() => setInput("Consultar memória recente")}
+                  title="Consultar Memória"
+                >
+                  <Icon><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></Icon>
+                  <span>Consultar</span>
+                </button>
+                <button
+                  className="qa qa-compact"
+                  onClick={() => {
+                    engineRef.current?.morphTo(profile);
+                    const t = Math.min(99.9, omegaLiveRef.current + 2);
+                    animateOmega(t, omegaLiveRef.current, 800);
+                  }}
+                  title="Reconfigurar Atlas"
+                >
+                  <Icon><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></Icon>
+                  <span>Recalibrar</span>
+                </button>
+              </div>
             </div>
 
             <div className="ps">
@@ -418,14 +429,6 @@ export default function SingulAIDashboard() {
           </div>
         </main>
       </div>
-
-      {/* ACCESS BTN */}
-      <button id="access-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-        ACESSO
-      </button>
 
       {/* MOBILE */}
       <button id="mobile-menu-btn" onClick={() => setPanelOpen((o) => !o)} aria-label="Menu">
