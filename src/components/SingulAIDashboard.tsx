@@ -60,6 +60,7 @@ export default function SingulAIDashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
   const [railOpen, setRailOpen] = useState(false);
+  const [railActions, setRailActions] = useState<RailAction[]>([]);
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
