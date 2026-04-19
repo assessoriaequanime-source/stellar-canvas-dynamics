@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
 import ChatStream from "./ChatStream";
+import ActionRail, { type RailAction } from "./ActionRail";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; name: string; desc: string; omega: number }> = {
   pedro: { rgb: [59, 130, 246], hex: "#3b82f6", name: "Pedro", desc: "Absorção de Conhecimento", omega: 79.1 },
@@ -58,6 +59,8 @@ export default function SingulAIDashboard() {
   const [input, setInput] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
+  const [railOpen, setRailOpen] = useState(false);
+  const [railActions, setRailActions] = useState<RailAction[]>([]);
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
@@ -127,6 +130,55 @@ export default function SingulAIDashboard() {
     }, 2200);
     return () => clearInterval(id);
   }, []);
+
+  // Initialize rail actions ordered by logical use coherence
+  useEffect(() => {
+    setRailActions([
+      {
+        id: "create",
+        label: "Criar Cápsula",
+        hint: "Novo legado digital",
+        svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+        onClick: () => setModalOpen(true),
+      },
+      {
+        id: "consult",
+        label: "Consultar",
+        hint: "Buscar memória",
+        svg: <><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
+        onClick: () => setInput("Consultar memória recente"),
+      },
+      {
+        id: "recalibrate",
+        label: "Recalibrar",
+        hint: "Reorganizar atlas neural",
+        svg: <><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></>,
+        onClick: () => {
+          engineRef.current?.morphTo(profileRef.current);
+          const t = Math.min(99.9, omegaLiveRef.current + 2);
+          animateOmega(t, omegaLiveRef.current, 800);
+        },
+      },
+      {
+        id: "docs",
+        label: "Documentos",
+        hint: "Acervo notarial",
+        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+      },
+      {
+        id: "security",
+        label: "Segurança",
+        hint: "Chaves & permissões",
+        svg: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></>,
+      },
+      {
+        id: "export",
+        label: "Exportar",
+        hint: "Snapshot do legado",
+        svg: <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+      },
+    ]);
+  }, [animateOmega]);
 
   // Profile switch
   const switchProfile = (p: Profile) => {
@@ -329,41 +381,7 @@ export default function SingulAIDashboard() {
               </div>
             </div>
 
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
-                Ações Rápidas
-              </div>
-              <button className="qa qa-primary" onClick={() => setModalOpen(true)}>
-                <Icon><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></Icon>
-                <span className="qa-text">
-                  <span className="qa-title">Criar Legado Digital</span>
-                  <span className="qa-sub">Cápsula segura com entrega programada</span>
-                </span>
-              </button>
-              <div className="qa-grid">
-                <button
-                  className="qa qa-compact"
-                  onClick={() => setInput("Consultar memória recente")}
-                  title="Consultar Memória"
-                >
-                  <Icon><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></Icon>
-                  <span>Consultar</span>
-                </button>
-                <button
-                  className="qa qa-compact"
-                  onClick={() => {
-                    engineRef.current?.morphTo(profile);
-                    const t = Math.min(99.9, omegaLiveRef.current + 2);
-                    animateOmega(t, omegaLiveRef.current, 800);
-                  }}
-                  title="Reconfigurar Atlas"
-                >
-                  <Icon><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></Icon>
-                  <span>Recalibrar</span>
-                </button>
-              </div>
-            </div>
+            {/* Ações foram movidas para o ActionRail lateral progressivo */}
 
             <div className="ps">
               <div className="ps-label">
@@ -430,12 +448,29 @@ export default function SingulAIDashboard() {
         </main>
       </div>
 
+      {/* ACTION RAIL — trilha lateral progressiva curva */}
+      <div className={`rail-shell ${railOpen ? "rail-shell-open" : ""}`} aria-hidden={!railOpen}>
+        <ActionRail actions={railActions} onReorder={setRailActions} />
+      </div>
+
       {/* MOBILE */}
       <button id="mobile-menu-btn" onClick={() => setPanelOpen((o) => !o)} aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
           <line x1="3" y1="6" x2="21" y2="6" />
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+
+      <button
+        id="rail-fab"
+        onClick={() => setRailOpen((v) => !v)}
+        aria-pressed={railOpen}
+        aria-label="Trilha de ações"
+        title="Ações rápidas"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       </button>
 
