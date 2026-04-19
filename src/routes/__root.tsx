@@ -10,6 +10,62 @@ const LOCAL_USER_KEY = "singulai_user";
 const LOCAL_WALLET_KEY = "singulai_wallet";
 const REDIRECT_ATTEMPT_KEY = "singulai_auth_redirect_attempt";
 
+const DEV_SIMPLE_TEST_AUTH = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
+const DEV_SIMPLE_AUTH_HOSTNAMES = ["singulai.live", "localhost", "127.0.0.1"];
+const DEV_SIMPLE_AUTH_SESSION = "dev-session-singulai-live";
+const DEV_SIMPLE_AUTH_USER = {
+  id: "dev_user_singulai_live",
+  name: "SingulAI Test User",
+  email: "dev@singulai.live",
+  walletAddress: "0x0000000000000000000000000000000000000000",
+  sglBalance: 10000,
+};
+const DEV_SIMPLE_AUTH_WALLET = {
+  address: "0x0000000000000000000000000000000000000000",
+  walletAddress: "0x0000000000000000000000000000000000000000",
+  network: "sepolia",
+  chainId: 11155111,
+  type: "native_singulai_dev",
+};
+
+function isDevSimpleAuthMode() {
+  return (
+    DEV_SIMPLE_TEST_AUTH &&
+    typeof window !== "undefined" &&
+    DEV_SIMPLE_AUTH_HOSTNAMES.includes(window.location.hostname)
+  );
+}
+
+function useDevSimpleAuthSession() {
+  localStorage.setItem(LOCAL_SESSION_KEY, DEV_SIMPLE_AUTH_SESSION);
+  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(DEV_SIMPLE_AUTH_USER));
+  localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(DEV_SIMPLE_AUTH_WALLET));
+}
+
+function DevTestAuthBadge() {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        right: 12,
+        bottom: 12,
+        zIndex: 9999,
+        padding: "4px 8px",
+        fontSize: "11px",
+        lineHeight: 1,
+        background: "rgba(15, 23, 42, 0.85)",
+        color: "#f8fafc",
+        borderRadius: "999px",
+        border: "1px solid rgba(148, 163, 184, 0.25)",
+        pointerEvents: "none",
+        opacity: 0.85,
+      }}
+    >
+      DEV TEST AUTH
+    </div>
+  );
+}
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -122,6 +178,13 @@ function RootComponent() {
 
   useEffect(() => {
     const handleAuth = async () => {
+      if (isDevSimpleAuthMode()) {
+        useDevSimpleAuthSession();
+        removeQueryParams();
+        setReady(true);
+        return;
+      }
+
       const params = new URLSearchParams(window.location.search);
       const authSource = params.get("auth");
       const session = params.get("session");
@@ -187,5 +250,10 @@ function RootComponent() {
     );
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      {isDevSimpleAuthMode() ? <DevTestAuthBadge /> : null}
+    </>
+  );
 }
