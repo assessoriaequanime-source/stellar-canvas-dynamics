@@ -4,9 +4,9 @@ import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; name: string; desc: string; omega: number }> = {
-  pedro: { rgb: [59, 130, 246], hex: "#3b82f6", name: "Pedro", desc: "Absorção de Conhecimento", omega: 79.1 },
-  laura: { rgb: [236, 72, 153], hex: "#ec4899", name: "Laura", desc: "Segurança & Privacidade", omega: 68.4 },
-  leticia: { rgb: [234, 179, 8], hex: "#eab308", name: "Letícia", desc: "Expertise Profissional", omega: 91.3 },
+  pedro: { rgb: [59, 130, 246], hex: "#3b82f6", name: "Modo safe quantum", desc: "Absorção de Conhecimento", omega: 79.1 },
+  laura: { rgb: [236, 72, 153], hex: "#ec4899", name: "Modo difusão atomica", desc: "Segurança & Privacidade", omega: 68.4 },
+  leticia: { rgb: [234, 179, 8], hex: "#eab308", name: "Modo Spin analitico", desc: "Expertise Profissional", omega: 91.3 },
 };
 
 

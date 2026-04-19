@@ -82,7 +82,7 @@
 #canvas-bg canvas { display: block; width: 100% !important; height: 100% !important; }
 #canvas-bg::after {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 60% 55% at 50% 50%, transparent 40%, rgba(4, 4, 8, 0.55) 100%);
+  background: radial-gradient(ellipse 60% 55% at 50% 50%, transparent 36%, rgba(0, 0, 0, 0.72) 100%);
   pointer-events: none;
 }
 
@@ -154,19 +154,29 @@
   z-index: 10; position: relative;
 }
 #avatar-tabs {
-  display: flex; align-items: center; gap: 6px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center; justify-items: center;
+  gap: 10px;
   min-width: 0;
+  width: min(100%, 680px);
 }
 .av-tab {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 16px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  flex-shrink: 0;
+  padding: 6px 14px; border-radius: 999px;
   font-size: 11.5px; font-weight: 600;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-lo); border: 1px solid transparent;
   transition: color var(--dur) var(--ease), background var(--dur) var(--ease),
     border-color var(--dur) var(--ease), opacity var(--dur) var(--ease);
-  white-space: nowrap;
+  white-space: normal;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: center;
 }
+.av-tab .av-dot { flex-shrink: 0; }
 .av-tab.av-dim { color: var(--text-lo); opacity: 0.55; }
 .av-tab.av-dim .av-dot { background: var(--text-xlo) !important; box-shadow: none; }
 .av-tab.av-dim:hover { opacity: 0.85; color: var(--text-md); background: var(--s1); }
@@ -426,6 +436,7 @@
   left: 50%;
   bottom: 110px;
   width: min(560px, 86vw);
+  min-width: 0;
   display: flex;
   pointer-events: none;
   will-change: transform, opacity, filter;
@@ -448,6 +459,10 @@
   -webkit-backdrop-filter: blur(14px) saturate(115%);
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 .stream-msg.from-ai .bubble {
   background: rgba(14, 14, 20, 0.82);
@@ -1014,9 +1029,9 @@
 
   /* Edge hook → posicionado no terço inferior, fácil para o polegar */
   #rail-hook {
-    top: auto;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
-    transform: none;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
     width: 32px; height: 56px;
   }
   #rail-hook .hook-bar { height: 36px; }
