@@ -243,6 +243,7 @@ export default function SingulAIDashboard() {
   const switchProfile = (p: Profile) => {
     if (p === profile) return;
     setProfile(p);
+    setSigmaFlash((n) => n + 1); // dispara animação de partículas formando o σ
     engineRef.current?.morphTo(p);
     const prof = PROFILES[p];
     omegaTargetRef.current = prof.omega;
