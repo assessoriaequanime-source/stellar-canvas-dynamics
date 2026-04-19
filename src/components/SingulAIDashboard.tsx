@@ -483,23 +483,37 @@ export default function SingulAIDashboard() {
         </main>
       </div>
 
-      {/* ACTION RAIL — trilha lateral progressiva curva */}
+      {/* ACTION RAIL — trilha lateral refinada (desktop) / dock inferior (mobile) */}
+      {railOpen && (
+        <div
+          className="rail-scrim"
+          onClick={() => setRailOpen(false)}
+          aria-hidden
+        />
+      )}
       <div className={`rail-shell ${railOpen ? "rail-shell-open" : ""}`} aria-hidden={!railOpen}>
-        <ActionRail actions={railActions} onReorder={setRailActions} />
+        <ActionRail
+          actions={railActions}
+          onReorder={setRailActions}
+          onClose={() => setRailOpen(false)}
+        />
       </div>
 
-      {/* (sidebar removida — navegação totalmente migrada para o rail) */}
-
+      {/* Edge hook — âncora discreta no centro vertical da borda direita */}
       <button
-        id="rail-fab"
+        id="rail-hook"
+        className={railOpen ? "is-open" : ""}
         onClick={() => setRailOpen((v) => !v)}
         aria-pressed={railOpen}
-        aria-label="Trilha de ações"
-        title="Ações rápidas"
+        aria-label={railOpen ? "Fechar menu" : "Abrir menu"}
+        title="Menu"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-        </svg>
+        <span className="hook-bar" aria-hidden />
+        <span className="hook-arrow" aria-hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <polyline points={railOpen ? "9 6 15 12 9 18" : "15 6 9 12 15 18"} />
+          </svg>
+        </span>
       </button>
 
       {/* MODAL */}
