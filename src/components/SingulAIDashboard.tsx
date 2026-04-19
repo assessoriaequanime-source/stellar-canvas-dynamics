@@ -138,25 +138,25 @@ export default function SingulAIDashboard() {
     animateOmega(prof.omega, omegaLiveRef.current, 1200);
   };
 
-  // Send chat
+  // Send chat — newer messages push older toward absorption (cap with MAX_STREAM)
   const sendMessage = async () => {
     const text = input.trim();
     if (!text) return;
     setInput("");
     const userId = ++msgIdRef.current;
     const typingId = ++msgIdRef.current;
-    setMessages((m) => [...m, { role: "user", text, id: userId }, { role: "typing", id: typingId }]);
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 50);
+    setMessages((m) =>
+      [...m, { role: "user", text, id: userId }, { role: "typing", id: typingId } as Msg].slice(-MAX_STREAM),
+    );
 
     await new Promise((r) => setTimeout(r, 1100 + Math.random() * 900));
     const pool = AI_REPLIES[profileRef.current];
     const reply = pool[Math.floor(Math.random() * pool.length)];
     const aiId = ++msgIdRef.current;
-    setMessages((m) => m.filter((x) => x.id !== typingId).concat({ role: "ai", text: reply, id: aiId }));
+    setMessages((m) =>
+      m.filter((x) => x.id !== typingId).concat({ role: "ai", text: reply, id: aiId }).slice(-MAX_STREAM),
+    );
     omegaTargetRef.current = Math.min(99.5, omegaLiveRef.current + 0.4);
-    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
 
   // ESC closes modal
