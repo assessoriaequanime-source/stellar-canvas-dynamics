@@ -434,11 +434,10 @@ export default function SingulAIDashboard() {
               </button>
             </div>
             <div id="chat-footer">
-              <span className="cyan">SingulAI v2.0</span>
-              <span className="sep">—</span>
-              <a href="https://singulai.live" target="_blank" rel="noreferrer">singulai.live</a>
-              <span className="sep">—</span>
-              <a href="https://rodrigo.run" target="_blank" rel="noreferrer">rodrigo.run</a>
+              <span className="footer-avatar-name" style={{ color: accentStr }}>
+                {prof.name}
+                <span className="footer-avatar-desc">{prof.desc}</span>
+              </span>
             </div>
           </div>
         </main>
