@@ -289,23 +289,40 @@
 .qa {
   display: flex; align-items: center; gap: 9px;
   padding: 9px 11px; border-radius: var(--r-md);
-  border: 1px solid var(--border); background: var(--s1);
+  border: 1px solid var(--border); background: var(--gray-800);
   font-size: 12px; font-weight: 500; color: var(--text-md);
   transition: all var(--dur) var(--ease); text-align: left;
 }
-.qa:hover { background: var(--s2); border-color: rgba(var(--accent-rgb), 0.2); color: var(--text-hi); }
-.qa svg { width: 13px; height: 13px; stroke-width: 1.5; flex-shrink: 0; }
-.qa-legacy { border-color: rgba(234, 179, 8, 0.2); background: rgba(234, 179, 8, 0.05); color: rgb(234, 179, 8); }
-.qa-legacy:hover { background: rgba(234, 179, 8, 0.1); border-color: rgba(234, 179, 8, 0.35); }
+.qa:hover {
+  background: var(--gray-700); border-color: var(--border-md);
+  color: var(--text-hi);
+}
+.qa:hover svg { color: rgb(var(--accent-rgb)); }
+.qa svg { width: 13px; height: 13px; stroke-width: 1.5; flex-shrink: 0; transition: color var(--dur); }
+.qa-legacy {
+  border-color: var(--border-md);
+  background: linear-gradient(135deg, var(--gray-800), var(--gray-700));
+  color: var(--text-hi);
+  position: relative; overflow: hidden;
+}
+.qa-legacy::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: rgb(var(--accent-rgb));
+  opacity: 0.7; transition: opacity var(--dur), box-shadow var(--dur);
+}
+.qa-legacy:hover { background: linear-gradient(135deg, var(--gray-700), var(--gray-600)); border-color: var(--border-hi); }
+.qa-legacy:hover::before { opacity: 1; box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.6); }
+.qa-legacy:hover svg { color: rgb(var(--accent-rgb)); }
 
 .mem-item {
   display: flex; align-items: center; gap: 9px;
   padding: 8px 10px; border-radius: var(--r-sm);
-  background: var(--s1); border: 1px solid var(--border);
+  background: var(--gray-800); border: 1px solid var(--border);
   transition: all var(--dur) var(--ease); cursor: pointer;
 }
-.mem-item:hover { background: var(--s2); }
-.mem-item svg { width: 11px; height: 11px; stroke-width: 1.5; color: var(--text-lo); flex-shrink: 0; }
+.mem-item:hover { background: var(--gray-700); border-color: var(--border-md); }
+.mem-item:hover svg { color: rgb(var(--accent-rgb)); }
+.mem-item svg { width: 11px; height: 11px; stroke-width: 1.5; color: var(--text-lo); flex-shrink: 0; transition: color var(--dur); }
 .mem-name { font-size: 11px; color: var(--text-md); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mem-type { font-family: var(--font-mono); font-size: 8.5px; color: var(--text-lo); }
 
