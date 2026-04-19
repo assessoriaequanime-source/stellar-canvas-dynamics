@@ -131,9 +131,11 @@ export default function SingulAIDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  // Initialize rail actions ordered by logical use coherence
+  // Initialize rail actions — consolidates ALL migrated functions
+  // (sidebar nav + right-panel widgets + topbar chips) into a single hub.
   useEffect(() => {
     setRailActions([
+      // Primary action
       {
         id: "create",
         label: "Criar Cápsula",
@@ -141,17 +143,67 @@ export default function SingulAIDashboard() {
         svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
         onClick: () => setModalOpen(true),
       },
+      // Avatar & profile (from sidebar)
       {
-        id: "consult",
-        label: "Consultar",
-        hint: "Buscar memória",
-        svg: <><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
-        onClick: () => setInput("Consultar memória recente"),
+        id: "avatar",
+        label: "Meu Avatar",
+        hint: "Identidade ativa",
+        svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></>,
+        onClick: () => setActiveNav("profile"),
       },
+      // Capsules (from sidebar, with badge)
+      {
+        id: "capsules",
+        label: "Cápsulas",
+        hint: "Acervo de envios",
+        svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></>,
+        onClick: () => setActiveNav("capsules"),
+      },
+      // Tracking (from sidebar)
+      {
+        id: "track",
+        label: "Acompanhamento",
+        hint: "Status de entregas",
+        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+        onClick: () => setActiveNav("track"),
+      },
+      // Documents (from sidebar)
+      {
+        id: "docs",
+        label: "Documentos",
+        hint: "Acervo notarial",
+        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+        onClick: () => setActiveNav("docs"),
+      },
+      // Memories (from right panel)
+      {
+        id: "memories",
+        label: "Memórias",
+        hint: "Recentes & absorção",
+        svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
+        onClick: () => setSubpanel("memories"),
+      },
+      // Neural sync (from right panel)
+      {
+        id: "sync",
+        label: "Sincronização",
+        hint: "Bandas neurais",
+        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+        onClick: () => setSubpanel("sync"),
+      },
+      // Emotional absorption (from right panel)
+      {
+        id: "emo",
+        label: "Absorção Emocional",
+        hint: "Feedback ↔ conhecimento",
+        svg: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
+        onClick: () => setSubpanel("emo"),
+      },
+      // Recalibrate (utility)
       {
         id: "recalibrate",
         label: "Recalibrar",
-        hint: "Reorganizar atlas neural",
+        hint: "Reorganizar atlas",
         svg: <><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></>,
         onClick: () => {
           engineRef.current?.morphTo(profileRef.current);
@@ -159,23 +211,29 @@ export default function SingulAIDashboard() {
           animateOmega(t, omegaLiveRef.current, 800);
         },
       },
+      // Wallet (from topbar chip)
       {
-        id: "docs",
-        label: "Documentos",
-        hint: "Acervo notarial",
-        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+        id: "wallet",
+        label: "Carteira",
+        hint: "0xaf99…7686",
+        svg: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>,
+        onClick: () => setSubpanel("wallet"),
       },
+      // PRO plan (from topbar chip)
       {
-        id: "security",
-        label: "Segurança",
-        hint: "Chaves & permissões",
-        svg: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></>,
+        id: "pro",
+        label: "Plano PRO",
+        hint: "Status & benefícios",
+        svg: <><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2" /></>,
+        onClick: () => setSubpanel("pro"),
       },
+      // Settings (from sidebar)
       {
-        id: "export",
-        label: "Exportar",
-        hint: "Snapshot do legado",
-        svg: <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+        id: "settings",
+        label: "Configurações",
+        hint: "Preferências do sistema",
+        svg: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
+        onClick: () => setSubpanel("settings"),
       },
     ]);
   }, [animateOmega]);
