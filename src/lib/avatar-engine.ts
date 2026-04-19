@@ -173,8 +173,8 @@ export class AvatarEngine {
     const currCol = this.geo.attributes.color.array as Float32Array;
     const nextCol = this.palettes[profile];
 
-    gsap.to(currPos, {
-      endArray: nextPos,
+    gsap.to(currPos as unknown as number[], {
+      endArray: nextPos as unknown as number[],
       duration: 2.2,
       ease: "expo.inOut",
       onUpdate: () => {
@@ -191,8 +191,7 @@ export class AvatarEngine {
       {
         duration: 1.8,
         ease: "power2.inOut",
-        onUpdate: function () {
-          // @ts-expect-error gsap this
+        onUpdate: function (this: gsap.core.Tween) {
           const p = this.progress();
           for (let i = 0; i < currCol.length; i += 3) {
             const b = 0.55 + Math.random() * 0.45;
