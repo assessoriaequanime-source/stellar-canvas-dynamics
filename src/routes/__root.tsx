@@ -9,6 +9,8 @@ const LOCAL_SESSION_KEY = "singulai_session";
 const LOCAL_USER_KEY = "singulai_user";
 const LOCAL_WALLET_KEY = "singulai_wallet";
 const REDIRECT_ATTEMPT_KEY = "singulai_auth_redirect_attempt";
+const AUTH_QUERY_PARAMS = ["auth", "session", "user", "wallet"];
+const PUBLIC_PATHS = new Set(["/demo"]);
 
 const DEV_SIMPLE_TEST_AUTH = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
 const DEV_SIMPLE_AUTH_HOSTNAMES = ["singulai.live", "localhost", "127.0.0.1"];
@@ -97,9 +99,27 @@ function parseJsonParam(value: string | null) {
   }
 }
 
+function isPublicPath() {
+  if (typeof window === "undefined") return false;
+  const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
+  return PUBLIC_PATHS.has(normalizedPath);
+}
+
 function removeQueryParams() {
   const url = new URL(window.location.href);
-  url.search = "";
+  let hasChanges = false;
+
+  AUTH_QUERY_PARAMS.forEach((key) => {
+    if (url.searchParams.has(key)) {
+      url.searchParams.delete(key);
+      hasChanges = true;
+    }
+  });
+
+  if (!hasChanges) return;
+
+  const nextSearch = url.searchParams.toString();
+  url.search = nextSearch ? `?${nextSearch}` : "";
   window.history.replaceState({}, document.title, url.toString());
 }
 
@@ -178,6 +198,11 @@ function RootComponent() {
 
   useEffect(() => {
     const handleAuth = async () => {
+      if (isPublicPath()) {
+        setReady(true);
+        return;
+      }
+
       if (isDevSimpleAuthMode()) {
         useDevSimpleAuthSession();
         removeQueryParams();

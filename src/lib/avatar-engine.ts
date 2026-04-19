@@ -183,14 +183,14 @@ export class AvatarEngine {
     const sizes = new Float32Array(this.N);
     const alphas = new Float32Array(this.N);
     const base = this.palettes[profile];
-    const baseSize = this.isMobile ? 1.9 : 2.4;
+    const baseSize = this.isMobile ? 2.1 : 2.7;
     for (let i = 0; i < this.N; i++) {
       const b = 0.55 + Math.random() * 0.45;
       col[i * 3] = base.r * b;
       col[i * 3 + 1] = base.g * b;
       col[i * 3 + 2] = base.b * b;
       sizes[i] = baseSize;
-      alphas[i] = 0.82;
+      alphas[i] = 0.92;
     }
     this.geo = new THREE.BufferGeometry();
     this.geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));

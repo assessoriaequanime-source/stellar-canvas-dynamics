@@ -30,51 +30,31 @@ type Props = {
  */
 const VISIBLE_DEPTH = 5; // depths 0..4 are rendered; 5+ are hidden
 
-function trajectoryFor(profile: Profile, depth: number, fromUser: boolean, mobile = false) {
+function trajectoryFor(_profile: Profile, depth: number, fromUser: boolean, _mobile = false) {
   if (depth >= VISIBLE_DEPTH) {
     return { opacity: 0, scale: 0.12, x: 0, y: -340, blur: 8, hidden: true };
   }
+
+  // Pure vertical trajectory — messages rise upward, no horizontal drift.
+  // User messages stay right-aligned, AI left-aligned via CSS justify-content.
+  // Slight horizontal nudge only for visual "lane" distinction (never enough to overflow).
   const t = depth / (VISIBLE_DEPTH - 1); // 0..1 across visible range
+  const liftY = -t * 280;
 
-  // Vertical lift toward the particle core
-  const liftY = -t * 300;
+  // Minimal lane nudge: user messages shift slightly right, AI slightly left.
+  // Max 20px at depth 0 (most recent), fading to 0 as messages ascend.
+  const laneNudge = (fromUser ? 14 : -14) * (1 - t);
 
-  // Lane bias — reduced on mobile to keep bubbles in viewport
-  const biasScale = mobile ? 0.3 : 1;
-  const sideBias = (fromUser ? 60 : -60) * Math.pow(1 - t, 1.3) * biasScale;
-
-  let driftX = 0;
-  let extraY = 0;
-  switch (profile) {
-    case "pedro": {
-      const angle = depth * 0.5;
-      driftX = Math.sin(angle) * (mobile ? 6 : 14) * t + sideBias;
-      extraY = -Math.cos(angle) * 5 * t;
-      break;
-    }
-    case "laura": {
-      const angle = depth * 0.78;
-      driftX = Math.sin(angle) * (mobile ? 28 : 70) * t * (1 - t * 0.5) + sideBias;
-      extraY = Math.sin(angle * 1.4) * 12 * t;
-      break;
-    }
-    case "leticia": {
-      driftX = (fromUser ? -1 : 1) * (mobile ? 8 : 22) * t + sideBias;
-      extraY = -t * 10;
-      break;
-    }
-  }
-
-  // Behance-grade legibility curve — sharp early, ofuscated late
+  // Behance-grade legibility curve — sharp early, faded late
   const opacityLadder = [1.0, 0.78, 0.55, 0.34, 0.16];
-  const scaleLadder = [1.0, 0.94, 0.86, 0.78, 0.66];
-  const blurLadder = [0, 0.3, 0.9, 1.8, 3.2];
+  const scaleLadder  = [1.0, 0.96, 0.90, 0.82, 0.70];
+  const blurLadder   = [0, 0.2, 0.7, 1.5, 2.8];
 
   const opacity = opacityLadder[depth] ?? 0;
   const scale = scaleLadder[depth] ?? 0.6;
   const blur = blurLadder[depth] ?? 4;
 
-  return { opacity, scale, x: driftX, y: liftY + extraY, blur, hidden: false };
+  return { opacity, scale, x: laneNudge, y: liftY, blur, hidden: false };
 }
 
 export default function ChatStream({ messages, profile, engineRef }: Props) {
