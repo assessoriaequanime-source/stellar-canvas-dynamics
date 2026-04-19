@@ -625,10 +625,11 @@
 /* ════ Responsive ════ */
 @media (max-width: 767px) {
   :root { --sidebar-w: 0px; --topbar-h: 50px; --panel-w: 100%; }
-  #sidebar, #access-btn, #av-online, #omega-widget { display: none; }
+  #sidebar, #av-online, #omega-widget { display: none; }
   #app { grid-template-columns: 1fr; grid-template-areas: "topbar" "main"; }
-  #topbar { padding: 0 10px 0 52px; gap: 6px; }
-  .chip, #chip-wallet { display: none; }
+  #topbar { padding: 0 10px 0 52px; gap: 8px; }
+  .chip-status span:not(.status-led), .chip-wallet { display: none; }
+  .topbar-divider { display: none; }
   .av-tab { padding: 4px 9px; font-size: 10.5px; letter-spacing: 0.04em; }
   #avatar-tabs { gap: 2px; overflow-x: auto; scrollbar-width: none; }
   #avatar-tabs::-webkit-scrollbar { display: none; }
@@ -642,7 +643,8 @@
 }
 @media (min-width: 768px) and (max-width: 1024px) {
   :root { --panel-w: 240px; }
-  .chip { font-size: 8.5px; padding: 4px 8px; }
+  .chip-wallet .wallet-addr { display: none; }
+  .chip { padding: 4px 8px; }
   .stream-msg { bottom: 100px; }
 }
 @media (min-width: 1025px) {
