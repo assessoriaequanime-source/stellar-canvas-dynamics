@@ -1094,3 +1094,50 @@
   font-family: var(--font-mono); font-size: 11px;
   color: var(--text-hi);
 }
+
+/* ════ Rail header — Ω discreto + indicador online ao lado de "Menu" ════ */
+.rail-eyebrow { display: inline-flex; align-items: center; gap: 8px; }
+.rail-online {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.7);
+  animation: pulseDot 2.4s ease infinite;
+}
+.rail-omega {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto; margin-right: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.35);
+  color: var(--text-md);
+  animation: omegaFloat 6s ease-in-out infinite;
+  transform-style: preserve-3d;
+}
+.rail-omega-glyph {
+  font-family: var(--font-mono); font-weight: 700; font-size: 11px;
+  color: var(--text-md);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5), 0 0 6px rgba(255, 255, 255, 0.08);
+}
+.rail-omega-val {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-md);
+}
+@keyframes omegaFloat {
+  0%, 100% { transform: perspective(60px) rotateX(0deg) rotateY(0deg); }
+  25%      { transform: perspective(60px) rotateX(2deg) rotateY(-3deg); }
+  50%      { transform: perspective(60px) rotateX(0deg) rotateY(0deg); }
+  75%      { transform: perspective(60px) rotateX(-2deg) rotateY(3deg); }
+}
+
+/* Esconder meta-rail no mobile (espaço reduzido) */
+@media (max-width: 767px) {
+  #meta-rail { display: none; }
+  .footer-avatar-name { font-size: 10px; letter-spacing: 0.18em; }
+  .footer-avatar-desc { font-size: 8px; }
+}
