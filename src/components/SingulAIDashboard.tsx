@@ -9,7 +9,7 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; na
   leticia: { rgb: [234, 179, 8], hex: "#eab308", name: "Letícia", desc: "Expertise Profissional", omega: 91.3 },
 };
 
-const CIRC = 2 * Math.PI * 19;
+
 
 const AI_REPLIES: Record<Profile, string[]> = {
   pedro: [
