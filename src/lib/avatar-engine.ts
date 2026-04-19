@@ -118,12 +118,18 @@ export class AvatarEngine {
   }
 
   private _genPedro() {
+    // Globo coeso e sólido: distribuição Fibonacci na superfície + leve preenchimento INTERNO,
+    // jamais externo. Garante uma borda nítida e estável (sem partículas saltando para fora).
     const a = new Float32Array(this.N * 3),
       r = this.BR;
     for (let i = 0; i < this.N; i++) {
       const phi = Math.acos(-1 + (2 * i) / this.N);
       const theta = Math.sqrt(this.N * Math.PI) * phi;
-      const rad = r + Math.random() * r * 0.12;
+      // 78% das partículas formam a casca firme; 22% preenchem o interior (densidade central).
+      const isShell = i % 100 < 78;
+      const rad = isShell
+        ? r * (0.985 + Math.random() * 0.015) // casca: ±1.5% para coesão sem rigidez
+        : r * (0.35 + Math.random() * 0.55);  // interior: protegido pela borda
       a[i * 3] = rad * Math.cos(theta) * Math.sin(phi);
       a[i * 3 + 1] = rad * Math.sin(theta) * Math.sin(phi);
       a[i * 3 + 2] = rad * Math.cos(phi);
@@ -144,14 +150,20 @@ export class AvatarEngine {
     return a;
   }
   private _genLeticia() {
+    // Cubo perfeitamente alinhado: grade regular sem jitter — expertise = precisão.
     const a = new Float32Array(this.N * 3);
     const sz = Math.floor(Math.cbrt(this.N));
     const sp = this.isMobile ? 22 : 30;
-    const off = (sz * sp) / 2;
+    const off = ((sz - 1) * sp) / 2;
+    const total = sz * sz * sz;
     for (let i = 0; i < this.N; i++) {
-      a[i * 3] = (i % sz) * sp - off + (Math.random() - 0.5) * 4;
-      a[i * 3 + 1] = (Math.floor(i / sz) % sz) * sp - off + (Math.random() - 0.5) * 4;
-      a[i * 3 + 2] = Math.floor(i / (sz * sz)) * sp - off + (Math.random() - 0.5) * 4;
+      const idx = i % total;
+      const x = idx % sz;
+      const y = Math.floor(idx / sz) % sz;
+      const z = Math.floor(idx / (sz * sz));
+      a[i * 3]     = x * sp - off;
+      a[i * 3 + 1] = y * sp - off;
+      a[i * 3 + 2] = z * sp - off;
     }
     return a;
   }

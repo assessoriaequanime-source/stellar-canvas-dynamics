@@ -12,14 +12,17 @@ type Props = {
   actions: RailAction[];
   onReorder?: (next: RailAction[]) => void;
   onClose?: () => void;
+  omegaPct?: number;
+  omegaStatus?: string;
+  online?: boolean;
 };
 
 /**
  * ActionRail — refined vertical rail anchored to the right edge.
  * Premium spacing, two-line buttons (label + hint), draggable to reorder.
- * On mobile, parent shell turns this into a bottom sheet.
+ * Houses the Ω cohesion index (subtle, monochrome 3D) and online indicator.
  */
-export default function ActionRail({ actions, onReorder, onClose }: Props) {
+export default function ActionRail({ actions, onReorder, onClose, omegaPct = 0, omegaStatus = "", online = true }: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -69,9 +72,19 @@ export default function ActionRail({ actions, onReorder, onClose }: Props) {
     <aside className="rail" aria-label="Menu de ações">
       <header className="rail-head">
         <div className="rail-head-titles">
-          <span className="rail-eyebrow">Menu</span>
+          <span className="rail-eyebrow">
+            Menu
+            {online && <span className="rail-online" title="Sistema online" />}
+          </span>
           <h2 className="rail-title">Ações</h2>
         </div>
+
+        {/* Ω — discreto, monocromático, levemente animado em 3D fluido */}
+        <div className="rail-omega" title={`Coesão Ω · ${omegaStatus}`}>
+          <span className="rail-omega-glyph">Ω</span>
+          <span className="rail-omega-val">{omegaPct.toFixed(1)}%</span>
+        </div>
+
         {onClose && (
           <button className="rail-close" onClick={onClose} aria-label="Fechar menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>

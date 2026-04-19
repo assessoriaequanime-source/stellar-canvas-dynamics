@@ -9,7 +9,7 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; na
   leticia: { rgb: [234, 179, 8], hex: "#eab308", name: "Letícia", desc: "Expertise Profissional", omega: 91.3 },
 };
 
-const CIRC = 2 * Math.PI * 19;
+
 
 const AI_REPLIES: Record<Profile, string[]> = {
   pedro: [
@@ -48,8 +48,7 @@ export default function SingulAIDashboard() {
   const profileRef = useRef<Profile>("pedro");
   profileRef.current = profile;
 
-  const [panelOpen, setPanelOpen] = useState(typeof window !== "undefined" ? window.innerWidth >= 768 : true);
-  const [activeNav, setActiveNav] = useState("home");
+  const [, setActiveNav] = useState("home");
   const [omegaPct, setOmegaPct] = useState(0);
   const [omegaStatus, setOmegaStatus] = useState("Fragmentado");
   const [bars, setBars] = useState<number[]>([58, 81, 52, 93, 67, 44, 88]);
@@ -62,6 +61,7 @@ export default function SingulAIDashboard() {
   const [railOpen, setRailOpen] = useState(false);
   const [railActions, setRailActions] = useState<RailAction[]>([]);
   const [subpanel, setSubpanel] = useState<string | null>(null);
+  const [sigmaFlash, setSigmaFlash] = useState(0);
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
@@ -243,6 +243,7 @@ export default function SingulAIDashboard() {
   const switchProfile = (p: Profile) => {
     if (p === profile) return;
     setProfile(p);
+    setSigmaFlash((n) => n + 1); // dispara animação de partículas formando o σ
     engineRef.current?.morphTo(p);
     const prof = PROFILES[p];
     omegaTargetRef.current = prof.omega;
@@ -280,9 +281,7 @@ export default function SingulAIDashboard() {
   }, []);
 
   const prof = PROFILES[profile];
-  const accentRGB = `${prof.rgb[0]},${prof.rgb[1]},${prof.rgb[2]}`;
-  const accentStr = `rgb(${accentRGB})`;
-  const offset = CIRC * (1 - omegaPct / 100);
+  const accentStr = `rgb(${prof.rgb[0]},${prof.rgb[1]},${prof.rgb[2]})`;
 
   return (
     <div className={`p-${profile}`}>
@@ -290,14 +289,13 @@ export default function SingulAIDashboard() {
       <div id="canvas-bg" ref={canvasRef} />
 
       <div id="app">
-        {/* TOPBAR — apenas avatares + status mínimo. Tudo o resto vive no rail. */}
+        {/* TOPBAR — apenas avatares centralizados. Ativo iluminado, demais opacos sem cor. */}
         <header id="topbar">
-          <div className="logo-mark logo-topbar" id="logo-mark" title="SingulAI">Σ</div>
-          <div id="avatar-tabs">
+          <div id="avatar-tabs" key={sigmaFlash}>
             {(Object.keys(PROFILES) as Profile[]).map((p) => (
               <button
                 key={p}
-                className={`av-tab ${profile === p ? "av-active" : ""}`}
+                className={`av-tab ${profile === p ? "av-active" : "av-dim"}`}
                 data-p={p}
                 onClick={() => switchProfile(p)}
               >
@@ -306,62 +304,23 @@ export default function SingulAIDashboard() {
               </button>
             ))}
           </div>
-          <div className="topbar-cluster">
-            <div className="chip chip-status" title="Sistema online">
-              <span className="status-led" />
-              <span>singulAI</span>
-            </div>
-          </div>
         </header>
 
+        {/* Sigma flash — partículas claras formam o ícone matemático e somem com fade-out */}
+        <div className="sigma-flash" key={`sf-${sigmaFlash}`} aria-hidden>
+          <span className="sf-glyph">Σ</span>
+          {Array.from({ length: 14 }).map((_, i) => (
+            <span key={i} className="sf-dot" style={{ ["--i" as never]: i }} />
+          ))}
+        </div>
+
         <main id="main">
-          {/* Avatar info */}
-          <div id="av-info">
-            <div id="av-name">{prof.name}</div>
-            <div id="av-desc">{prof.desc}</div>
-          </div>
-
-          <div id="av-online">
-            <div className="pulse-dot" />
-            <span id="av-online-text">ONLINE</span>
-          </div>
-
-          {/* Omega */}
-          <div id="omega-widget">
-            <div className="omega-card">
-              <svg id="omega-svg" viewBox="0 0 46 46">
-                <circle className="omega-ring-bg" cx="23" cy="23" r="19" />
-                <circle
-                  className="omega-ring-val"
-                  id="omega-ring"
-                  cx="23"
-                  cy="23"
-                  r="19"
-                  stroke={accentStr}
-                  strokeDasharray={CIRC.toFixed(2)}
-                  strokeDashoffset={offset.toFixed(2)}
-                />
-                <text
-                  x="23"
-                  y="27"
-                  textAnchor="middle"
-                  fontFamily="Space Mono,monospace"
-                  fontSize="8.5"
-                  fontWeight={700}
-                  fill={accentStr}
-                >
-                  Ω
-                </text>
-              </svg>
-              <div className="omega-info">
-                <div className="omega-label">Índice Ω</div>
-                <div className="omega-val" style={{ color: accentStr }}>
-                  {omegaPct.toFixed(1)}%
-                </div>
-                <div className="omega-status">{omegaStatus}</div>
-              </div>
-            </div>
-          </div>
+          {/* Links verticais discretos (migrados do footer) — somente cinza, sem variação por avatar */}
+          <nav id="meta-rail" aria-label="Atalhos">
+            <span className="meta-brand">SingulAI v2.0</span>
+            <a href="https://singulai.live" target="_blank" rel="noreferrer">singulai.live</a>
+            <a href="https://rodrigo.run" target="_blank" rel="noreferrer">rodrigo.run</a>
+          </nav>
 
           {/* SUBPANEL — renderizado on-demand pelo rail (Memórias / Sync / Emo / Wallet / PRO / Settings) */}
           {subpanel && (
@@ -473,11 +432,10 @@ export default function SingulAIDashboard() {
               </button>
             </div>
             <div id="chat-footer">
-              <span className="cyan">SingulAI v2.0</span>
-              <span className="sep">—</span>
-              <a href="https://singulai.live" target="_blank" rel="noreferrer">singulai.live</a>
-              <span className="sep">—</span>
-              <a href="https://rodrigo.run" target="_blank" rel="noreferrer">rodrigo.run</a>
+              <span className="footer-avatar-name" style={{ color: accentStr }}>
+                {prof.name}
+                <span className="footer-avatar-desc">{prof.desc}</span>
+              </span>
             </div>
           </div>
         </main>
@@ -496,6 +454,9 @@ export default function SingulAIDashboard() {
           actions={railActions}
           onReorder={setRailActions}
           onClose={() => setRailOpen(false)}
+          omegaPct={omegaPct}
+          omegaStatus={omegaStatus}
+          online
         />
       </div>
 
