@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Profile } from "@/lib/avatar-engine";
 import type { AvatarEngine } from "@/lib/avatar-engine";
 
@@ -14,58 +14,65 @@ type Props = {
   engineRef?: React.MutableRefObject<AvatarEngine | null>;
 };
 
-const MAX = 6; // visible depth before full absorption
-
 /**
- * Trajectory per profile, parameterized by depth t = depth/MAX in [0,1].
- * Sharper readability at low depth; quicker ofuscation as depth grows.
+ * Visible legibility ladder (Behance-grade memory aid):
+ *  depth 0 → most recent      | scale 1.00 | opacity 1.00 | blur 0    (sharp)
+ *  depth 1 → previous         | scale 0.94 | opacity 0.78 | blur 0.3  (legible)
+ *  depth 2 → 2 turns ago      | scale 0.86 | opacity 0.55 | blur 0.9  (legible)
+ *  depth 3 → 3 turns ago      | scale 0.78 | opacity 0.34 | blur 1.8  (faint context)
+ *  depth 4 → about to absorb  | scale 0.66 | opacity 0.16 | blur 3.2  (vanishing)
+ *  depth ≥ 5 → absorbed       | opacity 0  (fully removed from view)
+ *
+ * The ABSORPTION moment (particle flare + bubble vanish) is locked together:
+ * once a bubble enters depth 4 we mark it for absorption, fire the particle
+ * effect, and on the next render bump force opacity to 0 — no leftover ghost.
  */
+const VISIBLE_DEPTH = 5; // depths 0..4 are rendered; 5+ are hidden
+
 function trajectoryFor(profile: Profile, depth: number, fromUser: boolean) {
-  if (depth >= MAX) {
-    return { opacity: 0, scale: 0.18, x: 0, y: -300, blur: 8, absorbed: true };
+  if (depth >= VISIBLE_DEPTH) {
+    return { opacity: 0, scale: 0.12, x: 0, y: -340, blur: 8, hidden: true };
   }
-  const t = depth / MAX;
+  const t = depth / (VISIBLE_DEPTH - 1); // 0..1 across visible range
 
-  // Vertical lift toward the particle core (screen center area)
-  const liftY = -t * 320;
+  // Vertical lift toward the particle core
+  const liftY = -t * 300;
 
-  // Side bias so user/AI lanes stay readable
-  const sideBias = fromUser ? 70 * Math.pow(1 - t, 1.4) : -70 * Math.pow(1 - t, 1.4);
+  // Lane bias keeps user on right, AI on left while still readable
+  const sideBias = fromUser ? 60 * Math.pow(1 - t, 1.3) : -60 * Math.pow(1 - t, 1.3);
 
   let driftX = 0;
   let extraY = 0;
   switch (profile) {
     case "pedro": {
-      const angle = depth * 0.55;
-      driftX = Math.sin(angle) * 16 * t + sideBias;
-      extraY = -Math.cos(angle) * 6 * t;
+      const angle = depth * 0.5;
+      driftX = Math.sin(angle) * 14 * t + sideBias;
+      extraY = -Math.cos(angle) * 5 * t;
       break;
     }
     case "laura": {
       const angle = depth * 0.78;
-      driftX = Math.sin(angle) * 90 * t * (1 - t * 0.5) + sideBias;
-      extraY = Math.sin(angle * 1.4) * 14 * t;
+      driftX = Math.sin(angle) * 70 * t * (1 - t * 0.5) + sideBias;
+      extraY = Math.sin(angle * 1.4) * 12 * t;
       break;
     }
     case "leticia": {
-      driftX = (fromUser ? -1 : 1) * 26 * t + sideBias;
-      extraY = -t * 12;
+      driftX = (fromUser ? -1 : 1) * 22 * t + sideBias;
+      extraY = -t * 10;
       break;
     }
   }
 
-  // Sharp at top of stack, ofuscated quickly as it recedes
-  // depth 0: opacity 1.0, blur 0
-  // depth 1: opacity ~0.78, blur ~0.6  (still legível)
-  // depth 2: opacity ~0.55, blur ~1.4
-  // depth 3: opacity ~0.34, blur ~2.6
-  // depth 4: opacity ~0.18, blur ~4.0
-  // depth 5: opacity ~0.07, blur ~5.8
-  const scale = 1 - Math.pow(t, 1.2) * 0.66; // slower shrink early, faster late
-  const opacity = Math.max(0, Math.pow(1 - t, 1.55));
-  const blur = Math.pow(t, 1.35) * 6;
+  // Behance-grade legibility curve — sharp early, ofuscated late
+  const opacityLadder = [1.0, 0.78, 0.55, 0.34, 0.16];
+  const scaleLadder = [1.0, 0.94, 0.86, 0.78, 0.66];
+  const blurLadder = [0, 0.3, 0.9, 1.8, 3.2];
 
-  return { opacity, scale, x: driftX, y: liftY + extraY, blur, absorbed: false };
+  const opacity = opacityLadder[depth] ?? 0;
+  const scale = scaleLadder[depth] ?? 0.6;
+  const blur = blurLadder[depth] ?? 4;
+
+  return { opacity, scale, x: driftX, y: liftY + extraY, blur, hidden: false };
 }
 
 export default function ChatStream({ messages, profile, engineRef }: Props) {
@@ -74,29 +81,34 @@ export default function ChatStream({ messages, profile, engineRef }: Props) {
     return arr.map((m, i) => ({ msg: m, depth: arr.length - 1 - i }));
   }, [messages]);
 
-  // Track which message ids have already triggered absorption to avoid duplicate calls
   const absorbedIdsRef = useRef<Set<number>>(new Set());
   const elRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
+  const [vanished, setVanished] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!engineRef?.current) return;
-    // For each message at depth >= MAX-1, fire absorbAt once at its current screen position.
-    // We trigger right when it's about to vanish (depth reaches MAX-1), giving particle
-    // burst coherence with the bubble's last visible spot.
+    // The absorption boundary is the LAST visible depth (VISIBLE_DEPTH - 1 = 4).
+    // When a message reaches it, fire the particle absorption AND mark the bubble
+    // as vanished simultaneously so the visual moment is unified.
+    const ABSORB_DEPTH = VISIBLE_DEPTH - 1;
     indexed.forEach(({ msg, depth }) => {
       if (msg.role === "typing") return;
       if (absorbedIdsRef.current.has(msg.id)) return;
-      if (depth < MAX - 1) return;
-      const el = elRefs.current.get(msg.id);
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      // Slight delay so it lines up with the trajectory finishing its motion
-      window.setTimeout(() => {
-        engineRef.current?.absorbAt(cx, cy);
-      }, 400);
+      if (depth < ABSORB_DEPTH) return;
+
       absorbedIdsRef.current.add(msg.id);
+      const el = elRefs.current.get(msg.id);
+      const rect = el?.getBoundingClientRect();
+      const cx = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+      const cy = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+
+      // Fire particle flare and mark the bubble as vanished IN THE SAME FRAME.
+      engineRef.current?.absorbAt(cx, cy);
+      setVanished((prev) => {
+        const next = new Set(prev);
+        next.add(msg.id);
+        return next;
+      });
     });
   }, [indexed, engineRef]);
 
@@ -105,12 +117,19 @@ export default function ChatStream({ messages, profile, engineRef }: Props) {
       {indexed.map(({ msg, depth }) => {
         const fromUser = msg.role === "user";
         const tr = trajectoryFor(profile, depth, fromUser);
+        const isVanished = vanished.has(msg.id);
+        const opacity = isVanished ? 0 : tr.opacity;
+        const blur = isVanished ? 6 : tr.blur;
+        const scale = isVanished ? 0.4 : tr.scale;
+        const y = isVanished ? tr.y - 40 : tr.y;
+
         const style: React.CSSProperties = {
-          transform: `translate(calc(-50% + ${tr.x}px), ${tr.y}px) scale(${tr.scale})`,
-          opacity: tr.opacity,
-          filter: tr.blur > 0.05 ? `blur(${tr.blur.toFixed(2)}px)` : undefined,
+          transform: `translate(calc(-50% + ${tr.x}px), ${y}px) scale(${scale})`,
+          opacity,
+          filter: blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : undefined,
           zIndex: 100 - depth,
-          pointerEvents: depth === 0 ? "auto" : "none",
+          pointerEvents: depth === 0 && !isVanished ? "auto" : "none",
+          visibility: isVanished || tr.hidden ? "hidden" : "visible",
         };
         return (
           <div
