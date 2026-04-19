@@ -48,8 +48,7 @@ export default function SingulAIDashboard() {
   const profileRef = useRef<Profile>("pedro");
   profileRef.current = profile;
 
-  const [panelOpen, setPanelOpen] = useState(typeof window !== "undefined" ? window.innerWidth >= 768 : true);
-  const [activeNav, setActiveNav] = useState("home");
+  const [, setActiveNav] = useState("home");
   const [omegaPct, setOmegaPct] = useState(0);
   const [omegaStatus, setOmegaStatus] = useState("Fragmentado");
   const [bars, setBars] = useState<number[]>([58, 81, 52, 93, 67, 44, 88]);
@@ -62,6 +61,7 @@ export default function SingulAIDashboard() {
   const [railOpen, setRailOpen] = useState(false);
   const [railActions, setRailActions] = useState<RailAction[]>([]);
   const [subpanel, setSubpanel] = useState<string | null>(null);
+  const [sigmaFlash, setSigmaFlash] = useState(0);
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
