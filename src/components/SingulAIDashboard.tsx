@@ -328,8 +328,8 @@ export default function SingulAIDashboard() {
                   data-pos={pos}
                   onClick={() => switchProfile(p)}
                   style={{
-                    transform: `translateX(${pos * 140}px) scale(${pos === 0 ? 1 : 0.82})`,
-                    opacity: pos === 0 ? 1 : 0.4,
+                    transform: `translateX(${pos * 155}px) scale(${pos === 0 ? 1.14 : 0.86})`,
+                    opacity: pos === 0 ? 1 : 0.45,
                     zIndex: pos === 0 ? 20 : 10,
                   }}
                 >
