@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
+import ChatStream from "./ChatStream";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; name: string; desc: string; omega: number }> = {
   pedro: { rgb: [59, 130, 246], hex: "#3b82f6", name: "Pedro", desc: "Absorção de Conhecimento", omega: 79.1 },
@@ -383,24 +384,7 @@ export default function SingulAIDashboard() {
 
           {/* CHAT */}
           <div id="chat-area">
-            {messages.length > 0 && (
-              <div id="chat-messages">
-                {messages.map((m) => (
-                  <div key={m.id} className={`msg ${m.role === "user" ? "msg-user" : ""}`}>
-                    <div className={`bubble bubble-${m.role === "user" ? "user" : "ai"}`}>
-                      {m.role === "typing" ? (
-                        <div className="typing">
-                          <div className="tdot" /><div className="tdot" /><div className="tdot" />
-                        </div>
-                      ) : (
-                        m.text
-                      )}
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
+            <ChatStream messages={messages} profile={profile} />
             <div id="chat-bar">
               <button className="cb" title="Microfone" aria-label="Microfone">
                 <Icon><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></Icon>
