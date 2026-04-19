@@ -330,41 +330,7 @@ export default function SingulAIDashboard() {
               </div>
             </div>
 
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
-                Ações Rápidas
-              </div>
-              <button className="qa qa-primary" onClick={() => setModalOpen(true)}>
-                <Icon><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></Icon>
-                <span className="qa-text">
-                  <span className="qa-title">Criar Legado Digital</span>
-                  <span className="qa-sub">Cápsula segura com entrega programada</span>
-                </span>
-              </button>
-              <div className="qa-grid">
-                <button
-                  className="qa qa-compact"
-                  onClick={() => setInput("Consultar memória recente")}
-                  title="Consultar Memória"
-                >
-                  <Icon><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></Icon>
-                  <span>Consultar</span>
-                </button>
-                <button
-                  className="qa qa-compact"
-                  onClick={() => {
-                    engineRef.current?.morphTo(profile);
-                    const t = Math.min(99.9, omegaLiveRef.current + 2);
-                    animateOmega(t, omegaLiveRef.current, 800);
-                  }}
-                  title="Reconfigurar Atlas"
-                >
-                  <Icon><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></Icon>
-                  <span>Recalibrar</span>
-                </button>
-              </div>
-            </div>
+            {/* Ações foram movidas para o ActionRail lateral progressivo */}
 
             <div className="ps">
               <div className="ps-label">
