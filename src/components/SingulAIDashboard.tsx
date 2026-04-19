@@ -8,7 +8,7 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     rgb: [59, 130, 246],
     hex: "#3b82f6",
     avatarName: "Pedro",
-    modeName: "safe quantum",
+    modeName: "Safe Quantum",
     desc: "Absorção de Conhecimento",
     omega: 79.1,
   },
@@ -16,7 +16,7 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     rgb: [236, 72, 153],
     hex: "#ec4899",
     avatarName: "Laura",
-    modeName: "difusão atômica",
+    modeName: "Difusão Spin",
     desc: "Segurança & Privacidade",
     omega: 68.4,
   },
@@ -24,7 +24,7 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     rgb: [234, 179, 8],
     hex: "#eab308",
     avatarName: "Letícia",
-    modeName: "Spin analítico",
+    modeName: "Foco Atômico",
     desc: "Expertise Profissional",
     omega: 91.3,
   },
@@ -312,7 +312,7 @@ export default function SingulAIDashboard() {
       <div id="app">
         {/* TOPBAR — apenas avatares centralizados. Ativo iluminado, demais opacos sem cor. */}
         <header id="topbar">
-          <div id="avatar-tabs" key={sigmaFlash}>
+          <div id="model-tabs" key={sigmaFlash}>
             {(Object.keys(PROFILES) as Profile[]).map((p) => (
               <button
                 key={p}
@@ -321,9 +321,21 @@ export default function SingulAIDashboard() {
                 onClick={() => switchProfile(p)}
               >
                 <span className="mode-name">{PROFILES[p].modeName}</span>
-                <span className={`mode-badge ${profile === p ? "active" : ""}`}>MODO</span>
               </button>
             ))}
+          </div>
+          <div id="mode-divider">
+            <span className="divider-line" aria-hidden="true" />
+            <div className="mode-indicator-row">
+              {(Object.keys(PROFILES) as Profile[]).map((p) => (
+                <span
+                  key={`${p}-mode`}
+                  className={`mode-badge ${profile === p ? "active" : ""}`}
+                >
+                  MODO
+                </span>
+              ))}
+            </div>
           </div>
         </header>
 
