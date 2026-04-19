@@ -86,14 +86,20 @@
   pointer-events: none;
 }
 
-/* ════ Layout ════ */
+/* ════ Layout — sidebar removida, rail é o hub. ════ */
 #app {
   position: fixed; inset: 0; z-index: 1;
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: var(--topbar-h) 1fr;
-  grid-template-areas: "sidebar topbar" "sidebar main";
+  grid-template-areas: "topbar" "main";
   overflow: hidden;
+}
+.logo-topbar {
+  margin: 0 8px 0 2px !important;
+  width: 28px; height: 28px;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 /* ════ Sidebar ════ */
