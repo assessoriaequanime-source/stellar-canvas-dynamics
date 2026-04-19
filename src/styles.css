@@ -523,12 +523,24 @@
   box-shadow: 0 0 18px rgba(var(--accent-rgb), 0.18);
 }
 #chat-footer {
-  font-family: var(--font-mono); font-size: 9px; color: var(--text-xlo);
-  letter-spacing: 0.07em; display: flex; align-items: center; gap: 8px;
-  margin-top: 6px; position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 8px; position: relative; z-index: 2;
 }
-#chat-footer .cyan { color: rgba(var(--accent-rgb), 0.55); font-weight: 700; transition: color 0.4s; }
-#chat-footer .sep { color: var(--border); }
+.footer-avatar-name {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  transition: color 0.4s var(--ease);
+  text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.35);
+}
+.footer-avatar-desc {
+  font-family: var(--font-ui);
+  font-size: 8.5px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-lo);
+  text-shadow: none;
+}
 
 .typing { display: flex; gap: 4px; align-items: center; padding: 2px 0; }
 .tdot { width: 5px; height: 5px; border-radius: 50%; background: rgba(var(--accent-rgb), 0.55); animation: tDot 1.2s ease infinite; }
