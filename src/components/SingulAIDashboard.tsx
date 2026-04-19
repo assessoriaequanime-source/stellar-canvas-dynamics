@@ -61,6 +61,7 @@ export default function SingulAIDashboard() {
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
   const [railOpen, setRailOpen] = useState(false);
   const [railActions, setRailActions] = useState<RailAction[]>([]);
+  const [subpanel, setSubpanel] = useState<string | null>(null);
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
@@ -131,9 +132,11 @@ export default function SingulAIDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  // Initialize rail actions ordered by logical use coherence
+  // Initialize rail actions — consolidates ALL migrated functions
+  // (sidebar nav + right-panel widgets + topbar chips) into a single hub.
   useEffect(() => {
     setRailActions([
+      // Primary action
       {
         id: "create",
         label: "Criar Cápsula",
@@ -141,17 +144,67 @@ export default function SingulAIDashboard() {
         svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
         onClick: () => setModalOpen(true),
       },
+      // Avatar & profile (from sidebar)
       {
-        id: "consult",
-        label: "Consultar",
-        hint: "Buscar memória",
-        svg: <><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>,
-        onClick: () => setInput("Consultar memória recente"),
+        id: "avatar",
+        label: "Meu Avatar",
+        hint: "Identidade ativa",
+        svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></>,
+        onClick: () => setActiveNav("profile"),
       },
+      // Capsules (from sidebar, with badge)
+      {
+        id: "capsules",
+        label: "Cápsulas",
+        hint: "Acervo de envios",
+        svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></>,
+        onClick: () => setActiveNav("capsules"),
+      },
+      // Tracking (from sidebar)
+      {
+        id: "track",
+        label: "Acompanhamento",
+        hint: "Status de entregas",
+        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+        onClick: () => setActiveNav("track"),
+      },
+      // Documents (from sidebar)
+      {
+        id: "docs",
+        label: "Documentos",
+        hint: "Acervo notarial",
+        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+        onClick: () => setActiveNav("docs"),
+      },
+      // Memories (from right panel)
+      {
+        id: "memories",
+        label: "Memórias",
+        hint: "Recentes & absorção",
+        svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
+        onClick: () => setSubpanel("memories"),
+      },
+      // Neural sync (from right panel)
+      {
+        id: "sync",
+        label: "Sincronização",
+        hint: "Bandas neurais",
+        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+        onClick: () => setSubpanel("sync"),
+      },
+      // Emotional absorption (from right panel)
+      {
+        id: "emo",
+        label: "Absorção Emocional",
+        hint: "Feedback ↔ conhecimento",
+        svg: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
+        onClick: () => setSubpanel("emo"),
+      },
+      // Recalibrate (utility)
       {
         id: "recalibrate",
         label: "Recalibrar",
-        hint: "Reorganizar atlas neural",
+        hint: "Reorganizar atlas",
         svg: <><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></>,
         onClick: () => {
           engineRef.current?.morphTo(profileRef.current);
@@ -159,23 +212,29 @@ export default function SingulAIDashboard() {
           animateOmega(t, omegaLiveRef.current, 800);
         },
       },
+      // Wallet (from topbar chip)
       {
-        id: "docs",
-        label: "Documentos",
-        hint: "Acervo notarial",
-        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+        id: "wallet",
+        label: "Carteira",
+        hint: "0xaf99…7686",
+        svg: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>,
+        onClick: () => setSubpanel("wallet"),
       },
+      // PRO plan (from topbar chip)
       {
-        id: "security",
-        label: "Segurança",
-        hint: "Chaves & permissões",
-        svg: <><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></>,
+        id: "pro",
+        label: "Plano PRO",
+        hint: "Status & benefícios",
+        svg: <><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2" /></>,
+        onClick: () => setSubpanel("pro"),
       },
+      // Settings (from sidebar)
       {
-        id: "export",
-        label: "Exportar",
-        hint: "Snapshot do legado",
-        svg: <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+        id: "settings",
+        label: "Configurações",
+        hint: "Preferências do sistema",
+        svg: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
+        onClick: () => setSubpanel("settings"),
       },
     ]);
   }, [animateOmega]);
@@ -231,39 +290,9 @@ export default function SingulAIDashboard() {
       <div id="canvas-bg" ref={canvasRef} />
 
       <div id="app">
-        {/* SIDEBAR */}
-        <nav id="sidebar">
-          <div className="logo-mark" id="logo-mark">Σ</div>
-          {[
-            { k: "home", title: "Home", svg: <><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></> },
-            { k: "profile", title: "Avatar", svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></> },
-            { k: "capsules", title: "Cápsulas", badge: true, svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></> },
-            { k: "track", title: "Acompanhamento", svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /> },
-            { k: "docs", title: "Documentos", svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></> },
-          ].map((n) => (
-            <button
-              key={n.k}
-              className={`nav-icon ${activeNav === n.k ? "active" : ""}`}
-              onClick={() => setActiveNav(n.k)}
-              title={n.title}
-              aria-label={n.title}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">{n.svg}</svg>
-              {n.badge && <span className="nav-badge" />}
-            </button>
-          ))}
-          <div className="sidebar-spacer" />
-          <div className="sidebar-divider" />
-          <button className="nav-icon" title="Configurações" aria-label="Configurações">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-          </button>
-        </nav>
-
-        {/* TOPBAR */}
+        {/* TOPBAR — apenas avatares + status mínimo. Tudo o resto vive no rail. */}
         <header id="topbar">
+          <div className="logo-mark logo-topbar" id="logo-mark" title="SingulAI">Σ</div>
           <div id="avatar-tabs">
             {(Object.keys(PROFILES) as Profile[]).map((p) => (
               <button
@@ -278,26 +307,10 @@ export default function SingulAIDashboard() {
             ))}
           </div>
           <div className="topbar-cluster">
-            <div className="chip chip-status">
+            <div className="chip chip-status" title="Sistema online">
               <span className="status-led" />
               <span>singulAI</span>
             </div>
-            <div className="chip chip-wallet" id="chip-wallet">
-              <Icon><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></Icon>
-              <span className="wallet-addr">0xaf99…7686</span>
-            </div>
-            <div className="chip chip-pro" id="chip-pro">PRO</div>
-            <div className="topbar-divider" />
-            <button
-              className="icon-btn"
-              id="btn-panel-toggle"
-              title="Painel de controle"
-              aria-label="Painel"
-              aria-pressed={panelOpen}
-              onClick={() => setPanelOpen((o) => !o)}
-            >
-              <Icon><line x1="21" y1="10" x2="7" y2="10" /><line x1="21" y1="6" x2="3" y2="6" /><line x1="21" y1="14" x2="3" y2="14" /><line x1="21" y1="18" x2="7" y2="18" /></Icon>
-            </button>
           </div>
         </header>
 
@@ -350,66 +363,88 @@ export default function SingulAIDashboard() {
             </div>
           </div>
 
-          {/* RIGHT PANEL */}
-          <aside id="right-panel" className={panelOpen ? "" : "hidden"}>
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></Icon>
-                Sincronização Neural
+          {/* SUBPANEL — renderizado on-demand pelo rail (Memórias / Sync / Emo / Wallet / PRO / Settings) */}
+          {subpanel && (
+            <aside id="subpanel" onClick={(e) => e.stopPropagation()}>
+              <header className="sp-hdr">
+                <span className="sp-title">
+                  {subpanel === "memories" && "Memórias Recentes"}
+                  {subpanel === "sync" && "Sincronização Neural"}
+                  {subpanel === "emo" && "Absorção Emocional"}
+                  {subpanel === "wallet" && "Carteira"}
+                  {subpanel === "pro" && "Plano PRO"}
+                  {subpanel === "settings" && "Configurações"}
+                </span>
+                <button className="sp-x" onClick={() => setSubpanel(null)} aria-label="Fechar">
+                  <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
+                </button>
+              </header>
+              <div className="sp-body">
+                {subpanel === "sync" && (
+                  <div id="sync-bars">
+                    {bars.map((lv, i) => (
+                      <div key={i} className="sbar" style={{ ["--lv" as never]: `${lv}%` }} />
+                    ))}
+                  </div>
+                )}
+                {subpanel === "emo" && (
+                  <div className="emo-row">
+                    <div className="emo-labels">
+                      <span className="emo-lbl">FEEDBACK</span>
+                      <span className="emo-lbl">CONHECIMENTO</span>
+                    </div>
+                    <div className="emo-track">
+                      <div className="emo-fill" style={{ width: `${emo}%` }} />
+                      <div className="emo-thumb" style={{ left: `${emo}%` }} />
+                    </div>
+                  </div>
+                )}
+                {subpanel === "memories" && (
+                  <>
+                    <div className="abs-wrap">
+                      <div className="abs-bar"><div className="abs-fill" style={{ width: `${absorption}%` }} /></div>
+                      <div className="abs-meta">
+                        <span className="abs-label">Absorção</span>
+                        <span className="abs-pct">{absorption}%</span>
+                      </div>
+                    </div>
+                    {[
+                      { name: "Memória_Base_01", type: ".syn" },
+                      { name: "Legado_Digital", type: ".eth" },
+                      { name: "Valores_Familiares", type: ".dat" },
+                    ].map((m) => (
+                      <div className="mem-item" key={m.name}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        <span className="mem-name">{m.name}</span>
+                        <span className="mem-type">{m.type}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {subpanel === "wallet" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>Endereço</span><code>0xaf99…7686</code></div>
+                    <div className="sp-row"><span>Saldo SGL</span><code>2 480</code></div>
+                    <div className="sp-row"><span>Rede</span><code>SingulAI Mainnet</code></div>
+                  </div>
+                )}
+                {subpanel === "pro" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>Plano</span><code>PRO</code></div>
+                    <div className="sp-row"><span>Cápsulas</span><code>ilimitadas</code></div>
+                    <div className="sp-row"><span>Renovação</span><code>12/2026</code></div>
+                  </div>
+                )}
+                {subpanel === "settings" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>Tema</span><code>Dark Tech</code></div>
+                    <div className="sp-row"><span>Idioma</span><code>pt-BR</code></div>
+                    <div className="sp-row"><span>Notificações</span><code>ativadas</code></div>
+                  </div>
+                )}
               </div>
-              <div id="sync-bars">
-                {bars.map((lv, i) => (
-                  <div key={i} className="sbar" style={{ ["--lv" as never]: `${lv}%` }} />
-                ))}
-              </div>
-            </div>
-
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /></Icon>
-                Absorção Emocional
-              </div>
-              <div className="emo-row">
-                <div className="emo-labels">
-                  <span className="emo-lbl">FEEDBACK</span>
-                  <span className="emo-lbl">CONHECIMENTO</span>
-                </div>
-                <div className="emo-track">
-                  <div className="emo-fill" style={{ width: `${emo}%` }} />
-                  <div className="emo-thumb" style={{ left: `${emo}%` }} />
-                </div>
-              </div>
-            </div>
-
-            {/* Ações foram movidas para o ActionRail lateral progressivo */}
-
-            <div className="ps">
-              <div className="ps-label">
-                <Icon><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></Icon>
-                Memórias Recentes
-              </div>
-              <div className="abs-wrap">
-                <div className="abs-bar">
-                  <div className="abs-fill" style={{ width: `${absorption}%` }} />
-                </div>
-                <div className="abs-meta">
-                  <span className="abs-label">Absorção</span>
-                  <span className="abs-pct">{absorption}%</span>
-                </div>
-              </div>
-              {[
-                { name: "Memória_Base_01", type: ".syn", icon: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></> },
-                { name: "Legado_Digital", type: ".eth", icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
-                { name: "Valores_Familiares", type: ".dat", icon: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" /> },
-              ].map((m) => (
-                <div className="mem-item" key={m.name}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">{m.icon}</svg>
-                  <span className="mem-name">{m.name}</span>
-                  <span className="mem-type">{m.type}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
+            </aside>
+          )}
 
           {/* CHAT */}
           <div id="chat-area">
@@ -453,14 +488,7 @@ export default function SingulAIDashboard() {
         <ActionRail actions={railActions} onReorder={setRailActions} />
       </div>
 
-      {/* MOBILE */}
-      <button id="mobile-menu-btn" onClick={() => setPanelOpen((o) => !o)} aria-label="Menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
+      {/* (sidebar removida — navegação totalmente migrada para o rail) */}
 
       <button
         id="rail-fab"
