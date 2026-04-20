@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import BrandLogo from "./BrandLogo";
+import { getDashboardUrl } from "@/lib/deviceRouting";
 
 type Particle = {
   x: number;
@@ -14,7 +14,7 @@ type Particle = {
   angle: number;
 };
 
-type DemoState = "idle" | "transition";
+type DemoState = "idle" | "transition" | "ready";
 
 function spawnParticles(w: number, h: number): Particle[] {
   const cx = w * 0.5;
@@ -38,7 +38,6 @@ function spawnParticles(w: number, h: number): Particle[] {
 }
 
 export default function SingulAIIntroExperience() {
-  const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const frameRef = useRef<number>(0);
@@ -137,16 +136,16 @@ export default function SingulAIIntroExperience() {
     };
   }, []);
 
-  /* ── auto navigate after transition ── */
+  /* ── transition → ready after animation ── */
   useEffect(() => {
     if (state === "transition") {
       stateStartRef.current = performance.now();
       const timer = setTimeout(() => {
-        navigate({ to: "/dashboard" });
+        setState("ready");
       }, 4500);
       return () => clearTimeout(timer);
     }
-  }, [state, navigate]);
+  }, [state]);
 
   /* ── handlers ── */
   const handleStart = useCallback(
@@ -166,6 +165,10 @@ export default function SingulAIIntroExperience() {
     },
     [state],
   );
+
+  const handleEnter = useCallback(() => {
+    window.location.href = getDashboardUrl("/dashboard");
+  }, []);
 
   const handleRestart = useCallback(() => {
     if (audioRef.current) {
@@ -206,10 +209,25 @@ export default function SingulAIIntroExperience() {
             <p className="demo-subtitle">Absorvendo memória neural.</p>
           </>
         )}
+
+        {state === "ready" && (
+          <>
+            <h1 className="demo-headline demo-headline--small">Experiência pronta.</h1>
+            <p className="demo-subtitle">Núcleo cognitivo ativado.</p>
+            <div className="demo-actions">
+              <button type="button" className="demo-btn demo-btn--primary" onClick={handleEnter}>
+                Entrar no painel
+              </button>
+              <button type="button" className="demo-btn demo-btn--ghost" onClick={handleRestart}>
+                Reiniciar
+              </button>
+            </div>
+          </>
+        )}
       </main>
 
       {/* navigation */}
-      {state === "transition" && (
+      {(state === "transition" || state === "ready") && (
         <button type="button" className="demo-nav-btn demo-nav-btn--back" onClick={handleRestart}>
           ← Voltar
         </button>

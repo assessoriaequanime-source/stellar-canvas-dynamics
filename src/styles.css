@@ -1887,7 +1887,8 @@ section[aria-label="SingulAI — entrada"] {
 }
 
 /* ── state transitions ── */
-.demo-landing--transition .demo-glass-center {
+.demo-landing--transition .demo-glass-center,
+.demo-landing--ready .demo-glass-center {
   opacity: 1.2;
   transition: opacity 1.2s ease;
 }
@@ -2168,7 +2169,8 @@ section[aria-label="SingulAI — entrada"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .demo-landing--transition .demo-glass-center {
+  .demo-landing--transition .demo-glass-center,
+  .demo-landing--ready .demo-glass-center {
     transition-duration: 0.01ms !important;
   }
 }

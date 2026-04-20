@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import SingulAIDashboard from "@/components/SingulAIDashboard";
+import SingulAIIntroExperience from "@/components/SingulAIIntroExperience";
 
 export const Route = createFileRoute("/")({
-  component: SingulAIDashboard,
+  component: SingulAIIntroExperience,
 });

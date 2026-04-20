@@ -5,10 +5,20 @@ export default defineConfig({
   vite: {
     server: {
       host: true,
-      allowedHosts: ["singulai.live", "www.singulai.live"],
+      allowedHosts: [
+        "singulai.live",
+        "www.singulai.live",
+        "app.singulai.live",
+        "dk.singulai.live",
+      ],
     },
     preview: {
-      allowedHosts: ["singulai.live", "www.singulai.live"],
+      allowedHosts: [
+        "singulai.live",
+        "www.singulai.live",
+        "app.singulai.live",
+        "dk.singulai.live",
+      ],
     },
   },
 });
