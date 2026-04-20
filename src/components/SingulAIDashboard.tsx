@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
 import BrandLogo from "@/components/BrandLogo";
 import { BRAND_LOGO_USAGE } from "@/lib/brand";
+import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 
@@ -15,16 +16,16 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     omega: 79.1,
   },
   laura: {
-    rgb: [38, 176, 226],
-    hex: "#26B0E2",
+    rgb: [217, 70, 239],
+    hex: "#D946EF",
     avatarName: "Laura",
     modeName: "Difusão Spin",
     desc: "Segurança & Privacidade",
     omega: 68.4,
   },
   leticia: {
-    rgb: [38, 176, 226],
-    hex: "#26B0E2",
+    rgb: [245, 158, 11],
+    hex: "#F59E0B",
     avatarName: "Letícia",
     modeName: "Foco Atômico",
     desc: "Expertise Profissional",
@@ -66,6 +67,7 @@ export default function SingulAIDashboard() {
   const engineRef = useRef<AvatarEngine | null>(null);
   const omegaLiveRef = useRef(0);
   const omegaTargetRef = useRef(79.1);
+  const isMobile = useIsMobile();
 
   const [profile, setProfile] = useState<Profile>("pedro");
   const profileRef = useRef<Profile>("pedro");
@@ -85,6 +87,7 @@ export default function SingulAIDashboard() {
   const [railActions, setRailActions] = useState<RailAction[]>([]);
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
+  const [topExpanded, setTopExpanded] = useState(false);
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
@@ -310,45 +313,89 @@ export default function SingulAIDashboard() {
     <div className={`p-${profile}`}>
       {/* CANVAS BACKGROUND */}
       <div id="canvas-bg" ref={canvasRef} />
+      <div className="glass-grid" aria-hidden />
 
       <div id="app">
-        {/* TOPBAR — carousel orbital selector */}
-        <header id="topbar">
-          <div className="topbar-brand">
-            <BrandLogo {...BRAND_LOGO_USAGE.dashboard} />
-          </div>
-          <div id="model-carousel">
-            {(Object.keys(PROFILES) as Profile[]).map((p, i) => {
-              const keys = Object.keys(PROFILES) as Profile[];
-              const activeIdx = keys.indexOf(profile);
-              // Calculate carousel position: -1 = left, 0 = center, 1 = right
-              let pos = i - activeIdx;
-              if (pos > 1) pos -= 3;
-              if (pos < -1) pos += 3;
-              return (
+        {/* TOPBAR — premium expandable intelligence dock */}
+        <header
+          id="topbar"
+          className={topExpanded ? "topbar-expanded" : ""}
+          onMouseEnter={() => !isMobile && setTopExpanded(true)}
+          onMouseLeave={() => !isMobile && setTopExpanded(false)}
+        >
+          {/* Strip — always visible */}
+          <div className="topbar-strip">
+            <div className="topbar-brand">
+              <BrandLogo {...BRAND_LOGO_USAGE.dashboard} />
+            </div>
+
+            {/* Active mode pill — visible when collapsed */}
+            <div className="topbar-active-pill">
+              <span className="topbar-pill-dot" />
+              <span className="topbar-pill-label">{prof.modeName}</span>
+            </div>
+
+            {/* Right actions */}
+            <div className="topbar-actions">
+              <div className="topbar-status">
+                <span className="pulse-dot" style={{ width: 5, height: 5 }} />
+                <span className="topbar-status-text">ONLINE</span>
+              </div>
+              {isMobile && (
                 <button
-                  key={p}
-                  className={`carousel-item ${pos === 0 ? "carousel-active" : "carousel-side"}`}
-                  data-p={p}
-                  data-pos={pos}
-                  onClick={() => switchProfile(p)}
-                  style={{
-                    transform: `translateX(${pos * 155}px) scale(${pos === 0 ? 1.14 : 0.86})`,
-                    opacity: pos === 0 ? 1 : 0.58,
-                    zIndex: pos === 0 ? 20 : 10,
-                  }}
+                  className="topbar-toggle"
+                  onClick={() => setTopExpanded((v) => !v)}
+                  aria-label={topExpanded ? "Recolher" : "Expandir"}
                 >
-                  <span className="carousel-label">{PROFILES[p].modeName}</span>
+                  <Icon><polyline points={topExpanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></Icon>
                 </button>
-              );
-            })}
+              )}
+              <button
+                className="topbar-action-btn"
+                onClick={() => setRailOpen(true)}
+                title="Menu"
+                aria-label="Abrir menu"
+              >
+                <Icon>
+                  <line x1="4" y1="6" x2="20" y2="6" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="18" x2="20" y2="18" />
+                </Icon>
+              </button>
+            </div>
           </div>
-          <span
-            className="carousel-modo"
-            style={{ color: accentStr }}
-          >
-            MODO
-          </span>
+
+          {/* Expansion zone */}
+          <div className="topbar-expand-zone">
+            <div id="model-carousel">
+              {(Object.keys(PROFILES) as Profile[]).map((p, i) => {
+                const keys = Object.keys(PROFILES) as Profile[];
+                const activeIdx = keys.indexOf(profile);
+                let pos = i - activeIdx;
+                if (pos > 1) pos -= 3;
+                if (pos < -1) pos += 3;
+                return (
+                  <button
+                    key={p}
+                    className={`carousel-item ${pos === 0 ? "carousel-active" : "carousel-side"}`}
+                    data-p={p}
+                    data-pos={pos}
+                    onClick={() => switchProfile(p)}
+                    style={{
+                      transform: `translateX(${pos * 155}px) scale(${pos === 0 ? 1.14 : 0.86})`,
+                      opacity: pos === 0 ? 1 : 0.58,
+                      zIndex: pos === 0 ? 20 : 10,
+                    }}
+                  >
+                    <span className="carousel-label">{PROFILES[p].modeName}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <span className="carousel-modo" style={{ color: accentStr }}>
+              MODO
+            </span>
+          </div>
         </header>
 
         {/* Sigma flash — partículas claras formam o ícone matemático e somem com fade-out */}
@@ -504,7 +551,7 @@ export default function SingulAIDashboard() {
         />
       </div>
 
-      {/* Edge hook — âncora discreta no centro vertical da borda direita */}
+      {/* Edge hook — premium tab anchor */}
       <button
         id="rail-hook"
         className={railOpen ? "is-open" : ""}
@@ -513,7 +560,10 @@ export default function SingulAIDashboard() {
         aria-label={railOpen ? "Fechar menu" : "Abrir menu"}
         title="Menu"
       >
-        <span className="hook-bar" aria-hidden />
+        <span className="hook-tab" aria-hidden>
+          <span className="hook-bar" />
+          <span className="hook-text">Menu</span>
+        </span>
         <span className="hook-arrow" aria-hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
             <polyline points={railOpen ? "9 6 15 12 9 18" : "15 6 9 12 15 18"} />
