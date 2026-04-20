@@ -5,6 +5,7 @@ import { BRAND_LOGO_USAGE } from "@/lib/brand";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
+import { sendAvatarMessage } from "@/lib/altApi";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modeName: string; desc: string; omega: number }> = {
   pedro: {
@@ -56,6 +57,8 @@ const AI_REPLIES: Record<Profile, string[]> = {
 
 type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 
+const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
+
 const Icon = ({ d, children }: { d?: string; children?: React.ReactNode }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
     {children ?? <path d={d} />}
@@ -81,6 +84,8 @@ export default function SingulAIDashboard() {
   const [absorption, setAbsorption] = useState(0);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const [sglBalance, setSglBalance] = useState(0);
+  const [walletAddress, setWalletAddress] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
   const [railOpen, setRailOpen] = useState(false);
@@ -100,6 +105,16 @@ export default function SingulAIDashboard() {
       eng.dispose();
       engineRef.current = null;
     };
+  }, []);
+
+  // Load user/wallet from localStorage on mount
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
+      const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+      if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
+      if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
+    } catch {}
   }, []);
 
   // Omega animation logic
@@ -276,7 +291,7 @@ export default function SingulAIDashboard() {
     animateOmega(prof.omega, omegaLiveRef.current, 1200);
   };
 
-  // Send chat — newer messages push older toward absorption (cap with MAX_STREAM)
+  // Send chat — tries real backend, falls back to AI_REPLIES on error
   const sendMessage = async () => {
     const text = input.trim();
     if (!text) return;
@@ -287,9 +302,26 @@ export default function SingulAIDashboard() {
       ([...m, { role: "user" as const, text, id: userId }, { role: "typing" as const, id: typingId }] as Msg[]).slice(-MAX_STREAM),
     );
 
-    await new Promise((r) => setTimeout(r, 1100 + Math.random() * 900));
-    const pool = AI_REPLIES[profileRef.current];
-    const reply = pool[Math.floor(Math.random() * pool.length)];
+    const sessionToken = localStorage.getItem("singulai_session");
+    let reply: string;
+    try {
+      if (sessionToken) {
+        const data = await sendAvatarMessage(sessionToken, text, MODEL_IDS[profileRef.current]);
+        const raw = (data.message || data.reply || data.text || "").trim();
+        reply = raw || AI_REPLIES[profileRef.current][Math.floor(Math.random() * AI_REPLIES[profileRef.current].length)];
+        if (data.sglBalance !== undefined) setSglBalance(data.sglBalance);
+        else if (data.balance !== undefined) setSglBalance(data.balance);
+      } else {
+        await new Promise((r) => setTimeout(r, 1100 + Math.random() * 900));
+        const pool = AI_REPLIES[profileRef.current];
+        reply = pool[Math.floor(Math.random() * pool.length)];
+      }
+    } catch {
+      await new Promise((r) => setTimeout(r, 900 + Math.random() * 600));
+      const pool = AI_REPLIES[profileRef.current];
+      reply = pool[Math.floor(Math.random() * pool.length)];
+    }
+
     const aiId = ++msgIdRef.current;
     setMessages((m) =>
       m.filter((x) => x.id !== typingId).concat({ role: "ai", text: reply, id: aiId }).slice(-MAX_STREAM),
@@ -407,11 +439,13 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
-          {/* Links verticais discretos (migrados do footer) — somente cinza, sem variação por avatar */}
-          <nav id="meta-rail" aria-label="Atalhos">
-            <span className="meta-brand">SingulAI v2.0</span>
-            <a href="https://singulai.live" target="_blank" rel="noreferrer">singulai.live</a>
-            <a href="https://rodrigo.run" target="_blank" rel="noreferrer">rodrigo.run</a>
+          {/* Barra horizontal de créditos/assinatura */}
+          <nav id="meta-rail" aria-label="Créditos">
+            <span className="meta-brand">SingulAI v2.0 · singulai.site</span>
+            <span className="meta-sep" aria-hidden="true" />
+            <span className="meta-item">CEO AND Founder: <a href="https://rodrigo.run" target="_blank" rel="noreferrer">rodrigo.run</a></span>
+            <span className="meta-sep" aria-hidden="true" />
+            <span className="meta-item">Brand and ADS: <a href="https://vitor.business" target="_blank" rel="noreferrer">vitor.business</a></span>
           </nav>
 
           {/* SUBPANEL — renderizado on-demand pelo rail (Memórias / Sync / Emo / Wallet / PRO / Settings) */}
@@ -474,9 +508,9 @@ export default function SingulAIDashboard() {
                 )}
                 {subpanel === "wallet" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Endereço</span><code>0xaf99…7686</code></div>
-                    <div className="sp-row"><span>Saldo SGL</span><code>2 480</code></div>
-                    <div className="sp-row"><span>Rede</span><code>SingulAI Mainnet</code></div>
+                    <div className="sp-row"><span>Endereço</span><code>{walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "—"}</code></div>
+                    <div className="sp-row"><span>Saldo SGL</span><code>{sglBalance.toLocaleString("pt-BR")}</code></div>
+                    <div className="sp-row"><span>Rede</span><code>SingulAI Alt</code></div>
                   </div>
                 )}
                 {subpanel === "pro" && (

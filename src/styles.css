@@ -675,26 +675,47 @@
   100% { transform: rotate(var(--ang)) translateX(0) scale(1.2); opacity: 0; }
 }
 
-/* ════ Meta rail — links verticais discretos à esquerda ════ */
+/* ════ Meta rail — barra horizontal de créditos ════ */
 #meta-rail {
   position: absolute;
-  left: 18px; top: 50%;
-  z-index: 6;
-  display: flex; flex-direction: column; gap: 14px;
-  writing-mode: vertical-rl;
-  transform: translateY(-50%) rotate(180deg);
+  bottom: 6px; left: 0; right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 16px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+#meta-rail::-webkit-scrollbar { display: none; }
+#meta-rail .meta-brand,
+#meta-rail .meta-item {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-xlo);
+  white-space: nowrap;
   pointer-events: auto;
 }
-#meta-rail a, #meta-rail .meta-brand {
+#meta-rail .meta-brand { color: var(--text-lo); font-weight: 700; letter-spacing: 0.14em; }
+#meta-rail .meta-item a {
   font-family: var(--font-mono);
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
-  text-transform: lowercase;
+  font-size: 9px;
+  letter-spacing: 0.1em;
   color: var(--text-lo);
   transition: color var(--dur);
+  pointer-events: auto;
 }
-#meta-rail .meta-brand { color: var(--text-md); font-weight: 700; letter-spacing: 0.24em; }
-#meta-rail a:hover { color: var(--text-hi); }
+#meta-rail .meta-item a:hover { color: var(--text-hi); }
+#meta-rail .meta-sep {
+  width: 1px; height: 8px;
+  background: var(--border-md);
+  flex-shrink: 0;
+}
 
 /* ════ Main ════ */
 #main {
@@ -1823,9 +1844,9 @@
   75%      { transform: perspective(60px) rotateX(-2deg) rotateY(3deg); }
 }
 
-/* Esconder meta-rail no mobile (espaço reduzido) */
+/* Meta-rail: scroll horizontal no mobile */
 @media (max-width: 767px) {
-  #meta-rail { display: none; }
+  #meta-rail { justify-content: flex-start; }
   .footer-avatar-name { font-size: 10px; letter-spacing: 0.18em; }
   .footer-avatar-desc { font-size: 8px; }
 }
@@ -2207,4 +2228,60 @@
   .intro-grid {
     opacity: 0.08;
   }
+}
+
+/* ════ Simple Demo Login ════ */
+.slogin-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brand-obsidian);
+  padding: 16px;
+}
+
+.slogin-shell {
+  width: 100%; max-width: 380px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 36px 28px 28px;
+  border-radius: var(--r-xl);
+  background: rgba(10, 10, 14, 0.97);
+  border: 1px solid var(--border-md);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.72);
+}
+
+.slogin-brand { margin-bottom: 4px; }
+
+.slogin-title {
+  font-size: 18px; font-weight: 700; color: var(--text-hi);
+  letter-spacing: -0.02em; text-align: center;
+}
+
+.slogin-sub {
+  font-size: 11.5px; color: var(--text-lo); text-align: center;
+  letter-spacing: 0.02em; line-height: 1.55;
+  max-width: 280px;
+}
+
+.slogin-form {
+  width: 100%; display: flex; flex-direction: column; gap: 10px;
+}
+
+.slogin-input { font-size: 14px; }
+
+.slogin-error {
+  font-size: 11px; color: rgba(239, 68, 68, 0.82);
+  letter-spacing: 0.03em; text-align: center;
+}
+
+.slogin-btn { margin-top: 4px; width: 100%; cursor: pointer; }
+.slogin-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; transform: none; box-shadow: none; }
+
+.slogin-loading {
+  display: flex; gap: 4px; align-items: center; justify-content: center; padding: 3px 0;
+}
+
+.slogin-footer {
+  font-family: var(--font-mono);
+  font-size: 9px; color: var(--text-xlo);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  margin-top: 4px;
 }

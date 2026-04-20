@@ -2,18 +2,17 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { useEffect, useState, useRef } from "react";
 
 import appCss from "../styles.css?url";
+import { verifyAltSession } from "@/lib/altApi";
+import SimpleDemoLogin from "@/components/SimpleDemoLogin";
 
-const AUTH_START_URL = "https://singulai.site/api/auth/google";
-const VERIFY_SESSION_URL = "https://singulai.site/api/auth/verify-session";
 const LOCAL_SESSION_KEY = "singulai_session";
 const LOCAL_USER_KEY = "singulai_user";
 const LOCAL_WALLET_KEY = "singulai_wallet";
-const REDIRECT_ATTEMPT_KEY = "singulai_auth_redirect_attempt";
 const AUTH_QUERY_PARAMS = ["auth", "session", "user", "wallet"];
 const PUBLIC_PATHS = new Set(["/demo"]);
 
 const DEV_SIMPLE_TEST_AUTH = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
-const DEV_SIMPLE_AUTH_HOSTNAMES = ["singulai.live", "localhost", "127.0.0.1"];
+const DEV_SIMPLE_AUTH_HOSTNAMES = ["localhost", "127.0.0.1"];
 const DEV_SIMPLE_AUTH_SESSION = "dev-session-singulai-live";
 const DEV_SIMPLE_AUTH_USER = {
   id: "dev_user_singulai_live",
@@ -125,29 +124,7 @@ function removeQueryParams() {
   window.history.replaceState({}, document.title, url.toString());
 }
 
-function redirectToAuth() {
-  if (sessionStorage.getItem(REDIRECT_ATTEMPT_KEY)) return;
-  sessionStorage.setItem(REDIRECT_ATTEMPT_KEY, "1");
-  window.location.href = AUTH_START_URL;
-}
 
-async function verifySession(sessionToken: string) {
-  try {
-    const response = await fetch(VERIFY_SESSION_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ sessionToken }),
-    });
-
-    if (!response.ok) return null;
-
-    return await response.json();
-  } catch {
-    return null;
-  }
-}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -195,61 +172,43 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  const [ready, setReady] = useState(false);
-  const triedRedirect = useRef(false);
+  const [authState, setAuthState] = useState<"loading" | "login" | "ready">("loading");
+  const triedAuth = useRef(false);
+
+  const handleLoginSuccess = () => setAuthState("ready");
 
   useEffect(() => {
     const handleAuth = async () => {
       if (isPublicPath()) {
-        setReady(true);
+        setAuthState("ready");
         return;
       }
 
       if (isDevSimpleAuthMode()) {
         useDevSimpleAuthSession();
         removeQueryParams();
-        setReady(true);
+        setAuthState("ready");
         return;
       }
 
-      const params = new URLSearchParams(window.location.search);
-      const authSource = params.get("auth");
-      const session = params.get("session");
-      const userParam = params.get("user");
-      const walletParam = params.get("wallet");
-
-      if (authSource === "google" && session) {
-        localStorage.setItem(LOCAL_SESSION_KEY, session);
-
-        const user = parseJsonParam(userParam);
-        if (user) {
-          localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(user));
-        }
-
-        const wallet = parseJsonParam(walletParam);
-        if (wallet) {
-          localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(wallet));
-        }
-
-        removeQueryParams();
-      }
+      removeQueryParams();
 
       const sessionToken = localStorage.getItem(LOCAL_SESSION_KEY);
       if (!sessionToken) {
-        redirectToAuth();
+        setAuthState("login");
         return;
       }
 
-      const verification = await verifySession(sessionToken);
+      const verification = await verifyAltSession(sessionToken);
       const sessionValid =
         verification?.valid === true ||
-        (verification?.user && typeof verification.user === "object");
+        (verification != null && "user" in verification && typeof verification.user === "object");
 
       if (!verification || !sessionValid) {
         localStorage.removeItem(LOCAL_SESSION_KEY);
         localStorage.removeItem(LOCAL_USER_KEY);
         localStorage.removeItem(LOCAL_WALLET_KEY);
-        redirectToAuth();
+        setAuthState("login");
         return;
       }
 
@@ -260,21 +219,25 @@ function RootComponent() {
         localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(verification.wallet));
       }
 
-      setReady(true);
+      setAuthState("ready");
     };
 
-    if (!triedRedirect.current) {
-      triedRedirect.current = true;
+    if (!triedAuth.current) {
+      triedAuth.current = true;
       handleAuth();
     }
   }, []);
 
-  if (!ready) {
+  if (authState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="text-center text-sm text-muted-foreground">Validating session…</div>
+        <div className="text-center text-sm text-muted-foreground">Inicializando…</div>
       </div>
     );
+  }
+
+  if (authState === "login") {
+    return <SimpleDemoLogin onSuccess={handleLoginSuccess} />;
   }
 
   return (
