@@ -49,18 +49,20 @@ function DevTestAuthBadge() {
     <div
       style={{
         position: "fixed",
+        top: "max(10px, env(safe-area-inset-top, 0px) + 10px)",
         right: 12,
-        bottom: 12,
         zIndex: 9999,
-        padding: "4px 8px",
-        fontSize: "11px",
+        padding: "5px 8px",
+        fontSize: "10px",
         lineHeight: 1,
-        background: "rgba(15, 23, 42, 0.85)",
-        color: "#f8fafc",
-        borderRadius: "999px",
-        border: "1px solid rgba(148, 163, 184, 0.25)",
+        background: "rgba(11, 11, 11, 0.88)",
+        color: "rgba(255, 255, 255, 0.78)",
+        borderRadius: "10px",
+        border: "1px solid rgba(38, 176, 226, 0.22)",
         pointerEvents: "none",
-        opacity: 0.85,
+        opacity: 0.78,
+        letterSpacing: "0.12em",
+        textTransform: "uppercase",
       }}
     >
       DEV TEST AUTH

@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { gsap } from "gsap";
 
+import { BRAND_COLORS } from "@/lib/brand";
+
 export type Profile = "pedro" | "laura" | "leticia";
 
 /**
@@ -71,9 +73,9 @@ export class AvatarEngine {
     this.profile = "pedro";
     this.morphing = false;
     this.palettes = {
-      pedro: new THREE.Color("#3b82f6"),
-      laura: new THREE.Color("#ec4899"),
-      leticia: new THREE.Color("#eab308"),
+      pedro: new THREE.Color(BRAND_COLORS.electricBlue),
+      laura: new THREE.Color(BRAND_COLORS.electricBlue),
+      leticia: new THREE.Color(BRAND_COLORS.electricBlue),
     };
 
     if (!this._checkWGL()) {

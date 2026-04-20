@@ -1,28 +1,30 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
+import BrandLogo from "@/components/BrandLogo";
+import { BRAND_LOGO_USAGE } from "@/lib/brand";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modeName: string; desc: string; omega: number }> = {
   pedro: {
-    rgb: [59, 130, 246],
-    hex: "#3b82f6",
+    rgb: [38, 176, 226],
+    hex: "#26B0E2",
     avatarName: "Pedro",
     modeName: "Safe Quantum",
     desc: "Absorção de Conhecimento",
     omega: 79.1,
   },
   laura: {
-    rgb: [236, 72, 153],
-    hex: "#ec4899",
+    rgb: [38, 176, 226],
+    hex: "#26B0E2",
     avatarName: "Laura",
     modeName: "Difusão Spin",
     desc: "Segurança & Privacidade",
     omega: 68.4,
   },
   leticia: {
-    rgb: [234, 179, 8],
-    hex: "#eab308",
+    rgb: [38, 176, 226],
+    hex: "#26B0E2",
     avatarName: "Letícia",
     modeName: "Foco Atômico",
     desc: "Expertise Profissional",
@@ -312,6 +314,9 @@ export default function SingulAIDashboard() {
       <div id="app">
         {/* TOPBAR — carousel orbital selector */}
         <header id="topbar">
+          <div className="topbar-brand">
+            <BrandLogo {...BRAND_LOGO_USAGE.dashboard} />
+          </div>
           <div id="model-carousel">
             {(Object.keys(PROFILES) as Profile[]).map((p, i) => {
               const keys = Object.keys(PROFILES) as Profile[];
@@ -520,8 +525,8 @@ export default function SingulAIDashboard() {
       <div className={`overlay ${modalOpen ? "open" : ""}`} onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}>
         <div className="modal-shell">
           <div className="modal-hdr">
-            <div className="modal-ico">
-              <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
+            <div className="modal-brand">
+              <BrandLogo {...BRAND_LOGO_USAGE.modal} />
             </div>
             <div className="modal-titles">
               <h3>Criar Cápsula</h3>
@@ -546,11 +551,11 @@ export default function SingulAIDashboard() {
             </div>
             <div>
               <label className="f-label">WhatsApp (opcional)</label>
-              <div style={{ position: "relative" }}>
+              <div className="wa-field">
                 <input type="tel" className="f-input" placeholder="+55 11 99999-9999" style={{ paddingRight: 42 }} />
-                <div style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", width: 20, height: 20, background: "rgba(37,211,102,.14)", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#25d366" strokeWidth={2}>
-                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                <div className="wa-indicator" aria-hidden>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </div>
               </div>
@@ -561,10 +566,10 @@ export default function SingulAIDashboard() {
               <textarea className="f-input f-textarea" placeholder="Escreva sua mensagem…" />
             </div>
             <div>
-              <label className="f-label">Attachments</label>
+              <label className="f-label">Anexos</label>
               <div className="attach-grid">
                 {[
-                  { l: "File", svg: <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /> },
+                  { l: "Arquivo", svg: <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /> },
                   { l: "Áudio", svg: <><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /></> },
                   { l: "Vídeo", svg: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></> },
                 ].map((a) => (
@@ -588,7 +593,7 @@ export default function SingulAIDashboard() {
             </div>
           </div>
           <div className="modal-ftr">
-            <button className="btn-amber">
+            <button className="btn-primary">
               <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
               Criar Cápsula
             </button>
