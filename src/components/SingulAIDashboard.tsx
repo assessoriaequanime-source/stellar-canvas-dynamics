@@ -90,6 +90,7 @@ export default function SingulAIDashboard() {
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
   const [railOpen, setRailOpen] = useState(false);
   const [railActions, setRailActions] = useState<RailAction[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
   const [topExpanded, setTopExpanded] = useState(false);
@@ -173,27 +174,23 @@ export default function SingulAIDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  // Initialize rail actions — consolidates ALL migrated functions
-  // (sidebar nav + right-panel widgets + topbar chips) into a single hub.
+  // Initialize rail actions — AI functions only (settings are in the settings panel)
   useEffect(() => {
     setRailActions([
-      // Primary action
       {
-        id: "create",
-        label: "Criar Cápsula",
-        hint: "Novo legado digital",
-        svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
-        onClick: () => setModalOpen(true),
+        id: "absorption",
+        label: "Absorção",
+        hint: "Nível de conhecimento",
+        svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
+        onClick: () => setSubpanel("memories"),
       },
-      // Avatar & profile (from sidebar)
       {
-        id: "avatar",
-        label: "Meu Avatar",
-        hint: "Identidade ativa",
-        svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></>,
-        onClick: () => setActiveNav("profile"),
+        id: "indices",
+        label: "Índices",
+        hint: "Métricas & Ω coesão",
+        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+        onClick: () => setSubpanel("sync"),
       },
-      // Capsules (from sidebar, with badge)
       {
         id: "capsules",
         label: "Cápsulas",
@@ -201,47 +198,55 @@ export default function SingulAIDashboard() {
         svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></>,
         onClick: () => setActiveNav("capsules"),
       },
-      // Tracking (from sidebar)
       {
-        id: "track",
-        label: "Acompanhamento",
-        hint: "Status de entregas",
-        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
-        onClick: () => setActiveNav("track"),
-      },
-      // Documents (from sidebar)
-      {
-        id: "docs",
-        label: "Documentos",
-        hint: "Acervo notarial",
-        svg: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></>,
+        id: "legados",
+        label: "Legados",
+        hint: "Legados digitais",
+        svg: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></>,
         onClick: () => setActiveNav("docs"),
       },
-      // Memories (from right panel)
       {
-        id: "memories",
-        label: "Memórias",
-        hint: "Recentes & absorção",
-        svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
+        id: "historicos",
+        label: "Históricos",
+        hint: "Log de sessões",
+        svg: <><polyline points="12 8 12 12 14 14" /><path d="M3.05 11a9 9 0 1 0 .5-4.5" /><polyline points="3 3 3 9 9 9" /></>,
         onClick: () => setSubpanel("memories"),
       },
-      // Neural sync (from right panel)
       {
-        id: "sync",
-        label: "Sincronização",
-        hint: "Bandas neurais",
-        svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
+        id: "rascunhos",
+        label: "Rascunhos",
+        hint: "Mensagens em criação",
+        svg: <><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></>,
+        onClick: () => setSubpanel("memories"),
+      },
+      {
+        id: "create",
+        label: "Criar Cápsula",
+        hint: "Novo legado digital",
+        svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+        onClick: () => setModalOpen(true),
+      },
+      {
+        id: "apis",
+        label: "APIs & Conectores",
+        hint: "Integrações externas",
+        svg: <><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></>,
+        onClick: () => setSubpanel("settings"),
+      },
+      {
+        id: "skills",
+        label: "Skills & Recursos",
+        hint: "Capacidades ativas",
+        svg: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></>,
         onClick: () => setSubpanel("sync"),
       },
-      // Emotional absorption (from right panel)
       {
-        id: "emo",
-        label: "Absorção Emocional",
-        hint: "Feedback ↔ conhecimento",
-        svg: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
-        onClick: () => setSubpanel("emo"),
+        id: "banco",
+        label: "Banco de Dados",
+        hint: "Informações absorvidas",
+        svg: <><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></>,
+        onClick: () => setSubpanel("memories"),
       },
-      // Recalibrate (utility)
       {
         id: "recalibrate",
         label: "Recalibrar",
@@ -252,30 +257,6 @@ export default function SingulAIDashboard() {
           const t = Math.min(99.9, omegaLiveRef.current + 2);
           animateOmega(t, omegaLiveRef.current, 800);
         },
-      },
-      // Wallet (from topbar chip)
-      {
-        id: "wallet",
-        label: "Carteira",
-        hint: "0xaf99…7686",
-        svg: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>,
-        onClick: () => setSubpanel("wallet"),
-      },
-      // PRO plan (from topbar chip)
-      {
-        id: "pro",
-        label: "Plano PRO",
-        hint: "Status & benefícios",
-        svg: <><polygon points="12 2 15 8.5 22 9.3 17 14 18.2 21 12 17.8 5.8 21 7 14 2 9.3 9 8.5 12 2" /></>,
-        onClick: () => setSubpanel("pro"),
-      },
-      // Settings (from sidebar)
-      {
-        id: "settings",
-        label: "Configurações",
-        hint: "Preferências do sistema",
-        svg: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
-        onClick: () => setSubpanel("settings"),
       },
     ]);
   }, [animateOmega]);
@@ -382,22 +363,43 @@ export default function SingulAIDashboard() {
                   <Icon><polyline points={topExpanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></Icon>
                 </button>
               )}
+
+              {/* Notifications */}
+              <div className="topbar-notif-wrap">
+                <button
+                  className="topbar-action-btn topbar-notif-btn"
+                  title="Notificações"
+                  aria-label="Notificações"
+                >
+                  <Icon>
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </Icon>
+                </button>
+                <span className="topbar-notif-badge" aria-hidden="true" />
+              </div>
+
               <Link to="/demo" className="topbar-action-btn" title="Voltar para Intro" aria-label="Voltar para Intro">
                 <Icon>
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </Icon>
               </Link>
+
+              {/* Settings (sliders icon) — wallet / perfil / ajustes / modo / layouts */}
               <button
                 className="topbar-action-btn"
-                onClick={() => setRailOpen(true)}
-                title="Menu"
-                aria-label="Abrir menu"
+                onClick={() => setSettingsOpen(true)}
+                title="Configurações"
+                aria-label="Configurações do painel"
               >
                 <Icon>
                   <line x1="4" y1="6" x2="20" y2="6" />
+                  <line x1="8" y1="4" x2="8" y2="8" />
                   <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="16" y1="10" x2="16" y2="14" />
                   <line x1="4" y1="18" x2="20" y2="18" />
+                  <line x1="12" y1="16" x2="12" y2="20" />
                 </Icon>
               </button>
             </div>
@@ -445,13 +447,22 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
-          {/* Barra horizontal de créditos/assinatura */}
+          {/* Barra de créditos — rotada -90° na borda esquerda */}
           <nav id="meta-rail" aria-label="Créditos">
-            <span className="meta-brand">SingulAI v2.0 · singulai.site</span>
-            <span className="meta-sep" aria-hidden="true" />
-            <span className="meta-item">CEO AND Founder: <a href="https://rodrigo.run" target="_blank" rel="noreferrer">rodrigo.run</a></span>
-            <span className="meta-sep" aria-hidden="true" />
-            <span className="meta-item">Brand and ADS: <a href="https://vitor.business" target="_blank" rel="noreferrer">vitor.business</a></span>
+            <a href="https://singulai.site" target="_blank" rel="noreferrer" className="meta-link">
+              <span className="meta-lbl">Oficial</span>
+              <span className="meta-val">singulai.site</span>
+            </a>
+            <span className="meta-dot" aria-hidden="true" />
+            <a href="https://rodrigo.run" target="_blank" rel="noreferrer" className="meta-link">
+              <span className="meta-lbl">CEO & Founder</span>
+              <span className="meta-val">rodrigo.run</span>
+            </a>
+            <span className="meta-dot" aria-hidden="true" />
+            <a href="https://vitor.business" target="_blank" rel="noreferrer" className="meta-link">
+              <span className="meta-lbl">Design</span>
+              <span className="meta-val">vitor.business</span>
+            </a>
           </nav>
 
           {/* SUBPANEL — renderizado on-demand pelo rail (Memórias / Sync / Emo / Wallet / PRO / Settings) */}
@@ -572,7 +583,70 @@ export default function SingulAIDashboard() {
         </main>
       </div>
 
-      {/* ACTION RAIL — trilha lateral refinada (desktop) / dock inferior (mobile) */}
+      {/* SETTINGS PANEL — wallet / perfil / ajustes / modo / layouts */}
+      {settingsOpen && (
+        <div className="settings-scrim" onClick={() => setSettingsOpen(false)} aria-hidden />
+      )}
+      {settingsOpen && (
+        <aside className="settings-panel" aria-label="Configurações do painel">
+          <header className="settings-panel-hdr">
+            <span className="settings-panel-title">Configurações</span>
+            <button className="settings-panel-close" onClick={() => setSettingsOpen(false)} aria-label="Fechar">
+              <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
+            </button>
+          </header>
+          <ul className="settings-panel-list">
+            {[
+              {
+                id: "wallet", label: "Carteira", hint: "Saldo & endereço",
+                svg: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>,
+                onClick: () => { setSettingsOpen(false); setSubpanel("wallet"); },
+              },
+              {
+                id: "profile", label: "Perfil", hint: "Identidade & avatar",
+                svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></>,
+                onClick: () => { setSettingsOpen(false); setActiveNav("profile"); },
+              },
+              {
+                id: "panel-settings", label: "Ajustes do Painel", hint: "Notificações & tema",
+                svg: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
+                onClick: () => { setSettingsOpen(false); setSubpanel("settings"); },
+              },
+              {
+                id: "nav-mode", label: "Modo de Navegação", hint: "Compact · Full · Focus",
+                svg: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></>,
+                onClick: () => setSettingsOpen(false),
+              },
+              {
+                id: "layouts", label: "Layouts", hint: "Organização visual",
+                svg: <><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></>,
+                onClick: () => setSettingsOpen(false),
+              },
+            ].map((item) => (
+              <li key={item.id} className="settings-panel-item">
+                <button className="settings-panel-btn" onClick={item.onClick}>
+                  <span className="settings-panel-ico">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                      {item.svg}
+                    </svg>
+                  </span>
+                  <span className="settings-panel-text">
+                    <span className="settings-panel-label">{item.label}</span>
+                    <span className="settings-panel-hint">{item.hint}</span>
+                  </span>
+                  <span className="settings-panel-chev" aria-hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
+
+      {/* ACTION RAIL — funções de IA (borda direita) */}
       {railOpen && (
         <div
           className="rail-scrim"
@@ -597,12 +671,12 @@ export default function SingulAIDashboard() {
         className={railOpen ? "is-open" : ""}
         onClick={() => setRailOpen((v) => !v)}
         aria-pressed={railOpen}
-        aria-label={railOpen ? "Fechar menu" : "Abrir menu"}
-        title="Menu"
+        aria-label={railOpen ? "Fechar funções IA" : "Abrir funções IA"}
+        title="Funções IA"
       >
         <span className="hook-tab" aria-hidden>
           <span className="hook-bar" />
-          <span className="hook-text">Menu</span>
+          <span className="hook-text">IA</span>
         </span>
         <span className="hook-arrow" aria-hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>

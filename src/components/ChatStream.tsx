@@ -32,27 +32,26 @@ const VISIBLE_DEPTH = 5; // depths 0..4 are rendered; 5+ are hidden
 
 function trajectoryFor(_profile: Profile, depth: number, fromUser: boolean, _mobile = false) {
   if (depth >= VISIBLE_DEPTH) {
-    return { opacity: 0, scale: 0.12, x: 0, y: -340, blur: 8, hidden: true };
+    return { opacity: 0, scale: 0.12, x: 0, y: -460, blur: 8, hidden: true };
   }
 
-  // Pure vertical trajectory — messages rise upward, no horizontal drift.
-  // User messages stay right-aligned, AI left-aligned via CSS justify-content.
-  // Slight horizontal nudge only for visual "lane" distinction (never enough to overflow).
   const t = depth / (VISIBLE_DEPTH - 1); // 0..1 across visible range
-  const liftY = -t * 280;
 
-  // Minimal lane nudge: user messages shift slightly right, AI slightly left.
-  // Max 20px at depth 0 (most recent), fading to 0 as messages ascend.
-  const laneNudge = (fromUser ? 14 : -14) * (1 - t);
+  // Y: messages climb toward the particle sphere center (approx 45% up from chat bar).
+  // More aggressive lift so they visually converge into the sphere.
+  const liftY = -t * 420;
 
-  // Behance-grade legibility curve — sharp early, faded late
-  const opacityLadder = [1.0, 0.78, 0.55, 0.34, 0.16];
-  const scaleLadder  = [1.0, 0.96, 0.90, 0.82, 0.70];
-  const blurLadder   = [0, 0.2, 0.7, 1.5, 2.8];
+  // Horizontal convergence: messages start with lane separation and converge to center.
+  // As depth increases (messages age), they drift toward x=0 (sphere center).
+  const laneNudge = (fromUser ? 22 : -22) * (1 - t);
+
+  const opacityLadder = [1.0, 0.75, 0.50, 0.28, 0.11];
+  const scaleLadder  = [1.0, 0.95, 0.87, 0.76, 0.60];
+  const blurLadder   = [0, 0.3, 1.0, 2.2, 4.0];
 
   const opacity = opacityLadder[depth] ?? 0;
-  const scale = scaleLadder[depth] ?? 0.6;
-  const blur = blurLadder[depth] ?? 4;
+  const scale = scaleLadder[depth] ?? 0.5;
+  const blur = blurLadder[depth] ?? 5;
 
   return { opacity, scale, x: laneNudge, y: liftY, blur, hidden: false };
 }

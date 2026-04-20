@@ -185,7 +185,7 @@ export class AvatarEngine {
     const sizes = new Float32Array(this.N);
     const alphas = new Float32Array(this.N);
     const base = this.palettes[profile];
-    const baseSize = this.isMobile ? 2.1 : 2.7;
+    const baseSize = this.isMobile ? 2.6 : 3.2;
     for (let i = 0; i < this.N; i++) {
       const b = 0.55 + Math.random() * 0.45;
       col[i * 3] = base.r * b;

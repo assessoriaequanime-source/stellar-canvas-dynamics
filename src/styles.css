@@ -518,6 +518,7 @@
     opacity 0.35s 0.08s var(--ease),
     transform 0.4s 0.08s var(--spring);
   pointer-events: none;
+  position: relative;
 }
 .topbar-expanded .topbar-expand-zone {
   opacity: 1;
@@ -532,9 +533,12 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: min(640px, calc(100% - 240px));
+  max-width: 600px;
   height: 64px;
   overflow: visible;
+  /* Offset left to compensate for the brand logo width, centering active item
+     relative to the FULL topbar viewport width */
+  transform: translateX(calc((var(--page-pad-inline) * 0.5)));
 }
 
 /* Each carousel item */
@@ -675,62 +679,57 @@
   100% { transform: rotate(var(--ang)) translateX(0) scale(1.2); opacity: 0; }
 }
 
-/* ════ Meta rail — barra horizontal de créditos ════ */
+/* ════ Meta rail — créditos verticais na borda esquerda (rotação -90°) ════ */
 #meta-rail {
   position: fixed;
-  left: 12px;
-  bottom: 50%;
-  transform: translateY(50%);
+  left: 0;
+  top: 50%;
   z-index: 8;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 16px 12px;
-  border-radius: 14px;
-  background: rgba(7, 10, 14, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  flex-direction: row;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 6px 20px;
+  background: rgba(7, 10, 14, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   pointer-events: auto;
   white-space: nowrap;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  /* Rotate -90° (CCW) so the 3 items read bottom-to-top on the left edge.
+     translateX(-50% + 15px) centers the rotated element at the left edge
+     assuming element height ≈ 30px. */
+  transform: translateX(calc(-50% + 15px)) translateY(-50%) rotate(-90deg);
+  transform-origin: 50% 50%;
 }
 
-#meta-rail .meta-brand,
-#meta-rail .meta-item {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--text-xlo);
-  white-space: nowrap;
-  line-height: 1.5;
-}
-
-#meta-rail .meta-brand {
-  color: var(--text-md);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  margin-bottom: 4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-#meta-rail .meta-item a {
-  font-family: var(--font-ui), system-ui, sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--text-lo);
+.meta-link {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3rem;
   text-decoration: none;
+  font-family: var(--font-mono), monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.13em;
+  color: rgba(255, 255, 255, 0.28);
   transition: color 0.22s ease;
 }
+.meta-link:hover { color: rgba(var(--accent-rgb), 0.75); }
 
-#meta-rail .meta-item a:hover {
-  color: rgba(38, 176, 226, 0.9);
+.meta-lbl {
+  color: rgba(255, 255, 255, 0.14);
+  font-size: 7.5px;
+  text-transform: uppercase;
 }
 
-#meta-rail .meta-sep {
-  display: none;
+.meta-dot {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 /* ════ Main ════ */
@@ -1863,11 +1862,228 @@
   75%      { transform: perspective(60px) rotateX(-2deg) rotateY(3deg); }
 }
 
-/* Meta-rail: scroll horizontal no mobile */
+/* Meta-rail: hidden on very small screens */
 @media (max-width: 767px) {
-  #meta-rail { justify-content: flex-start; }
+  #meta-rail { display: none; }
   .footer-avatar-name { font-size: 10px; letter-spacing: 0.18em; }
   .footer-avatar-desc { font-size: 8px; }
+}
+
+/* ════ Settings Panel ════ */
+.settings-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(300px, 88vw);
+  height: 100%;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: rgba(8, 8, 13, 0.97);
+  border-left: 1px solid var(--border-md);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: settingsPanelIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes settingsPanelIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.settings-panel-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.settings-panel-title {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-md);
+}
+
+.settings-panel-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--border);
+  color: var(--text-lo);
+  transition: all var(--dur);
+}
+.settings-panel-close:hover { color: var(--text-hi); background: var(--s2); }
+.settings-panel-close svg { width: 14px; height: 14px; stroke-width: 1.6; }
+
+.settings-panel-list {
+  list-style: none;
+  padding: 10px 0;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.settings-panel-list::-webkit-scrollbar { display: none; }
+
+.settings-panel-item { display: block; }
+
+.settings-panel-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  text-align: left;
+  transition: background var(--dur), color var(--dur);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+.settings-panel-btn:hover { background: var(--s1); }
+
+.settings-panel-ico {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  background: var(--s1);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  color: var(--text-md);
+}
+.settings-panel-ico svg { width: 15px; height: 15px; stroke-width: 1.5; }
+
+.settings-panel-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-panel-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-hi);
+  letter-spacing: 0.01em;
+}
+
+.settings-panel-hint {
+  font-size: 10.5px;
+  color: var(--text-lo);
+  letter-spacing: 0.03em;
+}
+
+.settings-panel-chev {
+  color: var(--text-xlo);
+  flex-shrink: 0;
+}
+.settings-panel-chev svg { width: 14px; height: 14px; }
+
+/* ════ Topbar notification bell ════ */
+.topbar-notif-wrap {
+  position: relative;
+}
+
+.topbar-notif-badge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(var(--accent-rgb));
+  border: 1.5px solid rgba(6, 6, 10, 0.9);
+  pointer-events: none;
+  animation: pulseDot 2.4s ease infinite;
+}
+
+/* ════ Mobile chat bar — WhatsApp / GPT / Apple style ════ */
+@media (max-width: 640px) {
+  #chat-area {
+    padding: 8px 10px calc(env(safe-area-inset-bottom, 12px) + 8px);
+  }
+
+  #chat-bar {
+    max-width: 100%;
+    border-radius: 28px;
+    padding: 7px 7px 7px 16px;
+    background: rgba(18, 18, 26, 0.94);
+    border: 1.5px solid rgba(255, 255, 255, 0.09);
+    box-shadow:
+      0 -1px 0 rgba(255, 255, 255, 0.04),
+      0 4px 24px rgba(0, 0, 0, 0.55),
+      0 0 0 0px rgba(var(--accent-rgb), 0);
+    transition: border-color 0.22s, box-shadow 0.22s;
+    gap: 10px;
+  }
+
+  #chat-bar:focus-within {
+    border-color: rgba(var(--accent-rgb), 0.28);
+    box-shadow:
+      0 -1px 0 rgba(255, 255, 255, 0.04),
+      0 4px 24px rgba(0, 0, 0, 0.55),
+      0 0 0 3px rgba(var(--accent-rgb), 0.08);
+  }
+
+  #chat-input {
+    font-size: 16px; /* prevents iOS auto-zoom */
+    line-height: 1.45;
+    padding: 4px 0;
+  }
+
+  .cb {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    flex-shrink: 0;
+  }
+
+  #btn-send {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgb(var(--accent-rgb));
+    border: none;
+    color: #06060f;
+    box-shadow: 0 2px 12px rgba(var(--accent-rgb), 0.35);
+  }
+  #btn-send svg { stroke: #06060f; }
+  #btn-send:hover {
+    background: rgb(var(--accent-rgb));
+    opacity: 0.9;
+    box-shadow: 0 4px 18px rgba(var(--accent-rgb), 0.45);
+  }
+
+  #chat-footer { margin-top: 6px; }
+
+  .footer-avatar-name {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+  }
+
+  /* Stream messages: slightly narrower on mobile */
+  .stream-msg {
+    width: min(380px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+  }
 }
 
 /* ════ Obsidian Rite ════ */
