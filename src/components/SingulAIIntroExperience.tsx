@@ -1,118 +1,104 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import BrandLogo from "./BrandLogo";
 import { getDashboardUrl } from "@/lib/deviceRouting";
 
-type Particle = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  tx: number;
-  ty: number;
-  r: number;
-  o: number;
-  angle: number;
-};
+type DemoState = "idle" | "crossingSound" | "crossingSilent" | "ready";
 
-type DemoState = "idle" | "transition" | "ready";
-
-function spawnParticles(w: number, h: number): Particle[] {
-  const cx = w * 0.5;
-  const cy = h * 0.48;
-  const count = 60;
-  return Array.from({ length: count }, () => {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * Math.min(w, h) * 0.4;
-    return {
-      x: cx + Math.cos(angle) * dist,
-      y: cy + Math.sin(angle) * dist,
-      vx: 0,
-      vy: 0,
-      tx: cx,
-      ty: cy,
-      r: 0.8 + Math.random() * 1.6,
-      o: 0.08 + Math.random() * 0.18,
-      angle: Math.random() * Math.PI * 2,
-    };
+function toRoman(n: number): string {
+  const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const syms = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
+  let r = "";
+  vals.forEach((v, i) => {
+    while (n >= v) {
+      r += syms[i];
+      n -= v;
+    }
   });
+  return r;
 }
 
 export default function SingulAIIntroExperience() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const frameRef = useRef<number>(0);
-  const particlesRef = useRef<Particle[]>([]);
-  const stateStartRef = useRef(0);
   const [state, setState] = useState<DemoState>("idle");
+  const [veilActive, setVeilActive] = useState(false);
+  const [liveDate, setLiveDate] = useState("");
+  const [liveUtc, setLiveUtc] = useState("");
 
-  /* ── particle engine ── */
+  /* ── live date & clock ── */
+  useEffect(() => {
+    const now = new Date();
+    const y = toRoman(now.getFullYear());
+    const mo = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    setLiveDate(`${y} · ${mo} · ${d}`);
+
+    const tick = () => {
+      const t = new Date();
+      const hh = String(t.getUTCHours()).padStart(2, "0");
+      const mm = String(t.getUTCMinutes()).padStart(2, "0");
+      const ss = String(t.getUTCSeconds()).padStart(2, "0");
+      setLiveUtc(`${hh}:${mm}:${ss}`);
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  /* ── atmospheric canvas ── */
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let w = 0;
-    let h = 0;
-    let cx = 0;
-    let cy = 0;
+    type Dot = { x: number; y: number; vx: number; vy: number; r: number; a: number; hue: number };
+    let W = 0;
+    let H = 0;
+    let dots: Dot[] = [];
+    const N = 60;
 
     const resize = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
-      cx = w * 0.5;
-      cy = h * 0.48;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      particlesRef.current = spawnParticles(w, h);
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
     };
-
     resize();
     window.addEventListener("resize", resize);
 
-    const draw = (now: number) => {
-      ctx.clearRect(0, 0, w, h);
+    const mkDot = (): Dot => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      r: 0.5 + Math.random() * 0.8,
+      a: 0.04 + Math.random() * 0.12,
+      hue: 180 + Math.random() * 120,
+    });
 
-      const elapsed = (now - stateStartRef.current) / 1000;
-      const energy = state === "idle" ? 0.15 : Math.min(0.75, 0.35 + elapsed * 0.15);
+    dots = Array.from({ length: N }, mkDot);
 
-      for (const p of particlesRef.current) {
-        if (state === "idle") {
-          p.tx = cx + Math.cos(p.angle + now * 0.0003) * 80;
-          p.ty = cy + Math.sin(p.angle + now * 0.0003) * 60;
-        } else {
-          const orbit = 20 + energy * 140;
-          p.tx = cx + Math.cos(p.angle + now * 0.0006) * orbit;
-          p.ty = cy + Math.sin(p.angle + now * 0.0006) * orbit;
-        }
+    const draw = () => {
+      ctx.clearRect(0, 0, W, H);
 
-        p.vx += (p.tx - p.x) * 0.02;
-        p.vy += (p.ty - p.y) * 0.02;
-        p.vx *= 0.88;
-        p.vy *= 0.88;
-        p.x += p.vx;
-        p.y += p.vy;
+      // subtle atmospheric fog corner
+      const fog = ctx.createRadialGradient(W * 0.85, H * 0.15, 0, W * 0.85, H * 0.15, W * 0.4);
+      fog.addColorStop(0, "rgba(0,40,60,.04)");
+      fog.addColorStop(1, "transparent");
+      ctx.fillStyle = fog;
+      ctx.fillRect(0, 0, W, H);
 
-        const alpha = p.o * (0.4 + energy * 0.6);
+      for (const d of dots) {
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.x < -2) d.x = W + 2;
+        if (d.x > W + 2) d.x = -2;
+        if (d.y < -2) d.y = H + 2;
+        if (d.y > H + 2) d.y = -2;
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(38,176,226,${alpha})`;
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${d.hue},30%,78%,${d.a})`;
         ctx.fill();
-      }
-
-      // core glow
-      if (state !== "idle") {
-        const glowRadius = 40 + energy * 80;
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowRadius);
-        grad.addColorStop(0, `rgba(38,176,226,${0.15 + energy * 0.15})`);
-        grad.addColorStop(0.5, `rgba(255,255,255,${0.08 + energy * 0.08})`);
-        grad.addColorStop(1, "rgba(38,176,226,0)");
-        ctx.fillStyle = grad;
-        ctx.fillRect(cx - glowRadius, cy - glowRadius, glowRadius * 2, glowRadius * 2);
       }
 
       frameRef.current = requestAnimationFrame(draw);
@@ -121,34 +107,21 @@ export default function SingulAIIntroExperience() {
     frameRef.current = requestAnimationFrame(draw);
 
     return () => {
-      window.removeEventListener("resize", resize);
       cancelAnimationFrame(frameRef.current);
-    };
-  }, [state]);
-
-  /* ── cleanup ── */
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      window.removeEventListener("resize", resize);
     };
   }, []);
 
-  /* ── transition → ready after animation ── */
+  /* ── audio cleanup ── */
   useEffect(() => {
-    if (state === "transition") {
-      stateStartRef.current = performance.now();
-      const timer = setTimeout(() => {
-        setState("ready");
-      }, 4500);
-      return () => clearTimeout(timer);
-    }
-  }, [state]);
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
 
-  /* ── handlers ── */
-  const handleStart = useCallback(
+  /* ── inscription handlers ── */
+  const handleInscription = useCallback(
     (withSound: boolean) => {
       if (state !== "idle") return;
 
@@ -157,17 +130,27 @@ export default function SingulAIIntroExperience() {
         audio.volume = 0.5;
         audioRef.current = audio;
         audio.play().catch(() => {
-          /* browser blocked or file missing — continue silently */
+          /* browser may block or file may be missing — continue silently */
         });
       }
 
-      setState("transition");
+      setVeilActive(true);
+      setState(withSound ? "crossingSound" : "crossingSilent");
+
+      // veil in (1.8s) + dwell (2.4s) → show ready state
+      setTimeout(() => {
+        setVeilActive(false);
+        setState("ready");
+      }, 4200);
     },
     [state],
   );
 
   const handleEnter = useCallback(() => {
-    window.location.href = getDashboardUrl("/dashboard");
+    setVeilActive(true);
+    setTimeout(() => {
+      window.location.href = getDashboardUrl("/dashboard");
+    }, 900);
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -175,78 +158,214 @@ export default function SingulAIIntroExperience() {
       audioRef.current.pause();
       audioRef.current = null;
     }
+    setVeilActive(false);
     setState("idle");
   }, []);
 
+  const isCrossing = state === "crossingSound" || state === "crossingSilent";
+  const isReady = state === "ready";
+
   return (
-    <section className={`demo-landing demo-landing--${state}`} aria-label="SingulAI — entrada">
-      <canvas ref={canvasRef} className="demo-particles" aria-hidden="true" />
+    <section aria-label="SingulAI — entrada" className="rite-root">
+      {/* atmospheric canvas */}
+      <canvas ref={canvasRef} className="rite-bg" aria-hidden="true" />
 
-      <div className="demo-glass-edge" aria-hidden="true" />
-      <div className="demo-glass-center" aria-hidden="true" />
+      {/* grain overlay */}
+      <div className="rite-grain" aria-hidden="true" />
 
-      <main className="demo-content">
-        <BrandLogo size={120} className="demo-logo" />
+      {/* MEMORIÆ watermark */}
+      <div className="rite-watermark" aria-hidden="true">
+        MEMORIÆ
+      </div>
 
-        {state === "idle" && (
-          <>
-            <h1 className="demo-headline">Inicie o rito de memória.</h1>
-            <p className="demo-subtitle">Escolha som ou silêncio para abrir a experiência.</p>
-            <div className="demo-actions">
-              <button type="button" className="demo-btn demo-btn--primary" onClick={() => handleStart(true)}>
-                Iniciar com som
-              </button>
-              <button type="button" className="demo-btn demo-btn--ghost" onClick={() => handleStart(false)}>
-                Continuar em silêncio
-              </button>
+      {/* transition veil */}
+      <div
+        className={`rite-veil${veilActive ? " rite-veil--active" : ""}`}
+        aria-hidden="true"
+      >
+        {veilActive && (
+          <div className="rite-clock-wrap">
+            <svg
+              className={`rite-clock-svg${!isCrossing ? " rite-clock-svg--stopped" : ""}`}
+              viewBox="0 0 40 40"
+              width="36"
+              height="36"
+              fill="none"
+              aria-hidden="true"
+            >
+              {/* clock face */}
+              <circle cx="20" cy="20" r="15.5" stroke="rgba(240,234,216,0.12)" strokeWidth="0.75" />
+              {/* cardinal ticks */}
+              <line x1="20"   y1="5.5"  x2="20"   y2="7.5"  stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
+              <line x1="34.5" y1="20"  x2="32.5" y2="20"   stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
+              <line x1="20"   y1="34.5" x2="20"  y2="32.5" stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
+              <line x1="5.5"  y1="20"  x2="7.5"  y2="20"   stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
+              {/* hands — rotação centrada em (0,0) do grupo */}
+              <g transform="translate(20,20)">
+                <line x1="0" y1="0" x2="0" y2="-8"  stroke="rgba(240,234,216,0.48)"  strokeWidth="1.5" strokeLinecap="round" className="rite-clock-hr" />
+                <line x1="0" y1="0" x2="0" y2="-12" stroke="rgba(240,234,216,0.65)" strokeWidth="1"   strokeLinecap="round" className="rite-clock-min" />
+                <circle cx="0" cy="0" r="1.2" fill="rgba(240,234,216,0.45)" />
+              </g>
+            </svg>
+          </div>
+        )}
+      </div>
+
+      {/* editorial page */}
+      <div className={`rite-page${isCrossing ? " rite-page--crossing" : ""}`}>
+        {/* ── HEADER ── */}
+        <header className="rite-header">
+          <div className="rite-rule rite-rule--cyan" />
+          <div className="rite-header-row">
+            <div className="rite-header-left">
+              <span className="rite-head-title">SINGULAI</span>
+              <span className="rite-head-sep">·</span>
+              <span className="rite-head-sub">RITUS MEMORIÆ</span>
             </div>
-          </>
-        )}
-
-        {state === "transition" && (
-          <>
-            <h1 className="demo-headline demo-headline--small">Preparando experiência...</h1>
-            <p className="demo-subtitle">Absorvendo memória neural.</p>
-          </>
-        )}
-
-        {state === "ready" && (
-          <>
-            <h1 className="demo-headline demo-headline--small">Experiência pronta.</h1>
-            <p className="demo-subtitle">Núcleo cognitivo ativado.</p>
-            <div className="demo-actions">
-              <button type="button" className="demo-btn demo-btn--primary" onClick={handleEnter}>
-                Entrar no painel
-              </button>
-              <button type="button" className="demo-btn demo-btn--ghost" onClick={handleRestart}>
-                Reiniciar
-              </button>
+            <div className="rite-header-right">
+              <span className="rite-folio">FOLIO I · EDITIO PRIMA</span>
+              <span className="rite-head-sep">·</span>
+              <span className="rite-date">{liveDate}</span>
             </div>
-          </>
-        )}
-      </main>
+          </div>
+          <div className="rite-rule rite-rule--bone" />
+        </header>
 
-      {/* navigation */}
-      {(state === "transition" || state === "ready") && (
-        <button type="button" className="demo-nav-btn demo-nav-btn--back" onClick={handleRestart}>
-          ← Voltar
-        </button>
-      )}
+        {/* ── BODY ── */}
+        <div className="rite-body">
+          {/* main text */}
+          <main className="rite-main">
+            <p className="rite-folio-label">I · ABERTURA</p>
 
-      {/* credits */}
-      <footer className="demo-credits">
-        <a href="https://singulai.site" target="_blank" rel="noreferrer">
-          singulai.site
-        </a>
-        <span className="demo-credits-sep">·</span>
-        <a href="https://rodrigo.run" target="_blank" rel="noreferrer">
-          rodrigo.run
-        </a>
-        <span className="demo-credits-sep">·</span>
-        <a href="https://vitor.business" target="_blank" rel="noreferrer">
-          vitor.business
-        </a>
-      </footer>
+            <p className="rite-phrase">
+              <span className="rite-word rite-word--large">Inicie</span>
+              <span className="rite-word rite-word--mid">o rito de</span>
+              <span className="rite-word rite-word--end">
+                memória<span className="rite-accent">.</span>
+              </span>
+            </p>
+
+            <p className="rite-nota">
+              Esta página é uma soleira. Não um <em>onboarding</em>.<br />
+              Ao cruzar, você consente que algo seja lembrado de você.
+            </p>
+
+            <div className="rite-passage">
+              <p className="rite-passage-label">
+                II · PASSAGEM · DUAS INSCRIÇÕES · UMA SOLEIRA
+              </p>
+
+              <div className="rite-inscriptions">
+                {/* Inscription I */}
+                <button
+                  className="rite-inscription"
+                  onClick={() => handleInscription(true)}
+                  disabled={state !== "idle"}
+                  aria-label="Iniciar experiência com som"
+                >
+                  <span className="rite-ins-roman">I</span>
+                  <span className="rite-ins-name">com som</span>
+                  <span className="rite-ins-sub">→ iniciar experiência</span>
+                </button>
+
+                {/* Inscription II */}
+                <button
+                  className="rite-inscription"
+                  onClick={() => handleInscription(false)}
+                  disabled={state !== "idle"}
+                  aria-label="Atravessar sem som"
+                >
+                  <span className="rite-ins-roman">II</span>
+                  <span className="rite-ins-name">em silêncio</span>
+                  <span className="rite-ins-sub">→ atravessar sem som</span>
+                </button>
+
+                {/* Inscription III — appears only when ready */}
+                {isReady && (
+                  <button
+                    className="rite-inscription rite-inscription--ready"
+                    onClick={handleEnter}
+                    aria-label="Entrar no painel"
+                  >
+                    <span className="rite-ins-roman">III</span>
+                    <span className="rite-ins-name">entrar no painel</span>
+                    <span className="rite-ins-sub">→ cruzar a soleira</span>
+                  </button>
+                )}
+              </div>
+
+              {isReady && (
+                <p className="rite-restart">
+                  <button className="rite-restart-btn" onClick={handleRestart}>
+                    reiniciar
+                  </button>
+                </p>
+              )}
+            </div>
+          </main>
+
+          {/* coordinates aside */}
+          <aside className="rite-coords" aria-label="Metadados editoriais">
+            <div className="rite-coord-item rite-coord-hl">N°&nbsp;0001&nbsp;/&nbsp;0100</div>
+            <div className="rite-coord-sep" />
+            <div className="rite-coord-item">
+              <span className="rite-coord-key">LAT</span>−23.5505
+            </div>
+            <div className="rite-coord-item">
+              <span className="rite-coord-key">LON</span>−46.6333
+            </div>
+            <div className="rite-coord-item">
+              <span className="rite-coord-key">ALT</span>+0760&nbsp;m
+            </div>
+            <div className="rite-coord-sep" />
+            <div className="rite-coord-item">
+              <span className="rite-coord-key">REF</span>SGL/Δ/0001
+            </div>
+            <div className="rite-coord-item">
+              <span className="rite-coord-key">VER</span>2.0.0
+            </div>
+            <div className="rite-coord-item">
+              <span className="rite-coord-key">UTC</span>
+              {liveUtc}
+            </div>
+            <div className="rite-coord-sep" />
+            <img
+              src="/singulai_logo.svg"
+              alt=""
+              className="rite-logo-mark"
+              aria-hidden="true"
+            />
+          </aside>
+        </div>
+
+        {/* ── FOOTER ── */}
+        <footer className="rite-footer">
+          <div className="rite-rule rite-rule--bone" />
+          <div style={{ height: "0.5rem" }} />
+          <div className="rite-footer-inner">
+            <div className="rite-colophon-left">
+              <span className="rite-alpha">α&nbsp;·</span>custódia
+            </div>
+            <div className="rite-colophon-right">
+              <a href="https://singulai.site" target="_blank" rel="noopener noreferrer">
+                SINGULAI.SITE
+              </a>
+              &nbsp;·&nbsp;
+              <a href="https://rodrigo.run" target="_blank" rel="noopener noreferrer">
+                RODRIGO.RUN
+              </a>
+              &nbsp;·&nbsp;
+              <a href="https://vitor.business" target="_blank" rel="noopener noreferrer">
+                VITOR.BUSINESS
+              </a>
+              <br />
+              PRESSED IN OBSIDIAN&nbsp;·&nbsp;EDITIO MMXXVI
+              <br />
+              RITUS&nbsp;·&nbsp;MEMORIÆ&nbsp;·&nbsp;SOLEIRA&nbsp;·&nbsp;I
+            </div>
+          </div>
+        </footer>
+      </div>
     </section>
   );
 }
