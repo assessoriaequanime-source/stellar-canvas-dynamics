@@ -93,7 +93,7 @@ export default function SingulAIDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
-  const [topExpanded, setTopExpanded] = useState(false);
+
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
@@ -330,111 +330,69 @@ export default function SingulAIDashboard() {
 
       <div id="app">
         {/* TOPBAR — premium expandable intelligence dock */}
-        <header
-          id="topbar"
-          className={topExpanded ? "topbar-expanded" : ""}
-          onMouseEnter={() => !isMobile && setTopExpanded(true)}
-          onMouseLeave={() => !isMobile && setTopExpanded(false)}
-        >
-          {/* Strip — always visible */}
-          <div className="topbar-strip">
-            <div className="topbar-brand">
-              <BrandLogo size={48} />
-            </div>
-
-            {/* Active mode pill — visible when collapsed */}
-            <div className="topbar-active-pill">
-              <span className="topbar-pill-dot" />
-              <span className="topbar-pill-label">{prof.modeName}</span>
-            </div>
-
-            {/* Right actions */}
-            <div className="topbar-actions">
-              <div className="topbar-status">
-                <span className="pulse-dot" style={{ width: 5, height: 5 }} />
-                <span className="topbar-status-text">ONLINE</span>
-              </div>
-              {isMobile && (
-                <button
-                  className="topbar-toggle"
-                  onClick={() => setTopExpanded((v) => !v)}
-                  aria-label={topExpanded ? "Recolher" : "Expandir"}
-                >
-                  <Icon><polyline points={topExpanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></Icon>
-                </button>
-              )}
-
-              {/* Notifications */}
-              <div className="topbar-notif-wrap">
-                <button
-                  className="topbar-action-btn topbar-notif-btn"
-                  title="Notificações"
-                  aria-label="Notificações"
-                >
-                  <Icon>
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                  </Icon>
-                </button>
-                <span className="topbar-notif-badge" aria-hidden="true" />
-              </div>
-
-              <Link to="/demo" className="topbar-action-btn" title="Voltar para Intro" aria-label="Voltar para Intro">
-                <Icon>
-                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <polyline points="9 22 9 12 15 12 15 22" />
-                </Icon>
-              </Link>
-
-              {/* Settings (sliders icon) — wallet / perfil / ajustes / modo / layouts */}
-              <button
-                className="topbar-action-btn"
-                onClick={() => setSettingsOpen(true)}
-                title="Configurações"
-                aria-label="Configurações do painel"
-              >
-                <Icon>
-                  <line x1="4" y1="6" x2="20" y2="6" />
-                  <line x1="8" y1="4" x2="8" y2="8" />
-                  <line x1="4" y1="12" x2="20" y2="12" />
-                  <line x1="16" y1="10" x2="16" y2="14" />
-                  <line x1="4" y1="18" x2="20" y2="18" />
-                  <line x1="12" y1="16" x2="12" y2="20" />
-                </Icon>
-              </button>
+        <header id="topbar">
+          {/* Brand — logo + Ω live readout chip */}
+          <div className="tb-brand">
+            <BrandLogo size={48} />
+            <div className="tb-omega-live" title={`Ω ${omegaPct.toFixed(1)} — ${omegaStatus}`}>
+              <span className="tb-omega-sym">Ω</span>
+              <span className="tb-omega-num">{omegaPct.toFixed(1)}</span>
             </div>
           </div>
 
-          {/* Expansion zone */}
-          <div className="topbar-expand-zone">
-            <div id="model-carousel">
-              {(Object.keys(PROFILES) as Profile[]).map((p, i) => {
-                const keys = Object.keys(PROFILES) as Profile[];
-                const activeIdx = keys.indexOf(profile);
-                let pos = i - activeIdx;
-                if (pos > 1) pos -= 3;
-                if (pos < -1) pos += 3;
-                return (
-                  <button
-                    key={p}
-                    className={`carousel-item ${pos === 0 ? "carousel-active" : "carousel-side"}`}
-                    data-p={p}
-                    data-pos={pos}
-                    onClick={() => switchProfile(p)}
-                    style={{
-                      transform: `translateX(${pos * 155}px) scale(${pos === 0 ? 1.14 : 0.86})`,
-                      opacity: pos === 0 ? 1 : 0.58,
-                      zIndex: pos === 0 ? 20 : 10,
-                    }}
-                  >
-                    <span className="carousel-label">{PROFILES[p].modeName}</span>
-                  </button>
-                );
-              })}
+          {/* Neural mode switcher — always-visible inline selector */}
+          <div className="tb-switcher">
+            {(Object.keys(PROFILES) as Profile[]).map((p) => (
+              <button
+                key={p}
+                className={`tb-mode ${profile === p ? "tb-mode--active" : ""}`}
+                data-p={p}
+                onClick={() => switchProfile(p)}
+                title={`${PROFILES[p].modeName} — ${PROFILES[p].desc}`}
+              >
+                <span className="tb-mode-label">{PROFILES[p].modeName}</span>
+                <span className="tb-mode-sub">{PROFILES[p].desc}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Right actions — unified glass chip */}
+          <div className="tb-actions-chip">
+            <div className="tb-status">
+              <span className="pulse-dot" style={{ width: 5, height: 5 }} />
+              <span className="tb-status-txt">ONLINE</span>
             </div>
-            <span className="carousel-modo" style={{ color: accentStr }}>
-              MODO
-            </span>
+            <div className="tb-divider-v" />
+            <div className="topbar-notif-wrap">
+              <button className="tb-btn topbar-notif-btn" title="Notificações" aria-label="Notificações">
+                <Icon>
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </Icon>
+              </button>
+              <span className="topbar-notif-badge" aria-hidden="true" />
+            </div>
+            <Link to="/demo" className="tb-btn" title="Voltar para Intro" aria-label="Voltar para Intro">
+              <Icon>
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </Icon>
+            </Link>
+            <button
+              className="tb-btn"
+              onClick={() => setSettingsOpen(true)}
+              title="Configurações"
+              aria-label="Configurações do painel"
+            >
+              <Icon>
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="8" y1="4" x2="8" y2="8" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="16" y1="10" x2="16" y2="14" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+                <line x1="12" y1="16" x2="12" y2="20" />
+              </Icon>
+            </button>
           </div>
         </header>
 
