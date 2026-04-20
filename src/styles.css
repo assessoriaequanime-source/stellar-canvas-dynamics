@@ -1958,6 +1958,15 @@
   text-shadow: 0 0 24px rgba(38, 176, 226, 0.2);
 }
 
+/* ── logo real ── */
+.demo-logo {
+  width: clamp(180px, 28vw, 320px);
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 40px;
+  filter: drop-shadow(0 0 28px rgba(38, 176, 226, 0.18));
+}
+
 /* ── headline ── */
 .demo-headline {
   font-family: var(--font-ui), system-ui, sans-serif;

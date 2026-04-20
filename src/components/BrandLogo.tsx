@@ -11,7 +11,7 @@ export type BrandLogoProps = {
   className?: string;
 };
 
-const LOGO_ASSET_SRC: string | null = null;
+const LOGO_ASSET_SRC: string | null = "/singulai_logo.svg";
 
 const LOGO_SIZE_MAP: Record<BrandLogoProps["variant"], Record<BrandLogoProps["size"], { width: string; height: string }>> = {
   horizontal: {

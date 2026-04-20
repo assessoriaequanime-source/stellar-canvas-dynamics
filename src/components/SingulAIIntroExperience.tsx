@@ -184,7 +184,7 @@ export default function SingulAIIntroExperience() {
       <div className="demo-glass-center" aria-hidden="true" />
 
       <main className="demo-content">
-        <h2 className="demo-wordmark">SingulAI</h2>
+        <img src="/singulai_logo.svg" alt="SingulAI" className="demo-logo" />
 
         {state === "idle" && (
           <>
