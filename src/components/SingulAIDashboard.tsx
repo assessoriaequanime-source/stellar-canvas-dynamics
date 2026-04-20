@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { Link } from "@tanstack/react-router";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
 import BrandLogo from "@/components/BrandLogo";
 import { BRAND_LOGO_USAGE } from "@/lib/brand";
@@ -382,6 +383,12 @@ export default function SingulAIDashboard() {
                   <Icon><polyline points={topExpanded ? "18 15 12 9 6 15" : "6 9 12 15 18 9"} /></Icon>
                 </button>
               )}
+              <Link to="/demo" className="topbar-action-btn" title="Voltar para Intro" aria-label="Voltar para Intro">
+                <Icon>
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </Icon>
+              </Link>
               <button
                 className="topbar-action-btn"
                 onClick={() => setRailOpen(true)}
