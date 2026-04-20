@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import BrandLogo from "./BrandLogo";
 
 type Particle = {
   x: number;
@@ -13,11 +14,12 @@ type Particle = {
   angle: number;
 };
 
-type DemoState = "idle" | "playing" | "silent" | "ready";
+type DemoState = "idle" | "transition";
 
-function spawnParticles(w: number, h: number, count: number): Particle[] {
+function spawnParticles(w: number, h: number): Particle[] {
   const cx = w * 0.5;
   const cy = h * 0.48;
+  const count = 60;
   return Array.from({ length: count }, () => {
     const angle = Math.random() * Math.PI * 2;
     const dist = Math.random() * Math.min(w, h) * 0.4;
@@ -67,8 +69,7 @@ export default function SingulAIIntroExperience() {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const count = state === "idle" ? 80 : 120;
-      particlesRef.current = spawnParticles(w, h, count);
+      particlesRef.current = spawnParticles(w, h);
     };
 
     resize();
@@ -78,7 +79,7 @@ export default function SingulAIIntroExperience() {
       ctx.clearRect(0, 0, w, h);
 
       const elapsed = (now - stateStartRef.current) / 1000;
-      const energy = state === "idle" ? 0.15 : Math.min(0.65, 0.25 + elapsed * 0.12);
+      const energy = state === "idle" ? 0.15 : Math.min(0.75, 0.35 + elapsed * 0.15);
 
       for (const p of particlesRef.current) {
         if (state === "idle") {
@@ -136,37 +137,35 @@ export default function SingulAIIntroExperience() {
     };
   }, []);
 
-  /* ── auto ready after playing/silent ── */
+  /* ── auto navigate after transition ── */
   useEffect(() => {
-    if (state === "playing" || state === "silent") {
+    if (state === "transition") {
       stateStartRef.current = performance.now();
       const timer = setTimeout(() => {
-        setState("ready");
+        navigate({ to: "/dashboard" });
       }, 4500);
       return () => clearTimeout(timer);
     }
-  }, [state]);
+  }, [state, navigate]);
 
   /* ── handlers ── */
-  const handleWithSound = useCallback(() => {
-    if (state !== "idle") return;
-    const audio = new Audio("/audio/singulai-intro.mp3");
-    audio.volume = 0.5;
-    audioRef.current = audio;
-    audio.play().catch(() => {
-      /* browser blocked or file missing — continue silently */
-    });
-    setState("playing");
-  }, [state]);
+  const handleStart = useCallback(
+    (withSound: boolean) => {
+      if (state !== "idle") return;
 
-  const handleSilent = useCallback(() => {
-    if (state !== "idle") return;
-    setState("silent");
-  }, [state]);
+      if (withSound) {
+        const audio = new Audio("/audio/singulai-intro.mp3");
+        audio.volume = 0.5;
+        audioRef.current = audio;
+        audio.play().catch(() => {
+          /* browser blocked or file missing — continue silently */
+        });
+      }
 
-  const handleEnter = useCallback(() => {
-    navigate({ to: "/dashboard" });
-  }, [navigate]);
+      setState("transition");
+    },
+    [state],
+  );
 
   const handleRestart = useCallback(() => {
     if (audioRef.current) {
@@ -177,55 +176,40 @@ export default function SingulAIIntroExperience() {
   }, []);
 
   return (
-    <section className={`demo-landing demo-landing--${state}`}>
+    <section className={`demo-landing demo-landing--${state}`} aria-label="SingulAI — entrada">
       <canvas ref={canvasRef} className="demo-particles" aria-hidden="true" />
 
       <div className="demo-glass-edge" aria-hidden="true" />
       <div className="demo-glass-center" aria-hidden="true" />
 
       <main className="demo-content">
-        <img src="/singulai_logo.svg" alt="SingulAI" className="demo-logo" />
+        <BrandLogo size={120} className="demo-logo" />
 
         {state === "idle" && (
           <>
             <h1 className="demo-headline">Inicie o rito de memória.</h1>
             <p className="demo-subtitle">Escolha som ou silêncio para abrir a experiência.</p>
             <div className="demo-actions">
-              <button type="button" className="demo-btn demo-btn--primary" onClick={handleWithSound}>
+              <button type="button" className="demo-btn demo-btn--primary" onClick={() => handleStart(true)}>
                 Iniciar com som
               </button>
-              <button type="button" className="demo-btn demo-btn--ghost" onClick={handleSilent}>
+              <button type="button" className="demo-btn demo-btn--ghost" onClick={() => handleStart(false)}>
                 Continuar em silêncio
               </button>
             </div>
           </>
         )}
 
-        {(state === "playing" || state === "silent") && (
+        {state === "transition" && (
           <>
             <h1 className="demo-headline demo-headline--small">Preparando experiência...</h1>
             <p className="demo-subtitle">Absorvendo memória neural.</p>
           </>
         )}
-
-        {state === "ready" && (
-          <>
-            <h1 className="demo-headline demo-headline--small">Experiência pronta.</h1>
-            <p className="demo-subtitle">Núcleo cognitivo ativado.</p>
-            <div className="demo-actions">
-              <button type="button" className="demo-btn demo-btn--primary" onClick={handleEnter}>
-                Entrar no painel
-              </button>
-              <button type="button" className="demo-btn demo-btn--ghost" onClick={handleRestart}>
-                Reiniciar
-              </button>
-            </div>
-          </>
-        )}
       </main>
 
       {/* navigation */}
-      {state !== "idle" && (
+      {state === "transition" && (
         <button type="button" className="demo-nav-btn demo-nav-btn--back" onClick={handleRestart}>
           ← Voltar
         </button>

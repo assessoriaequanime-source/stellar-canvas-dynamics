@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { AvatarEngine, type Profile } from "@/lib/avatar-engine";
 import BrandLogo from "@/components/BrandLogo";
-import { BRAND_LOGO_USAGE } from "@/lib/brand";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
@@ -359,7 +358,7 @@ export default function SingulAIDashboard() {
           {/* Strip — always visible */}
           <div className="topbar-strip">
             <div className="topbar-brand">
-              <BrandLogo {...BRAND_LOGO_USAGE.dashboard} />
+              <BrandLogo size={48} />
             </div>
 
             {/* Active mode pill — visible when collapsed */}
@@ -617,7 +616,7 @@ export default function SingulAIDashboard() {
         <div className="modal-shell">
           <div className="modal-hdr">
             <div className="modal-brand">
-              <BrandLogo {...BRAND_LOGO_USAGE.modal} />
+              <BrandLogo size={64} />
             </div>
             <div className="modal-titles">
               <h3>Criar Cápsula</h3>
