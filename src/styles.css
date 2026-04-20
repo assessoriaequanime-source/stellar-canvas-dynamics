@@ -653,6 +653,48 @@
 }
 
 
+/* ════ Gather Feedback Gesture ════ */
+
+/* Transparent overlay in particle area that captures long-press + drag */
+#gather-zone {
+  position: absolute;
+  inset: 0 0 0 0;
+  /* Leave room for chat bar (approx 88px bottom) — pointer-events on chat-area override anyway */
+  z-index: 6;
+  touch-action: none;
+  pointer-events: all;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+}
+
+/* Growing ring indicator during hold — fixed positioned (relative to viewport) */
+.gather-ring {
+  position: fixed;
+  border-radius: 50%;
+  border: 1.5px solid rgba(var(--accent-rgb), 0.72);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  transition: width 0.12s ease, height 0.12s ease;
+  box-shadow:
+    0 0 0 0 rgba(var(--accent-rgb), 0.35),
+    inset 0 0 16px rgba(var(--accent-rgb), 0.08);
+  animation: gatherPulse 1s ease-in-out infinite;
+}
+
+@keyframes gatherPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.35), inset 0 0 16px rgba(var(--accent-rgb), 0.08); }
+  50% { box-shadow: 0 0 0 10px rgba(var(--accent-rgb), 0), inset 0 0 24px rgba(var(--accent-rgb), 0.14); }
+}
+
+/* Bubble swipe — snap-back spring transition */
+.bubble {
+  transition:
+    transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
 /* ════ Sigma flash — partículas claras formam o σ e somem com fade-out ════ */
 .sigma-flash {
   position: fixed; top: 50%; left: 50%;

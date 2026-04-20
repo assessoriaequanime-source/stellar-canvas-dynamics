@@ -51,6 +51,15 @@ export class AvatarEngine {
   private alphas!: Float32Array;          // per-particle render alpha
   private projVec = new THREE.Vector3();
 
+  // ── Gather-feedback state ──────────────────────────────────────────
+  /** Indices of particles currently pulled toward the gather point. */
+  gatheredIdxs: number[] = [];
+  private gatherTweens = new Map<number, gsap.core.Tween>();
+  /** Whether a gather session is active (useful for UI indicator). */
+  isGathering = false;
+  /** 3-D convergence point used for the current gather session. */
+  private gatherPt = new THREE.Vector3();
+
   private onMouse = (e: MouseEvent) => {
     this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -514,6 +523,257 @@ export class AvatarEngine {
     (this.geo.attributes.aAlpha as THREE.BufferAttribute).needsUpdate = true;
     this.renderer.render(this.scene, this.camera);
   };
+
+  // ── Gather feedback methods ──────────────────────────────────────────────
+
+  private _screenToNDC(sx: number, sy: number) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    return {
+      ndcX: ((sx - rect.left) / rect.width) * 2 - 1,
+      ndcY: -((sy - rect.top) / rect.height) * 2 + 1,
+    };
+  }
+
+  /**
+   * Called repeatedly during a long-press hold.
+   * `fraction` ∈ [0, 1] — maps hold duration (0–3 s) to quantity of gathered particles (8–60).
+   * Animates nearby particles to converge toward the touch point.
+   */
+  gatherAt(sx: number, sy: number, fraction: number): void {
+    if (!this.geo || !this.points || this.disposed) return;
+    this.isGathering = true;
+
+    const targetCount = 8 + Math.floor(fraction * 52); // 8 → 60 particles
+    if (this.gatheredIdxs.length >= targetCount) return;
+
+    const { ndcX, ndcY } = this._screenToNDC(sx, sy);
+    const positions = this.geo.attributes.position.array as Float32Array;
+    const colors = this.geo.attributes.color.array as Float32Array;
+    const sizeRef = this.sizes;
+
+    // Build set of already-gathered particle indices for O(1) lookup
+    const gatheredSet = new Set(this.gatheredIdxs);
+    const needed = targetCount - this.gatheredIdxs.length;
+    if (needed <= 0) return;
+
+    // Find nearest un-gathered, un-absorbed particles in NDC screen space
+    const matrix = new THREE.Matrix4().multiplyMatrices(
+      this.camera.projectionMatrix,
+      this.camera.matrixWorldInverse,
+    );
+    const worldM = this.points.matrixWorld;
+    const v = this.projVec;
+    const stride = Math.max(1, Math.floor(this.N / 2500));
+    const candidates: { idx: number; dist: number }[] = [];
+
+    for (let i = 0; i < this.N; i += stride) {
+      if (gatheredSet.has(i) || this.absorbed[i]) continue;
+      v.set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+      v.applyMatrix4(worldM).applyMatrix4(matrix);
+      const dx = v.x - ndcX;
+      const dy = v.y - ndcY;
+      candidates.push({ idx: i, dist: dx * dx + dy * dy });
+    }
+    candidates.sort((a, b) => a.dist - b.dist);
+
+    // Project touch NDC → 3-D convergence point on the front hemisphere of the sphere
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2(ndcX, ndcY), this.camera);
+    ray.ray.at(this.camera.position.z - this.BR * 0.55, this.gatherPt);
+    if (this.gatherPt.length() > this.BR) this.gatherPt.setLength(this.BR * 0.82);
+
+    const accent = this.palettes[this.profile];
+    const baseSize = this.isMobile ? 2.6 : 3.2;
+
+    for (let j = 0; j < Math.min(needed, candidates.length); j++) {
+      const idx = candidates[j].idx;
+      this.gatheredIdxs.push(idx);
+
+      const ci = idx * 3;
+
+      // Slight spread around convergence point — tightens as fraction grows
+      const spread = this.BR * 0.18 * (1 - fraction * 0.7);
+      const ang = Math.random() * Math.PI * 2;
+      const tx = this.gatherPt.x + Math.cos(ang) * spread * Math.random();
+      const ty = this.gatherPt.y + Math.sin(ang) * spread * Math.random();
+      const tz = this.gatherPt.z;
+
+      // Kill previous tween if this particle is being re-gathered
+      this.gatherTweens.get(idx)?.kill();
+
+      const obj = {
+        x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
+        r: colors[ci], g: colors[ci + 1], b: colors[ci + 2],
+        s: sizeRef[idx],
+      };
+      const tween = gsap.to(obj, {
+        x: tx, y: ty, z: tz,
+        r: accent.r * 1.35, g: accent.g * 1.35, b: accent.b * 1.35,
+        s: baseSize * 2.1,
+        duration: 0.4 + Math.random() * 0.3,
+        ease: "power3.out",
+        onUpdate() {
+          positions[ci]     = obj.x;
+          positions[ci + 1] = obj.y;
+          positions[ci + 2] = obj.z;
+          colors[ci]        = obj.r;
+          colors[ci + 1]    = obj.g;
+          colors[ci + 2]    = obj.b;
+          sizeRef[idx]      = obj.s;
+        },
+      });
+      this.gatherTweens.set(idx, tween);
+    }
+  }
+
+  /**
+   * Commit or discard the gathered particles.
+   * - `'right'`   → assertivo: absorb them (white core, accent burst)
+   * - `'left'`    → equívoco:  scatter & return to base color (red flash)
+   * - `'cancel'`  → no action: particles return to home positions gently
+   */
+  releaseGathered(direction: "left" | "right" | "cancel"): void {
+    if (!this.geo || this.disposed) return;
+    this.isGathering = false;
+
+    const positions = this.geo.attributes.position.array as Float32Array;
+    const colors = this.geo.attributes.color.array as Float32Array;
+    const sizeRef = this.sizes;
+    const baseSize = this.isMobile ? 2.6 : 3.2;
+    const accent = this.palettes[this.profile];
+    // Snapshot gather point before it gets mutated by next gesture
+    const gpx = this.gatherPt.x;
+    const gpy = this.gatherPt.y;
+    const gpz = this.gatherPt.z;
+
+    const idxs = [...this.gatheredIdxs];
+    this.gatheredIdxs = [];
+
+    for (const idx of idxs) {
+      this.gatherTweens.get(idx)?.kill();
+      this.gatherTweens.delete(idx);
+
+      const ci = idx * 3;
+      const homeX = this.homePos[ci];
+      const homeY = this.homePos[ci + 1];
+      const homeZ = this.homePos[ci + 2];
+      const baseR = this.baseColor[ci];
+      const baseG = this.baseColor[ci + 1];
+      const baseB = this.baseColor[ci + 2];
+
+      if (direction === "cancel") {
+        // Smoothly return home, restore color
+        const obj = {
+          x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
+          r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[idx],
+        };
+        gsap.to(obj, {
+          x: homeX, y: homeY, z: homeZ,
+          r: baseR, g: baseG, b: baseB, s: baseSize,
+          duration: 0.65 + Math.random() * 0.45,
+          ease: "power2.out",
+          onUpdate() {
+            positions[ci]     = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
+            colors[ci]        = obj.r; colors[ci + 1]    = obj.g; colors[ci + 2]    = obj.b;
+            sizeRef[idx]      = obj.s;
+          },
+        });
+
+      } else if (direction === "left") {
+        // Flash red → scatter outward from gather center → return home dimmed → recover
+        const dxS = (positions[ci] - gpx) || (Math.random() - 0.5);
+        const dyS = (positions[ci + 1] - gpy) || (Math.random() - 0.5);
+        const dzS = (positions[ci + 2] - gpz) || (Math.random() - 0.5);
+        const scatterLen = this.BR * (0.85 + Math.random() * 0.45);
+        const scatterNorm = Math.sqrt(dxS * dxS + dyS * dyS + dzS * dzS) || 1;
+        const scatterX = homeX + (dxS / scatterNorm) * scatterLen * 0.4;
+        const scatterY = homeY + (dyS / scatterNorm) * scatterLen * 0.4;
+        const scatterZ = homeZ + (dzS / scatterNorm) * scatterLen * 0.4;
+
+        const obj = {
+          x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
+          r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[idx],
+        };
+        gsap.timeline()
+          .to(obj, {
+            r: 0.9, g: 0.18, b: 0.22, s: baseSize * 2.8,
+            duration: 0.08,
+            onUpdate() { colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b; sizeRef[idx] = obj.s; },
+          })
+          .to(obj, {
+            x: scatterX, y: scatterY, z: scatterZ,
+            r: 0.5, g: 0.1, b: 0.12, s: baseSize * 1.7,
+            duration: 0.38,
+            ease: "expo.out",
+            onUpdate() {
+              positions[ci] = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
+              colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b;
+              sizeRef[idx] = obj.s;
+            },
+          })
+          .to(obj, {
+            x: homeX, y: homeY, z: homeZ,
+            r: baseR * 0.5, g: baseG * 0.5, b: baseB * 0.5, s: baseSize * 0.65,
+            duration: 0.95,
+            ease: "power2.inOut",
+            onUpdate() {
+              positions[ci] = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
+              colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b;
+              sizeRef[idx] = obj.s;
+            },
+          })
+          .to(obj, {
+            r: baseR, g: baseG, b: baseB, s: baseSize,
+            duration: 1.6,
+            ease: "power1.inOut",
+            delay: 0.25,
+            onUpdate() { colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b; sizeRef[idx] = obj.s; },
+          });
+
+      } else {
+        // direction === 'right': absorb (accent burst → white core)
+        this.absorbed[idx] = 1;
+
+        const absorbedCount = this._absorbedCount();
+        const coreR = 18 + Math.min(absorbedCount, 60) * 0.6;
+        const a1 = Math.random() * Math.PI * 2;
+        const a2 = Math.acos(2 * Math.random() - 1);
+        const cr = Math.random() * coreR;
+        const targetX = cr * Math.sin(a2) * Math.cos(a1);
+        const targetY = cr * Math.sin(a2) * Math.sin(a1);
+        const targetZ = cr * Math.cos(a2);
+
+        this.homePos[ci]     = targetX;
+        this.homePos[ci + 1] = targetY;
+        this.homePos[ci + 2] = targetZ;
+
+        const obj = {
+          x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
+          r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[idx],
+        };
+        gsap.timeline()
+          .to(obj, {
+            r: accent.r * 1.7, g: accent.g * 1.7, b: accent.b * 1.7,
+            s: baseSize * 4.0,
+            duration: 0.16,
+            ease: "power2.out",
+            onUpdate() { colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b; sizeRef[idx] = obj.s; },
+          })
+          .to(obj, {
+            r: 1.0, g: 1.0, b: 1.0,
+            x: targetX, y: targetY, z: targetZ,
+            s: baseSize * 1.6,
+            duration: 1.05,
+            ease: "expo.inOut",
+            onUpdate() {
+              colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b;
+              positions[ci] = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
+              sizeRef[idx] = obj.s;
+            },
+          });
+      }
+    }
+  }
 
   dispose() {
     this.disposed = true;

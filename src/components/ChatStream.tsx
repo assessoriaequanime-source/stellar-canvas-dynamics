@@ -13,6 +13,7 @@ type Props = {
   messages: StreamMsg[];
   profile: Profile;
   engineRef?: React.MutableRefObject<AvatarEngine | null>;
+  onBubbleFeedback?: (msgId: number, dir: "positive" | "negative") => void;
 };
 
 /**
@@ -56,7 +57,7 @@ function trajectoryFor(_profile: Profile, depth: number, fromUser: boolean, _mob
   return { opacity, scale, x: laneNudge, y: liftY, blur, hidden: false };
 }
 
-export default function ChatStream({ messages, profile, engineRef }: Props) {
+export default function ChatStream({ messages, profile, engineRef, onBubbleFeedback }: Props) {
   const isMobile = useIsMobile();
   const indexed = useMemo(() => {
     const arr = [...messages];
@@ -66,6 +67,11 @@ export default function ChatStream({ messages, profile, engineRef }: Props) {
   const absorbedIdsRef = useRef<Set<number>>(new Set());
   const elRefs = useRef<Map<number, HTMLDivElement | null>>(new Map());
   const [vanished, setVanished] = useState<Set<number>>(new Set());
+
+  // Bubble swipe state
+  type BubbleSwipeState = { dragging: boolean; startX: number; dx: number; pointerId: number };
+  const bubbleSwipeRef = useRef<Map<number, BubbleSwipeState>>(new Map());
+  const [bubbleDxMap, setBubbleDxMap] = useState<Map<number, number>>(new Map());
 
   useEffect(() => {
     if (!engineRef?.current) return;
@@ -124,7 +130,58 @@ export default function ChatStream({ messages, profile, engineRef }: Props) {
             data-depth={depth}
             style={style}
           >
-            <div className={`bubble bubble-${fromUser ? "user" : "ai"}`}>
+            <div
+              className={`bubble bubble-${fromUser ? "user" : "ai"}`}
+              style={(() => {
+                const dx = bubbleDxMap.get(msg.id) ?? 0;
+                const swipeable = depth === 0 && !isVanished && msg.role !== "typing";
+                if (!swipeable || dx === 0) return undefined;
+                const maxDx = 80;
+                const clampedDx = Math.max(-maxDx, Math.min(maxDx, dx));
+                const ratio = clampedDx / maxDx;
+                const tint = ratio > 0
+                  ? `rgba(var(--accent-rgb), ${Math.abs(ratio) * 0.22})`
+                  : `rgba(220, 38, 38, ${Math.abs(ratio) * 0.22})`;
+                return {
+                  transform: `translateX(${clampedDx * 0.6}px)`,
+                  transition: "none",
+                  background: tint,
+                  boxShadow: ratio > 0
+                    ? `0 0 20px rgba(var(--accent-rgb), ${Math.abs(ratio) * 0.35})`
+                    : `0 0 20px rgba(220, 38, 38, ${Math.abs(ratio) * 0.30})`,
+                };
+              })()}
+              onPointerDown={depth === 0 && !isVanished && msg.role !== "typing" ? (e) => {
+                e.currentTarget.setPointerCapture(e.pointerId);
+                bubbleSwipeRef.current.set(msg.id, { dragging: true, startX: e.clientX, dx: 0, pointerId: e.pointerId });
+              } : undefined}
+              onPointerMove={depth === 0 && !isVanished && msg.role !== "typing" ? (e) => {
+                const state = bubbleSwipeRef.current.get(msg.id);
+                if (!state?.dragging) return;
+                const dx = e.clientX - state.startX;
+                state.dx = dx;
+                setBubbleDxMap((m) => new Map(m).set(msg.id, dx));
+              } : undefined}
+              onPointerUp={depth === 0 && !isVanished && msg.role !== "typing" ? (e) => {
+                const state = bubbleSwipeRef.current.get(msg.id);
+                if (!state?.dragging) return;
+                state.dragging = false;
+                const dx = state.dx;
+                bubbleSwipeRef.current.delete(msg.id);
+                // Snap back with spring transition
+                setBubbleDxMap((m) => {
+                  const next = new Map(m);
+                  next.delete(msg.id);
+                  return next;
+                });
+                if (dx > 55) onBubbleFeedback?.(msg.id, "positive");
+                else if (dx < -55) onBubbleFeedback?.(msg.id, "negative");
+              } : undefined}
+              onPointerCancel={depth === 0 ? () => {
+                bubbleSwipeRef.current.delete(msg.id);
+                setBubbleDxMap((m) => { const n = new Map(m); n.delete(msg.id); return n; });
+              } : undefined}
+            >
               {msg.role === "typing" ? (
                 <div className="typing">
                   <div className="tdot" />

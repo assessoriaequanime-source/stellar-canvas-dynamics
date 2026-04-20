@@ -94,6 +94,28 @@ export default function SingulAIDashboard() {
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
 
+  // ── Gather-feedback gesture ────────────────────────────────────────────
+  const gatherStateRef = useRef<{
+    phase: "idle" | "holding" | "ready" | "dragging";
+    startX: number;
+    startY: number;
+    currentX: number;
+    fraction: number;
+    holdTimer: ReturnType<typeof setTimeout> | null;
+    holdInterval: ReturnType<typeof setInterval> | null;
+    holdElapsed: number;
+  }>({
+    phase: "idle",
+    startX: 0, startY: 0, currentX: 0,
+    fraction: 0,
+    holdTimer: null,
+    holdInterval: null,
+    holdElapsed: 0,
+  });
+  const [gatherRing, setGatherRing] = useState<{
+    x: number; y: number; active: boolean; fraction: number;
+  }>({ x: 0, y: 0, active: false, fraction: 0 });
+
   const MAX_STREAM = 10;
   const msgIdRef = useRef(0);
 
@@ -260,6 +282,74 @@ export default function SingulAIDashboard() {
       },
     ]);
   }, [animateOmega]);
+
+  // ── Gather gesture handlers (long-press on particle canvas) ─────────────
+  const handleGatherDown = (e: React.PointerEvent) => {
+    const gs = gatherStateRef.current;
+    gs.startX = e.clientX;
+    gs.startY = e.clientY;
+    gs.currentX = e.clientX;
+    gs.holdElapsed = 0;
+    gs.fraction = 0;
+    gs.phase = "holding";
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+
+    // 350ms delay before starting to gather (distinguishes tap from hold)
+    gs.holdTimer = setTimeout(() => {
+      gs.phase = "ready";
+      setGatherRing({ x: gs.startX, y: gs.startY, active: true, fraction: 0 });
+
+      gs.holdInterval = setInterval(() => {
+        gs.holdElapsed += 80;
+        const f = Math.min(gs.holdElapsed / 3000, 1.0);
+        gs.fraction = f;
+        setGatherRing((r) => ({ ...r, fraction: f }));
+        engineRef.current?.gatherAt(gs.startX, gs.startY, f);
+      }, 80);
+    }, 350);
+  };
+
+  const handleGatherMove = (e: React.PointerEvent) => {
+    const gs = gatherStateRef.current;
+    if (gs.phase === "idle") return;
+    gs.currentX = e.clientX;
+  };
+
+  const _commitGather = (gs: typeof gatherStateRef.current) => {
+    if (gs.holdTimer) { clearTimeout(gs.holdTimer); gs.holdTimer = null; }
+    if (gs.holdInterval) { clearInterval(gs.holdInterval); gs.holdInterval = null; }
+    setGatherRing((r) => ({ ...r, active: false, fraction: 0 }));
+
+    if (gs.fraction > 0.01) {
+      const dx = gs.currentX - gs.startX;
+      const dir: "left" | "right" | "cancel" =
+        dx > 55 ? "right" : dx < -55 ? "left" : "cancel";
+      engineRef.current?.releaseGathered(dir);
+    } else if (engineRef.current && engineRef.current.gatheredIdxs.length > 0) {
+      engineRef.current.releaseGathered("cancel");
+    }
+    gs.phase = "idle";
+    gs.fraction = 0;
+    gs.holdElapsed = 0;
+  };
+
+  const handleGatherUp = (e: React.PointerEvent) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    _commitGather(gatherStateRef.current);
+  };
+
+  // Bubble swipe → feeds back to the particle engine with a mini gather burst
+  const handleBubbleFeedback = (msgId: number, dir: "positive" | "negative") => {
+    void msgId;
+    const eng = engineRef.current;
+    if (!eng) return;
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight * 0.38;
+    eng.gatherAt(cx, cy, 0.28);
+    setTimeout(() => {
+      eng.releaseGathered(dir === "positive" ? "right" : "left");
+    }, 380);
+  };
 
   // Profile switch
   const switchProfile = (p: Profile) => {
@@ -506,9 +596,37 @@ export default function SingulAIDashboard() {
             </aside>
           )}
 
+          {/* Gather zone — transparent overlay that captures long-press + drag feedback gesture */}
+          <div
+            id="gather-zone"
+            onPointerDown={handleGatherDown}
+            onPointerMove={handleGatherMove}
+            onPointerUp={handleGatherUp}
+            onPointerCancel={() => _commitGather(gatherStateRef.current)}
+            aria-hidden="true"
+          />
+
+          {/* Gather ring — visual feedback during hold */}
+          {gatherRing.active && (
+            <div
+              className="gather-ring"
+              style={{
+                left: gatherRing.x,
+                top: gatherRing.y,
+                width: `${44 + gatherRing.fraction * 64}px`,
+                height: `${44 + gatherRing.fraction * 64}px`,
+              }}
+            />
+          )}
+
           {/* CHAT */}
           <div id="chat-area">
-            <ChatStream messages={messages} profile={profile} engineRef={engineRef} />
+            <ChatStream
+              messages={messages}
+              profile={profile}
+              engineRef={engineRef}
+              onBubbleFeedback={handleBubbleFeedback}
+            />
             <div id="chat-bar">
               <button className="cb" title="Microfone" aria-label="Microfone">
                 <Icon><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></Icon>
