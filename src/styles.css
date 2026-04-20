@@ -21,8 +21,8 @@
   --brand-white-rgb: 255, 255, 255;
 
   --pedro-rgb: 38, 176, 226;
-  --laura-rgb: 217, 70, 239;
-  --leticia-rgb: 245, 158, 11;
+  --laura-rgb: 226, 38, 156;
+  --leticia-rgb: 226, 192, 38;
   --accent-rgb: var(--pedro-rgb);
 
   --bg: var(--brand-obsidian);
@@ -588,16 +588,16 @@
   box-shadow: 0 0 32px rgba(38, 176, 226, 0.24), 0 6px 24px rgba(0, 0, 0, 0.3);
 }
 .carousel-active[data-p="laura"] {
-  background: rgba(217, 70, 239, 0.12);
-  border-color: rgba(217, 70, 239, 0.38);
-  color: rgb(217, 70, 239);
-  box-shadow: 0 0 32px rgba(217, 70, 239, 0.24), 0 6px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(226, 38, 156, 0.12);
+  border-color: rgba(226, 38, 156, 0.38);
+  color: rgb(226, 38, 156);
+  box-shadow: 0 0 32px rgba(226, 38, 156, 0.24), 0 6px 24px rgba(0, 0, 0, 0.3);
 }
 .carousel-active[data-p="leticia"] {
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.38);
-  color: rgb(245, 158, 11);
-  box-shadow: 0 0 32px rgba(245, 158, 11, 0.24), 0 6px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(226, 192, 38, 0.12);
+  border-color: rgba(226, 192, 38, 0.38);
+  color: rgb(226, 192, 38);
+  box-shadow: 0 0 32px rgba(226, 192, 38, 0.24), 0 6px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* Side items — dimmed but with mode tint */
@@ -607,8 +607,8 @@
   border-color: rgba(255, 255, 255, 0.10);
 }
 .carousel-side[data-p="pedro"] { color: rgba(38, 176, 226, 0.5); }
-.carousel-side[data-p="laura"] { color: rgba(217, 70, 239, 0.5); }
-.carousel-side[data-p="leticia"] { color: rgba(245, 158, 11, 0.5); }
+.carousel-side[data-p="laura"] { color: rgba(226, 38, 156, 0.5); }
+.carousel-side[data-p="leticia"] { color: rgba(226, 192, 38, 0.5); }
 
 /* Carousel label */
 .carousel-label {

@@ -73,9 +73,9 @@ export class AvatarEngine {
     this.profile = "pedro";
     this.morphing = false;
     this.palettes = {
-      pedro: new THREE.Color(BRAND_COLORS.electricBlue),
-      laura: new THREE.Color(BRAND_COLORS.electricBlue),
-      leticia: new THREE.Color(BRAND_COLORS.electricBlue),
+      pedro: new THREE.Color("#26B0E2"),
+      laura: new THREE.Color("#E2269C"),
+      leticia: new THREE.Color("#E2C026"),
     };
 
     if (!this._checkWGL()) {

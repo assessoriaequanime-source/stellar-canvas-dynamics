@@ -48,3 +48,35 @@ export const BRAND_LOGO_USAGE = {
 } as const;
 
 export type BrandLogoPreset = typeof BRAND_LOGO_USAGE[keyof typeof BRAND_LOGO_USAGE];
+
+export const MODEL_VISUALS = {
+  safe: {
+    id: "safe",
+    model: "Safe Quantum",
+    avatarName: "Pedro",
+    accent: "#26B0E2",
+    rgb: [38, 176, 226] as const,
+    glow: "rgba(38, 176, 226, 0.42)",
+    soft: "rgba(38, 176, 226, 0.16)",
+  },
+  diffusion: {
+    id: "diffusion",
+    model: "Difusão Spin",
+    avatarName: "Laura",
+    accent: "#E2269C",
+    rgb: [226, 38, 156] as const,
+    glow: "rgba(226, 38, 156, 0.42)",
+    soft: "rgba(226, 38, 156, 0.16)",
+  },
+  focus: {
+    id: "focus",
+    model: "Foco Atômico",
+    avatarName: "Letícia",
+    accent: "#E2C026",
+    rgb: [226, 192, 38] as const,
+    glow: "rgba(226, 192, 38, 0.42)",
+    soft: "rgba(226, 192, 38, 0.16)",
+  },
+} as const;
+
+export type ModelVisualKey = keyof typeof MODEL_VISUALS;
