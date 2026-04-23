@@ -1,0 +1,35 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IOracleGateway",
+  "sourceName": "contracts/InstitutionalEscrow.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "subjectId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint8",
+          "name": "eventType",
+          "type": "uint8"
+        }
+      ],
+      "name": "hasValidEvent",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

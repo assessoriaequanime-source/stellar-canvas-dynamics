@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { Prisma } from "@prisma/client";
+import { AuditAction, Prisma } from "@prisma/client";
 import prisma from "../../lib/prisma";
 import { requireAuth } from "../middlewares/auth";
 import { AppError } from "../middlewares/errorHandler";
@@ -8,6 +8,7 @@ import {
   createTransactionSchema,
   updateTransactionStatusSchema,
 } from "../validators/transaction";
+import { createAuditLog } from "../../lib/audit";
 
 const router = Router();
 
@@ -76,6 +77,17 @@ router.post("/", requireAuth, async (req: Request, res: Response, next: NextFunc
       },
     });
 
+    await createAuditLog({
+      userId,
+      action: AuditAction.TRANSACTION_CREATE,
+      resource: "transaction",
+      resourceId: transaction.id,
+      details: {
+        type: transaction.type,
+        amount: transaction.amount.toString(),
+      },
+    });
+
     res.status(201).json(transaction);
   } catch (error) {
     next(error);
@@ -104,6 +116,16 @@ router.patch("/:id/status", requireAuth, async (req: Request, res: Response, nex
       data: {
         status: payload.status,
         txHash: payload.txHash,
+      },
+    });
+
+    await createAuditLog({
+      userId,
+      action: AuditAction.TRANSACTION_STATUS_UPDATE,
+      resource: "transaction",
+      resourceId: updatedTransaction.id,
+      details: {
+        status: updatedTransaction.status,
       },
     });
 

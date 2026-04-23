@@ -7,6 +7,7 @@ import capsuleRoutes from "./capsule";
 import legacyRoutes from "./legacy";
 import consentRoutes from "./consent";
 import transactionRoutes from "./transaction";
+import auditRoutes from "./audit";
 
 /**
  * Setup all API routes
@@ -38,6 +39,9 @@ function setupRoutes(app: Express): void {
 
   // ─── Transaction Routes ───────────────────────────────────────────────
   apiV1Router.use("/transaction", transactionRoutes);
+
+  // ─── Audit Routes ─────────────────────────────────────────────────────
+  apiV1Router.use("/audit", auditRoutes);
 
   // Attach all routes under /api/v1 prefix
   app.use(apiVersion, apiV1Router);

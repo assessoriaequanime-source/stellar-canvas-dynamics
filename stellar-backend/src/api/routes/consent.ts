@@ -1,10 +1,11 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { ConsentType } from "@prisma/client";
+import { AuditAction, ConsentType } from "@prisma/client";
 import prisma from "../../lib/prisma";
 import { requireAuth } from "../middlewares/auth";
 import { AppError } from "../middlewares/errorHandler";
 import { parseOrThrow } from "../../lib/validation";
 import { consentTypeParamSchema, upsertConsentSchema } from "../validators/consent";
+import { createAuditLog } from "../../lib/audit";
 
 const router = Router();
 
@@ -90,6 +91,17 @@ router.put("/:type", requireAuth, async (req: Request, res: Response, next: Next
             expiresAt: payload.expiresAt ? new Date(payload.expiresAt) : null,
           },
         });
+
+    await createAuditLog({
+      userId,
+      action: AuditAction.CONSENT_UPSERT,
+      resource: "consent",
+      resourceId: consent.id,
+      details: {
+        type: consent.type,
+        status: consent.status,
+      },
+    });
 
     res.status(200).json(consent);
   } catch (error) {

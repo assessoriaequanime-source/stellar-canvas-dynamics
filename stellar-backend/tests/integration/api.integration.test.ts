@@ -15,6 +15,7 @@ describe("API integration: auth + user + avatar + consent", () => {
   const secondaryWallet = Wallet.createRandom();
 
   beforeAll(async () => {
+    await prisma.auditLog.deleteMany();
     await prisma.session.deleteMany();
     await prisma.transaction.deleteMany();
     await prisma.timeCapsule.deleteMany();
@@ -25,6 +26,7 @@ describe("API integration: auth + user + avatar + consent", () => {
   });
 
   afterAll(async () => {
+    await prisma.auditLog.deleteMany();
     await prisma.session.deleteMany();
     await prisma.transaction.deleteMany();
     await prisma.timeCapsule.deleteMany();
@@ -323,5 +325,37 @@ describe("API integration: auth + user + avatar + consent", () => {
       .set("Authorization", `Bearer ${secondaryAccessToken}`);
 
     expect(foreignLegacyRead.status).toBe(404);
+  });
+
+  it("should create audit logs for critical actions", async () => {
+    const auditResponse = await request(app)
+      .get("/api/v1/audit")
+      .set("Authorization", `Bearer ${accessToken}`);
+
+    expect(auditResponse.status).toBe(200);
+    expect(Array.isArray(auditResponse.body)).toBe(true);
+    expect(auditResponse.body.length).toBeGreaterThan(0);
+
+    const actions = auditResponse.body.map((item: { action: string }) => item.action);
+
+    expect(actions).toContain("CONSENT_UPSERT");
+    expect(actions).toContain("TRANSACTION_CREATE");
+    expect(actions).toContain("TRANSACTION_STATUS_UPDATE");
+  });
+
+  it("should keep audit logs isolated by user", async () => {
+    const secondaryAuditResponse = await request(app)
+      .get("/api/v1/audit")
+      .set("Authorization", `Bearer ${secondaryAccessToken}`);
+
+    expect(secondaryAuditResponse.status).toBe(200);
+    expect(Array.isArray(secondaryAuditResponse.body)).toBe(true);
+
+    const containsPrimaryTransactionLog = secondaryAuditResponse.body.some(
+      (item: { resource: string; resourceId?: string }) =>
+        item.resource === "transaction" && item.resourceId === transactionId,
+    );
+
+    expect(containsPrimaryTransactionLog).toBe(false);
   });
 });

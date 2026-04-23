@@ -793,6 +793,137 @@
   max-height: 100%;
 }
 
+/* ════ Architecture Constellation ════ */
+.arch-constellation {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  width: min(1040px, calc(100vw - 140px));
+  max-height: min(45vh, 420px);
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(var(--accent-rgb), 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(10, 13, 18, 0.9), rgba(6, 7, 11, 0.9));
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: auto;
+  scrollbar-width: none;
+  animation: archReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.arch-constellation::-webkit-scrollbar {
+  display: none;
+}
+
+.arch-head {
+  margin-bottom: 12px;
+}
+
+.arch-kicker {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(var(--accent-rgb), 0.72);
+}
+
+.arch-title {
+  margin-top: 5px;
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.arch-sub {
+  margin-top: 4px;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.62);
+  max-width: 86ch;
+}
+
+.arch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.arch-card {
+  min-height: 130px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 30%),
+    rgba(11, 13, 18, 0.82);
+  transition:
+    transform 220ms var(--ease),
+    border-color 220ms var(--ease),
+    box-shadow 220ms var(--ease),
+    background 220ms var(--ease);
+}
+
+.arch-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--accent-rgb), 0.46);
+  background:
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.16), transparent 36%),
+    rgba(12, 14, 20, 0.92);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+}
+
+.arch-card-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(var(--accent-rgb), 0.9);
+}
+
+.arch-card-desc {
+  margin-top: 5px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.arch-card-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.arch-card-tags li {
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.24);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+@keyframes archReveal {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
 #av-info { position: absolute; top: 18px; left: 18px; z-index: 5; pointer-events: none; display: flex; flex-direction: column; gap: 4px; }
 #av-name {
   font-family: var(--font-mono); font-size: 10px; font-weight: 700;
@@ -1659,6 +1790,32 @@
 @media (max-width: 767px) {
   :root { --page-pad-inline: 16px; }
 
+  .arch-constellation {
+    width: calc(100vw - 24px);
+    top: 8px;
+    max-height: min(43vh, 340px);
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .arch-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .arch-card {
+    min-height: 116px;
+    padding: 9px;
+  }
+
+  .arch-title {
+    font-size: 15px;
+  }
+
+  .arch-sub {
+    font-size: 10px;
+  }
+
   #av-online, #omega-widget { display: none; }
 
   /* Ocultar créditos laterais em mobile */
@@ -1763,6 +1920,8 @@
 }
 @media (min-width: 768px) and (max-width: 1024px) {
   :root { --page-pad-inline: 32px; }
+  .arch-constellation { width: min(900px, calc(100vw - 120px)); }
+  .arch-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .stream-msg { bottom: 105px; }
   .carousel-item[data-pos="0"]  { transform: translateX(0) scale(1.1) !important; }
   .carousel-item[data-pos="-1"] { transform: translateX(-130px) scale(0.84) !important; }

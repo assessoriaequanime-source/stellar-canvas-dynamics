@@ -59,6 +59,57 @@ type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 
 const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
 
+const PLATFORM_ARCHITECTURE = [
+  {
+    id: "core",
+    title: "core",
+    description: "Nucleo da plataforma",
+    modules: ["blockchain", "privacy", "ai-integration", "contracts"],
+  },
+  {
+    id: "tokenomics",
+    title: "tokenomics",
+    description: "Economia SGL",
+    modules: ["contracts", "services", "economics", "compliance"],
+  },
+  {
+    id: "hardware",
+    title: "hardware",
+    description: "Caneta SingulAI",
+    modules: ["firmware", "hardware", "mobile-integration", "security"],
+  },
+  {
+    id: "b2b-white-label",
+    title: "b2b-white-label",
+    description: "Plataforma B2B white-label",
+    modules: ["banking", "insurance", "digital-notary", "celebrity"],
+  },
+  {
+    id: "frontend",
+    title: "frontend",
+    description: "Interfaces de usuario",
+    modules: ["web", "mobile", "components"],
+  },
+  {
+    id: "backend",
+    title: "backend",
+    description: "Backend da plataforma",
+    modules: ["api", "services", "database", "infrastructure"],
+  },
+  {
+    id: "docs",
+    title: "docs",
+    description: "Documentacao e compliance",
+    modules: ["architecture", "business", "legal", "security", "integration"],
+  },
+  {
+    id: "scripts",
+    title: "scripts",
+    description: "Automacao operacional",
+    modules: ["deployment", "testing", "monitoring", "maintenance"],
+  },
+] as const;
+
 const Icon = ({ d, children }: { d?: string; children?: React.ReactNode }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
     {children ?? <path d={d} />}
@@ -495,6 +546,31 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
+          <section className="arch-constellation" aria-label="Arquitetura SingulAI Platform">
+            <header className="arch-head">
+              <p className="arch-kicker">SINGULAI PLATFORM BLUEPRINT</p>
+              <h2 className="arch-title">Arquitetura projetada em camadas integradas</h2>
+              <p className="arch-sub">
+                Mapa estrutural de dominios tecnicos preservando core, tokenomics, hardware,
+                B2B white-label, frontend e backend.
+              </p>
+            </header>
+
+            <div className="arch-grid" role="list">
+              {PLATFORM_ARCHITECTURE.map((layer) => (
+                <article key={layer.id} className="arch-card" role="listitem">
+                  <p className="arch-card-title">{layer.title}</p>
+                  <p className="arch-card-desc">{layer.description}</p>
+                  <ul className="arch-card-tags" aria-label={`Modulos de ${layer.title}`}>
+                    {layer.modules.map((moduleName) => (
+                      <li key={moduleName}>{moduleName}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </section>
+
           {/* Barra de créditos — rotada -90° na borda esquerda */}
           <nav id="meta-rail" aria-label="Créditos">
             <a href="https://singulai.site" target="_blank" rel="noreferrer" className="meta-link">

@@ -32,6 +32,12 @@ enum TransactionStatus {
   FAILED
 }
 
+enum AuditAction {
+  CONSENT_UPSERT
+  TRANSACTION_CREATE
+  TRANSACTION_STATUS_UPDATE
+}
+
 model User {
   id            String           @id @default(uuid())
   walletAddress String           @unique
@@ -45,6 +51,7 @@ model User {
   legacies      DigitalLegacy[]
   consents      ConsentRegistry[]
   transactions  Transaction[]
+  auditLogs     AuditLog[]
 }
 
 model Session {
@@ -130,4 +137,20 @@ model DigitalLegacy {
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String
+  action     AuditAction
+  resource   String
+  resourceId String?
+  details    Json?
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
 }
