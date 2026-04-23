@@ -1,6 +1,8 @@
 # Roteiro de Deploy – Stellar Backend
 
 > **Projeto:** stellar-backend  
+> **Marca:** SingulAI  
+> **Domínio:** `singulai.live`  
 > **Data:** 2026-04-23  
 > **Responsável técnico:** Chefe Run  
 > **Validação CEO:** Rodrigo Alves  
@@ -11,7 +13,7 @@
 ## PRÉ-REQUISITOS (confirme antes de executar)
 
 - [ ] Acesso SSH à VPS: `ssh root@72.60.147.56`
-- [ ] DNS `stellar-backend.rodrigo.run` apontando para `72.60.147.56` (confirmar antes do SSL)
+- [ ] DNS `singulai.live` (e `www.singulai.live`) apontando para `72.60.147.56` (confirmar antes do SSL)
 - [ ] Docker e Docker Compose instalados na VPS
 - [ ] Node.js v20+ e npm v10+ instalados na VPS
 - [ ] PM2 instalado globalmente: `npm install -g pm2`
@@ -141,11 +143,11 @@ pm2 save
 ```bash
 # Copiar configuração pronta
 cp /var/www/stellar-backend/stellar-backend/nginx-stellar-backend.conf \
-   /etc/nginx/sites-available/stellar-backend
+   /etc/nginx/sites-available/singulai-live
 
 # Ativar site
-ln -s /etc/nginx/sites-available/stellar-backend \
-   /etc/nginx/sites-enabled/stellar-backend
+ln -s /etc/nginx/sites-available/singulai-live \
+   /etc/nginx/sites-enabled/singulai-live
 
 # Validar (NUNCA recarregar sem passar no teste)
 nginx -t
@@ -162,8 +164,8 @@ systemctl reload nginx
 # Teste local (health check)
 curl http://127.0.0.1:9200/api/v1/health
 
-# Teste via subdomínio (se DNS já estiver ativo)
-curl http://stellar-backend.rodrigo.run/api/v1/health
+# Teste via domínio próprio (se DNS já estiver ativo)
+curl http://singulai.live/api/v1/health
 
 # Verificar logs do PM2
 pm2 logs backend-stellar-backend --lines 50
@@ -176,14 +178,14 @@ systemctl status nginx
 
 ## FASE I — SSL (somente após DNS ativo)
 
-> Confirmar antes: `ping stellar-backend.rodrigo.run` deve retornar `72.60.147.56`
+> Confirmar antes: `ping singulai.live` deve retornar `72.60.147.56`
 
 ```bash
 # Instalar Certbot (se não existir)
 apt install -y certbot python3-certbot-nginx
 
 # Gerar certificado APENAS para este domínio
-certbot certonly --nginx -d stellar-backend.rodrigo.run
+certbot certonly --nginx -d singulai.live -d www.singulai.live
 
 # Testar renovação
 certbot renew --dry-run
@@ -196,12 +198,14 @@ nginx -t && systemctl reload nginx
 
 ## ALERTA DE DNS
 
-> Para que o deploy funcione publicamente, confirme e crie o subdomínio no DNS de rodrigo.run:
+> Para que o deploy funcione publicamente, confirme os registros DNS de `singulai.live`:
 >
-> **Tipo:** A  
-> **Nome:** `stellar-backend`  
-> **Valor:** `72.60.147.56`  
-> **Resultado:** `stellar-backend.rodrigo.run → 72.60.147.56`
+> | Tipo | Nome | Valor |
+> |------|------|-------|
+> | A | `@` | `72.60.147.56` |
+> | A | `www` | `72.60.147.56` |
+>
+> **Resultado esperado:** `singulai.live → 72.60.147.56`
 
 ---
 
@@ -216,7 +220,7 @@ nginx -t && systemctl reload nginx
 - [ ] PM2 iniciado como `backend-stellar-backend`
 - [ ] Nginx configurado e validado (`nginx -t`)
 - [ ] Health check respondendo: `GET /api/v1/health`
-- [ ] DNS apontado: `stellar-backend.rodrigo.run → 72.60.147.56`
+- [ ] DNS apontado: `singulai.live → 72.60.147.56` e `www.singulai.live → 72.60.147.56`
 - [ ] SSL configurado (somente após DNS ativo)
 - [ ] Logs verificados sem erros críticos
 - [ ] Nenhum outro projeto afetado
