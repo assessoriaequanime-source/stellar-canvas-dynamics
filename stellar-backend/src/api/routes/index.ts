@@ -8,6 +8,7 @@ import legacyRoutes from "./legacy";
 import consentRoutes from "./consent";
 import transactionRoutes from "./transaction";
 import auditRoutes from "./audit";
+import aiModelsRoutes from "./ai-models";
 
 /**
  * Setup all API routes
@@ -42,6 +43,9 @@ function setupRoutes(app: Express): void {
 
   // ─── Audit Routes ─────────────────────────────────────────────────────
   apiV1Router.use("/audit", auditRoutes);
+
+  // ─── AI Models Routes ─────────────────────────────────────────────────
+  apiV1Router.use("/ai-models", aiModelsRoutes);
 
   // Attach all routes under /api/v1 prefix
   app.use(apiVersion, apiV1Router);

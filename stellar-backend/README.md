@@ -138,6 +138,31 @@ tests/                     # Test files
 logs/                      # Runtime logs
 ```
 
+## 🧩 Avatar Interaction Expansion (Scaffold)
+
+This repository now includes a non-invasive scaffold for future avatar interaction upgrades:
+
+- sentimental voice synthesis via ElevenLabs
+- custom LLM/TTS provider integration (user-owned API)
+
+Location:
+
+```
+src/integrations/avatar-interaction/
+├── contracts/
+├── providers/
+│   ├── llm/
+│   └── voice/
+├── registry/
+└── application/
+```
+
+Activation status:
+
+- default: disabled
+- no runtime wiring yet
+- pending expansion rollout with feature flags
+
 ## 🔌 API Endpoints (v1)
 
 | Method | Endpoint | Description |

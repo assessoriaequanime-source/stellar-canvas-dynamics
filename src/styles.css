@@ -2818,6 +2818,23 @@
 
 .slogin-input { font-size: 14px; }
 
+.slogin-section {
+  display: grid;
+  gap: 6px;
+}
+
+.slogin-select {
+  font-size: 13px;
+}
+
+.slogin-note {
+  margin: 0;
+  font-size: 10px;
+  color: var(--text-xlo);
+  letter-spacing: 0.03em;
+  line-height: 1.45;
+}
+
 .slogin-error {
   font-size: 11px; color: rgba(239, 68, 68, 0.82);
   letter-spacing: 0.03em; text-align: center;
@@ -2835,4 +2852,13 @@
   font-size: 9px; color: var(--text-xlo);
   letter-spacing: 0.14em; text-transform: uppercase;
   margin-top: 4px;
+}
+
+.footer-meta {
+  margin-left: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-xlo);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

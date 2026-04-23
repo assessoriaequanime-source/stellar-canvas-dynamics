@@ -24,6 +24,13 @@ contract AvatarPro is AccessControl, Pausable, ReentrancyGuard {
     bytes32 public constant SESSION_MANAGER_ROLE = keccak256("SESSION_MANAGER_ROLE");
     bytes32 public constant PRICE_SETTER_ROLE    = keccak256("PRICE_SETTER_ROLE");
 
+    enum UsabilityPlan {
+        None,
+        Essential,
+        Professional,
+        CuratorDigital
+    }
+
     struct ServiceConfig {
         uint256 pricePerSession;
         bool    isActive;
@@ -39,17 +46,33 @@ contract AvatarPro is AccessControl, Pausable, ReentrancyGuard {
         bytes32 sessionDataHash;  // hash do log off-chain para auditoria
     }
 
+    struct UserPlanAcceptance {
+        UsabilityPlan plan;
+        uint64 acceptedAt;
+        bytes32 termsHash;
+        bool active;
+    }
+
     IERC20  public immutable sglToken;
     address public treasury;
     address public consentRegistry; // ConsentRegistry deste mesmo módulo
     uint256 public sessionCount;
+    bool    public enforcePlanAcceptance;
+
+    // Ancoragem do Contrato 0 off-chain versionado
+    bytes32 public contractZeroHash;
+    bytes32 public contractZeroVersionHash;
 
     // avatarId => config de servico
     mapping(uint256 => ServiceConfig) public serviceConfigs;
+    // avatarId => plano minimo exigido para uso
+    mapping(uint256 => UsabilityPlan) public requiredPlanByAvatar;
     // sessionId => dados da sessao
     mapping(uint256 => Session) public sessions;
     // avatarId => usuario => dia (timestamp/86400) => contador
     mapping(uint256 => mapping(address => mapping(uint256 => uint256))) private _dailyCount;
+    // usuario => aceite de plano
+    mapping(address => UserPlanAcceptance) public userPlanAcceptance;
 
     event ServiceConfigured(
         uint256 indexed avatarId,
@@ -75,6 +98,31 @@ contract AvatarPro is AccessControl, Pausable, ReentrancyGuard {
     event ConsentRegistryUpdated(
         address indexed oldRegistry,
         address indexed newRegistry
+    );
+    event UserPlanAccepted(
+        address indexed user,
+        UsabilityPlan indexed plan,
+        bytes32 indexed termsHash,
+        uint64 acceptedAt
+    );
+    event UserPlanRevoked(
+        address indexed user,
+        UsabilityPlan indexed plan,
+        uint64 revokedAt
+    );
+    event AvatarRequiredPlanUpdated(
+        uint256 indexed avatarId,
+        UsabilityPlan indexed requiredPlan,
+        address indexed operator
+    );
+    event PlanAcceptanceEnforcementUpdated(
+        bool indexed enabled,
+        address indexed operator
+    );
+    event ContractZeroAnchored(
+        bytes32 indexed contractZeroHash,
+        bytes32 indexed contractZeroVersionHash,
+        address indexed operator
     );
 
     constructor(
@@ -141,6 +189,14 @@ contract AvatarPro is AccessControl, Pausable, ReentrancyGuard {
             "PRO: daily session limit reached"
         );
 
+        if (enforcePlanAcceptance) {
+            UserPlanAcceptance storage acceptance = userPlanAcceptance[msg.sender];
+            UsabilityPlan requiredPlan = requiredPlanByAvatar[avatarId];
+            require(acceptance.active, "PRO: plan acceptance required");
+            require(requiredPlan != UsabilityPlan.None, "PRO: required plan not configured");
+            require(uint8(acceptance.plan) >= uint8(requiredPlan), "PRO: insufficient usability plan");
+        }
+
         sessionId = sessionCount++;
 
         sessions[sessionId] = Session({
@@ -180,6 +236,19 @@ contract AvatarPro is AccessControl, Pausable, ReentrancyGuard {
 
     // ─── Views ────────────────────────────────────────────────────────────
 
+    function hasRequiredPlan(
+        uint256 avatarId,
+        address user
+    ) external view returns (bool) {
+        UsabilityPlan requiredPlan = requiredPlanByAvatar[avatarId];
+        if (requiredPlan == UsabilityPlan.None) return false;
+
+        UserPlanAcceptance storage acceptance = userPlanAcceptance[user];
+        if (!acceptance.active) return false;
+
+        return uint8(acceptance.plan) >= uint8(requiredPlan);
+    }
+
     function getDailyCount(
         uint256 avatarId,
         address user
@@ -201,6 +270,68 @@ contract AvatarPro is AccessControl, Pausable, ReentrancyGuard {
         address old = consentRegistry;
         consentRegistry = newRegistry;
         emit ConsentRegistryUpdated(old, newRegistry);
+    }
+
+    /// @notice Usuário aceita seu plano e responsabilidade de finalidade de uso.
+    /// @dev termsHash deve apontar para os Termos de Uso versionados (off-chain).
+    function acceptUsabilityPlan(
+        UsabilityPlan plan,
+        bytes32 termsHash
+    ) external whenNotPaused {
+        require(plan != UsabilityPlan.None, "PRO: invalid plan");
+        require(termsHash != bytes32(0), "PRO: invalid terms hash");
+
+        userPlanAcceptance[msg.sender] = UserPlanAcceptance({
+            plan: plan,
+            acceptedAt: uint64(block.timestamp),
+            termsHash: termsHash,
+            active: true
+        });
+
+        emit UserPlanAccepted(msg.sender, plan, termsHash, uint64(block.timestamp));
+    }
+
+    /// @notice Usuario revoga seu aceite atual; sessoes passam a exigir novo aceite.
+    function revokeOwnPlanAcceptance() external {
+        UserPlanAcceptance storage acceptance = userPlanAcceptance[msg.sender];
+        require(acceptance.active, "PRO: no active acceptance");
+
+        acceptance.active = false;
+        emit UserPlanRevoked(msg.sender, acceptance.plan, uint64(block.timestamp));
+    }
+
+    /// @notice Define o plano minimo exigido por avatar para iniciar sessao.
+    function setAvatarRequiredPlan(
+        uint256 avatarId,
+        UsabilityPlan requiredPlan
+    ) external onlyRole(PRICE_SETTER_ROLE) {
+        require(requiredPlan != UsabilityPlan.None, "PRO: invalid required plan");
+        requiredPlanByAvatar[avatarId] = requiredPlan;
+        emit AvatarRequiredPlanUpdated(avatarId, requiredPlan, msg.sender);
+    }
+
+    /// @notice Ativa/desativa enforcement de aceite de plano em requestSession.
+    /// @dev Deploy seguro: inicia false para nao quebrar operacao legada.
+    function setPlanAcceptanceEnforcement(
+        bool enabled
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        enforcePlanAcceptance = enabled;
+        emit PlanAcceptanceEnforcementUpdated(enabled, msg.sender);
+    }
+
+    /// @notice Ancora o Contrato 0 versionado em hash para prova de integridade.
+    /// @dev A versao textual permanece off-chain; hash permite verificacao deterministica.
+    function anchorContractZero(
+        bytes32 newContractZeroHash,
+        bytes32 newContractZeroVersionHash
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(newContractZeroHash != bytes32(0), "PRO: invalid contract zero hash");
+        require(newContractZeroVersionHash != bytes32(0), "PRO: invalid version hash");
+
+        contractZeroHash = newContractZeroHash;
+        contractZeroVersionHash = newContractZeroVersionHash;
+
+        emit ContractZeroAnchored(newContractZeroHash, newContractZeroVersionHash, msg.sender);
     }
 
     function pause()   external onlyRole(DEFAULT_ADMIN_ROLE) { _pause(); }

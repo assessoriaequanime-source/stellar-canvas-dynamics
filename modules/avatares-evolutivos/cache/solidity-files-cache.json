@@ -913,8 +913,8 @@
       ]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/contracts/AvatarPro.sol": {
-      "lastModificationDate": 1776843341882,
-      "contentHash": "5440af5736fecf6ac047d9a22ae42b05",
+      "lastModificationDate": 1776919537189,
+      "contentHash": "13292d9aa591c1b60b442b1232e3b4d3",
       "sourceName": "contracts/AvatarPro.sol",
       "solcConfig": {
         "version": "0.8.24",
@@ -1105,6 +1105,44 @@
       ],
       "artifacts": [
         "AvatarWalletLink"
+      ]
+    },
+    "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/contracts/AvatarContractZero.sol": {
+      "lastModificationDate": 1776919556292,
+      "contentHash": "4b0669c921addbfff5507067392cb4e5",
+      "sourceName": "contracts/AvatarContractZero.sol",
+      "solcConfig": {
+        "version": "0.8.24",
+        "settings": {
+          "evmVersion": "cancun",
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/AccessControl.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.24"
+      ],
+      "artifacts": [
+        "AvatarContractZero"
       ]
     }
   }

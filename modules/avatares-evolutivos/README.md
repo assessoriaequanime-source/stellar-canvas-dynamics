@@ -7,9 +7,10 @@ Não interferem no frontend React/Vite do repositório principal.
 
 | Contrato | Responsabilidade |
 |---|---|
+| `AvatarContractZero.sol` | Base global de seguranca/etica: ancora hash de politica ativa e categorias proibidas. |
 | `AvatarBase.sol` | ERC721 NFT com CID IPFS de snapshot. Minting, atualização e desativação auditáveis. |
 | `AvatarWalletLink.sol` | Vincula carteiras a avatares com níveis de permissão e expiração. |
-| `AvatarPro.sol` | Sessões pagas em SGL com limite diário e finalização auditável. |
+| `AvatarPro.sol` | Sessões pagas em SGL com limite diário, finalização auditável e planos de usabilidade com aceite de termos. |
 | `ConsentRegistry.sol` | Consentimentos LGPD/GDPR com bitmask, trilha de revogação e hash de documento. |
 
 ## Dependências de outros módulos
@@ -52,5 +53,5 @@ npm run deploy:sepolia
 ## Vulnerabilidades conhecidas (audit backlog)
 
 - `AvatarPro.requestSession` não verifica se o avatar está ativo — integrar `AvatarBase` como dependência.
-- `ConsentRegistry` não bloqueia sessões em `AvatarPro` — integrar chamada `hasConsent` no `requestSession`.
+- `AvatarPro` ainda não valida automaticamente `AvatarContractZero` em `requestSession` — integrar referência direta para enforcement completo.
 - Falta de multisig para `DEFAULT_ADMIN_ROLE` — recomendado antes de mainnet.

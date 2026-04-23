@@ -139,6 +139,8 @@ export default function SingulAIDashboard() {
   const [walletAddress, setWalletAddress] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
+  const [activePlanId, setActivePlanId] = useState("plan-essential");
+  const [modelChoiceEnabled, setModelChoiceEnabled] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const [railActions, setRailActions] = useState<RailAction[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -186,8 +188,12 @@ export default function SingulAIDashboard() {
     try {
       const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
       const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+      const plan = localStorage.getItem("singulai_active_plan_id");
+      const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
       if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
       if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
+      if (plan) setActivePlanId(plan);
+      setModelChoiceEnabled(modelChoice === "true");
     } catch {}
   }, []);
 
@@ -729,6 +735,10 @@ export default function SingulAIDashboard() {
             <div id="chat-footer">
               <span className="footer-avatar-name" style={{ color: accentStr }}>
                 {prof.avatarName}
+              </span>
+              <span className="footer-meta">{activePlanId.replace("plan-", "Plano ")}</span>
+              <span className="footer-meta">
+                {modelChoiceEnabled ? "Modelo livre" : "Modelo bloqueado (aguardando contratação)"}
               </span>
             </div>
           </div>
