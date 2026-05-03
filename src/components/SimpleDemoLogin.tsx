@@ -9,6 +9,9 @@ interface Props {
 
 export default function SimpleDemoLogin({ onSuccess }: Props) {
   const [identifier, setIdentifier] = useState("");
+  const [userPlanTier, setUserPlanTier] = useState<"essential" | "professional" | "curator_digital">("essential");
+  const [activePlanId, setActivePlanId] = useState("plan-essential");
+  const [preferredModelId, setPreferredModelId] = useState("native-ollama");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +33,10 @@ export default function SimpleDemoLogin({ onSuccess }: Props) {
       localStorage.setItem("singulai_wallet", JSON.stringify(data.wallet ?? {}));
       localStorage.setItem("singulai_auth_source", "simple_backend");
       localStorage.setItem("singulai_api_base", ALT_API_BASE);
+      localStorage.setItem("singulai_active_plan_id", activePlanId);
+      localStorage.setItem("singulai_user_plan_tier", userPlanTier);
+      localStorage.setItem("singulai_preferred_model_id", preferredModelId);
+      localStorage.setItem("singulai_model_choice_enabled", "false");
       onSuccess();
     } catch {
       setError("Erro de conexão. Verifique sua rede e tente novamente.");
@@ -59,6 +66,44 @@ export default function SimpleDemoLogin({ onSuccess }: Props) {
             onChange={(e) => setIdentifier(e.target.value)}
             disabled={loading}
           />
+
+          <div className="slogin-section">
+            <label className="f-label">Plano SingulAI</label>
+            <select
+              className="f-input slogin-select"
+              value={activePlanId}
+              onChange={(e) => {
+                const next = e.target.value;
+                setActivePlanId(next);
+                if (next === "plan-professional") setUserPlanTier("professional");
+                else if (next === "plan-curator") setUserPlanTier("curator_digital");
+                else setUserPlanTier("essential");
+              }}
+              disabled={loading}
+            >
+              <option value="plan-essential">Essencial</option>
+              <option value="plan-professional">Profissional</option>
+              <option value="plan-curator">Curador Digital</option>
+            </select>
+          </div>
+
+          <div className="slogin-section">
+            <label className="f-label">Modelo de IA</label>
+            <select
+              className="f-input slogin-select"
+              value={preferredModelId}
+              onChange={(e) => setPreferredModelId(e.target.value)}
+              disabled
+            >
+              <option value="native-ollama">Nativo (Ollama) - Padrão</option>
+              <option value="premium-gpt-4o">Premium (pendente contratação)</option>
+              <option value="premium-claude">Premium (pendente contratação)</option>
+            </select>
+            <p className="slogin-note">
+              Escolha de modelo desabilitada até contratação dos planos premium.
+            </p>
+          </div>
+
           {error && <p className="slogin-error">{error}</p>}
           <button
             className="btn-primary slogin-btn"

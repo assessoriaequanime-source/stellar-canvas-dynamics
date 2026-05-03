@@ -59,6 +59,57 @@ type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 
 const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
 
+const PLATFORM_ARCHITECTURE = [
+  {
+    id: "core",
+    title: "core",
+    description: "Nucleo da plataforma",
+    modules: ["blockchain", "privacy", "ai-integration", "contracts"],
+  },
+  {
+    id: "tokenomics",
+    title: "tokenomics",
+    description: "Economia SGL",
+    modules: ["contracts", "services", "economics", "compliance"],
+  },
+  {
+    id: "hardware",
+    title: "hardware",
+    description: "Caneta SingulAI",
+    modules: ["firmware", "hardware", "mobile-integration", "security"],
+  },
+  {
+    id: "b2b-white-label",
+    title: "b2b-white-label",
+    description: "Plataforma B2B white-label",
+    modules: ["banking", "insurance", "digital-notary", "celebrity"],
+  },
+  {
+    id: "frontend",
+    title: "frontend",
+    description: "Interfaces de usuario",
+    modules: ["web", "mobile", "components"],
+  },
+  {
+    id: "backend",
+    title: "backend",
+    description: "Backend da plataforma",
+    modules: ["api", "services", "database", "infrastructure"],
+  },
+  {
+    id: "docs",
+    title: "docs",
+    description: "Documentacao e compliance",
+    modules: ["architecture", "business", "legal", "security", "integration"],
+  },
+  {
+    id: "scripts",
+    title: "scripts",
+    description: "Automacao operacional",
+    modules: ["deployment", "testing", "monitoring", "maintenance"],
+  },
+] as const;
+
 const Icon = ({ d, children }: { d?: string; children?: React.ReactNode }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
     {children ?? <path d={d} />}
@@ -88,6 +139,8 @@ export default function SingulAIDashboard() {
   const [walletAddress, setWalletAddress] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [delivery, setDelivery] = useState<"immediate" | "scheduled">("immediate");
+  const [activePlanId, setActivePlanId] = useState("plan-essential");
+  const [modelChoiceEnabled, setModelChoiceEnabled] = useState(false);
   const [railOpen, setRailOpen] = useState(false);
   const [railActions, setRailActions] = useState<RailAction[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -135,8 +188,12 @@ export default function SingulAIDashboard() {
     try {
       const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
       const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+      const plan = localStorage.getItem("singulai_active_plan_id");
+      const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
       if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
       if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
+      if (plan) setActivePlanId(plan);
+      setModelChoiceEnabled(modelChoice === "true");
     } catch {}
   }, []);
 
@@ -495,6 +552,31 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
+          <section className="arch-constellation" aria-label="Arquitetura SingulAI Platform">
+            <header className="arch-head">
+              <p className="arch-kicker">SINGULAI PLATFORM BLUEPRINT</p>
+              <h2 className="arch-title">Arquitetura projetada em camadas integradas</h2>
+              <p className="arch-sub">
+                Mapa estrutural de dominios tecnicos preservando core, tokenomics, hardware,
+                B2B white-label, frontend e backend.
+              </p>
+            </header>
+
+            <div className="arch-grid" role="list">
+              {PLATFORM_ARCHITECTURE.map((layer) => (
+                <article key={layer.id} className="arch-card" role="listitem">
+                  <p className="arch-card-title">{layer.title}</p>
+                  <p className="arch-card-desc">{layer.description}</p>
+                  <ul className="arch-card-tags" aria-label={`Modulos de ${layer.title}`}>
+                    {layer.modules.map((moduleName) => (
+                      <li key={moduleName}>{moduleName}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </section>
+
           {/* Barra de créditos — rotada -90° na borda esquerda */}
           <nav id="meta-rail" aria-label="Créditos">
             <a href="https://singulai.site" target="_blank" rel="noreferrer" className="meta-link">
@@ -653,6 +735,10 @@ export default function SingulAIDashboard() {
             <div id="chat-footer">
               <span className="footer-avatar-name" style={{ color: accentStr }}>
                 {prof.avatarName}
+              </span>
+              <span className="footer-meta">{activePlanId.replace("plan-", "Plano ")}</span>
+              <span className="footer-meta">
+                {modelChoiceEnabled ? "Modelo livre" : "Modelo bloqueado (aguardando contratação)"}
               </span>
             </div>
           </div>
