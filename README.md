@@ -1,8 +1,11 @@
 # SingulAI — Executable Digital Legacy on Solana
+# SingulAI AvatarPro Vault
 
-> **Not storage. Verified execution.**
+> **Professional continuity. Verifiable memory. Executable AI identity.**
 
-SingulAI transforms professional expertise into an on-chain executable asset. While AI displaces professional roles, SingulAI allows professionals to preserve their methods, decision frameworks, and legacy choices as verifiable programs on Solana — ones that execute with proof, not just store data.
+SingulAI AvatarPro Vault is a Solana-based infrastructure for professional AI avatars with verifiable memory. Users connect a wallet, create an AvatarPro, register encrypted method snapshots, program time capsules, and generate on-chain execution proofs.
+
+The MVP combines AI, privacy and Solana to make professional knowledge scalable, auditable and user-owned.
 
 ---
 
@@ -13,16 +16,21 @@ SingulAI transforms professional expertise into an on-chain executable asset. Wh
 | **Track** | Open Track |
 | **Network** | Solana Devnet |
 | **Language** | TypeScript (frontend + orchestration logic) |
-| **Core Concept** | AvatarPro: professional expertise as an executable on-chain identity |
+| **Product Name** | SingulAI AvatarPro Vault |
+| **Core Concept** | AvatarPro: professional expertise as a verifiable, executable on-chain identity |
 | **Key Innovation** | Particle Absorption Score (PAS) — adaptive maturity model for autonomous execution |
+| **Token** | SGL — Execution Credit (Devnet SPL) |
+| **Category** | AI / Infrastructure |
 
 ---
 
 ## The Problem
 
-Professionals displaced by AI lose more than their jobs — they lose the accumulated value of their expertise. AI platforms don't compensate them for the methods and decisions they trained on.
+When professionals are displaced by AI, they lose more than their jobs — they lose the accumulated value of their expertise. Generic AI platforms don't compensate them for the methods and decisions encoded into their training data.
 
-SingulAI inverts this: your methods become an on-chain program with a traceable record of every execution, trigger, and proof of delivery.
+SingulAI AvatarPro Vault inverts this: professionals create a verifiable AvatarPro — an on-chain executable identity that carries their method, their decision logic, and their continuity. It runs, delivers proof, and earns trust over time.
+
+**Not a chatbot. Not storage. An executable.**
 
 ---
 
@@ -31,10 +39,23 @@ SingulAI inverts this: your methods become an on-chain program with a traceable 
 ### 5 Core Modules
 
 1. **AvatarPro Core** — Creates a verifiable on-chain identity for a professional's expertise domain
-2. **TimeCapsule Engine** — Schedules and executes future deliveries with cryptographic proof
-3. **SGL Execution Layer** — Manages execution reserves and permission accounts tied to the avatar
+2. **TimeCapsule Engine** — Schedules and executes future condition-based deliveries with cryptographic proof
+3. **SGL Execution Layer** — SGL as Execution Credit: funds snapshot registration, capsule creation, and trigger execution
 4. **Audit & Trust** — Records every execution event as a proof anchored to a Solana slot
 5. **Particle Absorption Model** — Tracks how a professional's avatar adapts, learns, and earns autonomy over time
+
+### Demo Flow (10 steps — 2 min)
+
+1. Create **AvatarPro**
+2. Connect **Phantom wallet**
+3. Input fictitious professional method/memory
+4. Generate **snapshot**
+5. Encrypt off-chain
+6. Register **hash on Solana Devnet**
+7. Create **TimeCapsule** with fictitious recipient
+8. Simulate **trigger**
+9. Record **delivery**
+10. Show proof link on **Solana Explorer**
 
 ### Solana Program Architecture
 

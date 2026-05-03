@@ -331,5 +331,53 @@ Aprovar este blueprint como base funcional oficial para a trilha paralela de hac
 
 Status de decisão:
 
-- Aprovação técnica Run: PENDENTE
-- Aprovação estratégica CEO Rodrigo Alves: PENDENTE
+- Aprovação técnica Run: **APROVADO**
+- Aprovação estratégica CEO Rodrigo Alves: **APROVADO**
+- Trilha escolhida: Solana Devnet Hackathon MVP
+- Produto de submissão: **SingulAI AvatarPro Vault**
+- Escopo: AvatarPro + Snapshot + TimeCapsule + Trigger + Proof
+- Token: SGL Execution Credit em Devnet
+- Foco narrativo: professional continuity, verifiable memory, executable AI identity
+
+## 13. Ajustes Estratégicos Aprovados (CEO Rodrigo Alves — 2026-05-03)
+
+### 13.1 Recorte de produto
+
+Não apresentar como plataforma inteira SingulAI. Apresentar como:
+
+**SingulAI AvatarPro Vault** — infraestrutura em Solana para criar avatares profissionais verificáveis, registrar snapshots de memória/metodologia, programar cápsulas futuras e gerar prova auditável de execução.
+
+### 13.2 Narrativa ajustada
+
+Substituir "legado digital" por **"professional continuity + executable memory"**.
+Amplia o escopo além de herança/pós-morte. Reforça uso comercial imediato.
+
+### 13.3 Token SGL como Execution Credit
+
+SGL = crédito funcional para registrar snapshots, criar cápsulas e acionar execução.
+Sem staking, burn, liquidez ou promessa de valorização no hackathon.
+
+### 13.4 Fluxo MVP final aprovado
+
+1. Criar AvatarPro.
+2. Conectar carteira Phantom.
+3. Inserir memória/metodologia profissional fictícia.
+4. Gerar snapshot.
+5. Criptografar off-chain.
+6. Registrar hash na Solana Devnet.
+7. Criar TimeCapsule com destinatário fictício.
+8. Simular trigger.
+9. Marcar entrega.
+10. Mostrar link/prova no Solana Explorer.
+
+### 13.5 Categoria de submissão
+
+- Primeira opção: AI
+- Segunda opção: Infrastructure
+- Terceira opção: Consumer
+
+### 13.6 Descrição oficial em inglês (para formulário Colosseum)
+
+**Project Name:** SingulAI AvatarPro Vault
+
+**Brief Description:** SingulAI AvatarPro Vault is a Solana-based infrastructure for professional AI avatars with verifiable memory. Users connect a wallet, create an AvatarPro, register encrypted method snapshots, program time capsules, and generate on-chain execution proofs. The MVP combines AI, privacy and Solana to make professional knowledge scalable, auditable and user-owned.
