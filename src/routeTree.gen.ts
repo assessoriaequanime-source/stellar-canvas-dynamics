@@ -9,10 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VaultRouteImport } from './routes/vault'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuditRouteImport } from './routes/audit'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoRoute = DemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -23,6 +30,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditRoute = AuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,36 +43,51 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit': typeof AuditRoute
   '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
+  '/vault': typeof VaultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/demo'
+  fullPaths: '/' | '/audit' | '/dashboard' | '/demo' | '/vault'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/demo'
-  id: '__root__' | '/' | '/dashboard' | '/demo'
+  to: '/' | '/audit' | '/dashboard' | '/demo' | '/vault'
+  id: '__root__' | '/' | '/audit' | '/dashboard' | '/demo' | '/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditRoute: typeof AuditRoute
   DashboardRoute: typeof DashboardRoute
   DemoRoute: typeof DemoRoute
+  VaultRoute: typeof VaultRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo': {
       id: '/demo'
       path: '/demo'
@@ -75,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audit': {
+      id: '/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,8 +121,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditRoute: AuditRoute,
   DashboardRoute: DashboardRoute,
   DemoRoute: DemoRoute,
+  VaultRoute: VaultRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
