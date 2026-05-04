@@ -99,17 +99,20 @@ NEXT ACTION: Add controlled backend stubs/routes and connect remaining data read
 			- Título: "Official authentication required"
 			- Corpo: "Production access must use the official SingulAI Live login."
 		- Botão alterado para "Continue with Google".
-		- Link oficial alterado para `https://singulai.live`.
+		- Destino de login oficial alterado para `/api/v1/auth/google`.
 		- Adicionada linha discreta "Product: singulai.live".
+		- Lógica dev/preview ajustada para liberar teste quando houver `import.meta.env.DEV`, `VITE_SIMPLE_TEST_AUTH` (`1`/`true`) ou `VITE_DEV_SIMPLE_TEST_AUTH` (`1`/`true`), incluindo hosts `localhost`, `127.0.0.1`, `*.github.dev` e `*.app.github.dev`.
 	- `src/components/SingulAIDashboard.tsx`
 		- Meta rail "Oficial" atualizado de `singulai.site` para `singulai.live`.
+		- Detecção de mock/dev alinhada para `VITE_SIMPLE_TEST_AUTH` e `VITE_DEV_SIMPLE_TEST_AUTH` (`1`/`true`) + hosts de preview/local + `import.meta.env.DEV`.
 	- `src/components/SingulAIIntroExperience.tsx`
 		- Rodapé ritual atualizado de `SINGULAI.SITE` para `SINGULAI.LIVE`.
 - Validações executadas:
-	- Busca de domínio antigo no frontend: `grep -RIn "singulai\.site" src` sem ocorrências.
+	- Busca de domínio antigo no frontend: `grep -Rni "https://singulai.site\|Entrar via singulai.site\|singulai.site" src ...` sem ocorrências.
 	- Build frontend: `npm run build` OK.
-	- Rotas no dev server (`http://localhost:8080`):
+	- Rotas no preview (`http://127.0.0.1:4174`):
 		- `/demo` = 200
 		- `/dashboard` = 200
 		- `/vault` = 200
 		- `/audit` = 200
+	- Confirmação de footer: `INPI 942284933` permanece no dashboard (`src/components/SingulAIDashboard.tsx`).

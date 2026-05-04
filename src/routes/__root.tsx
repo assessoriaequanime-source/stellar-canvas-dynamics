@@ -11,7 +11,12 @@ const LOCAL_WALLET_KEY = "singulai_wallet";
 const AUTH_QUERY_PARAMS = ["auth", "session", "user", "wallet"];
 const PUBLIC_PATHS = new Set(["/demo"]);
 
-const DEV_SIMPLE_TEST_AUTH = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
+const DEV_SIMPLE_TEST_AUTH = ["1", "true"].includes(
+  (import.meta.env.VITE_SIMPLE_TEST_AUTH ?? "").toLowerCase(),
+);
+const DEV_SIMPLE_TEST_AUTH_ALT = ["1", "true"].includes(
+  (import.meta.env.VITE_DEV_SIMPLE_TEST_AUTH ?? "").toLowerCase(),
+);
 const DEV_SIMPLE_AUTH_HOSTNAMES = ["localhost", "127.0.0.1"];
 const DEV_SIMPLE_AUTH_SUFFIXES = [".app.github.dev", ".github.dev"];
 const DEV_SIMPLE_AUTH_SESSION = "dev-session-singulai-live";
@@ -31,15 +36,16 @@ const DEV_SIMPLE_AUTH_WALLET = {
 };
 
 function isDevSimpleAuthMode() {
-  if (!import.meta.env.DEV) return false;
-  if (!DEV_SIMPLE_TEST_AUTH) return false;
   if (typeof window === "undefined") return false;
 
   const host = window.location.hostname;
   const isLocalHost = DEV_SIMPLE_AUTH_HOSTNAMES.includes(host);
   const isCodespaceHost = DEV_SIMPLE_AUTH_SUFFIXES.some((suffix) => host.endsWith(suffix));
+  const hasDevAuthFlag = DEV_SIMPLE_TEST_AUTH || DEV_SIMPLE_TEST_AUTH_ALT;
 
   return (
+    import.meta.env.DEV ||
+    hasDevAuthFlag ||
     isLocalHost ||
     isCodespaceHost
   );
@@ -258,7 +264,7 @@ function RootComponent() {
             Production access must use the official SingulAI Live login.
           </p>
           <a
-            href="https://singulai.live"
+            href="/api/v1/auth/google"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Continue with Google

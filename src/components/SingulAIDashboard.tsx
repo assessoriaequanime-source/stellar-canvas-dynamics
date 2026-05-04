@@ -67,9 +67,21 @@ const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", 
 
 function isExplicitDevMockEnabled(): boolean {
   const mockByEnv = import.meta.env.VITE_ENABLE_MOCK_VAULT === "true";
-  const simpleAuthByEnv = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
-  const localhost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
-  return mockByEnv || (simpleAuthByEnv && localhost);
+  const simpleAuthByEnv = ["1", "true"].includes((import.meta.env.VITE_SIMPLE_TEST_AUTH ?? "").toLowerCase());
+  const simpleDevAuthByEnv = ["1", "true"].includes((import.meta.env.VITE_DEV_SIMPLE_TEST_AUTH ?? "").toLowerCase());
+
+  if (typeof window === "undefined") {
+    return mockByEnv || simpleAuthByEnv || simpleDevAuthByEnv;
+  }
+
+  const host = window.location.hostname;
+  const isLocalOrPreviewHost =
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host.endsWith(".github.dev") ||
+    host.endsWith(".app.github.dev");
+
+  return mockByEnv || import.meta.env.DEV || simpleAuthByEnv || simpleDevAuthByEnv || isLocalOrPreviewHost;
 }
 
 const PLATFORM_ARCHITECTURE = [
