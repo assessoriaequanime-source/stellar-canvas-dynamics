@@ -6,6 +6,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 import { sendAvatarMessage } from "@/lib/altApi";
+import { getCurrentUser, getProfile, getWalletStatus } from "@/lib/avatarpro/avatarProApiClient";
+import { getAbsorptionState, getPasMetrics, submitAbsorptionFeedback } from "@/lib/avatarpro/absorptionApiClient";
+import { listCapsules } from "@/lib/avatarpro/capsuleApiClient";
+import { listLegacyRules } from "@/lib/avatarpro/legacyApiClient";
+import { getAuditHistory } from "@/lib/avatarpro/auditApiClient";
+import { getSglBalance } from "@/lib/avatarpro/sglApiClient";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modeName: string; desc: string; omega: number }> = {
   pedro: {
@@ -58,6 +64,13 @@ const AI_REPLIES: Record<Profile, string[]> = {
 type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 
 const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
+
+function isExplicitDevMockEnabled(): boolean {
+  const mockByEnv = import.meta.env.VITE_ENABLE_MOCK_VAULT === "true";
+  const simpleAuthByEnv = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
+  const localhost = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
+  return mockByEnv || (simpleAuthByEnv && localhost);
+}
 
 const PLATFORM_ARCHITECTURE = [
   {
@@ -146,6 +159,11 @@ export default function SingulAIDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
+  const [backendStatus, setBackendStatus] = useState<"connected" | "unavailable" | "mock-dev">("connected");
+  const [profileName, setProfileName] = useState("Usuário");
+  const [capsuleCount, setCapsuleCount] = useState(0);
+  const [legacyCount, setLegacyCount] = useState(0);
+  const [historyCount, setHistoryCount] = useState(0);
 
   // ── Gather-feedback gesture ────────────────────────────────────────────
   const gatherStateRef = useRef<{
@@ -183,18 +201,79 @@ export default function SingulAIDashboard() {
     };
   }, []);
 
-  // Load user/wallet from localStorage on mount
+  // Load user/wallet from backend (source of truth), using explicit dev fallback only
   useEffect(() => {
-    try {
-      const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
-      const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
-      const plan = localStorage.getItem("singulai_active_plan_id");
-      const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
-      if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
-      if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
-      if (plan) setActivePlanId(plan);
-      setModelChoiceEnabled(modelChoice === "true");
-    } catch {}
+    let active = true;
+
+    async function loadBackendState() {
+      try {
+        const [auth, profileData, walletData, sglData, pasData, absorptionData, capsulesData, legacyData, auditData] = await Promise.all([
+          getCurrentUser(),
+          getProfile(),
+          getWalletStatus(),
+          getSglBalance(),
+          getPasMetrics(),
+          getAbsorptionState(),
+          listCapsules(),
+          listLegacyRules(),
+          getAuditHistory(),
+        ]);
+
+        if (!active) return;
+
+        const authUser = auth.user || {};
+        const userName = (profileData.nickname || profileData.name || authUser.name || "Usuário").toString();
+        const wallet = (walletData.walletAddress || walletData.address || authUser.walletAddress || "").toString();
+
+        setProfileName(userName);
+        setWalletAddress(wallet);
+        setSglBalance(Number(sglData.balance || sglData.sglBalance || 0));
+        setCapsuleCount(Array.isArray(capsulesData) ? capsulesData.length : 0);
+        setLegacyCount(Array.isArray(legacyData) ? legacyData.length : 0);
+        setHistoryCount(Array.isArray(auditData) ? auditData.length : 0);
+
+        const omega = Number((pasData.omega || pasData.pas || pasData.score || omegaLiveRef.current).toString());
+        if (!Number.isNaN(omega) && omega > 0) {
+          omegaTargetRef.current = omega;
+          animateOmega(omega, omegaLiveRef.current, 900);
+        }
+
+        const abs = Number((absorptionData.absorption || absorptionData.level || 42).toString());
+        if (!Number.isNaN(abs)) {
+          setAbsorption(Math.max(0, Math.min(100, abs)));
+        }
+
+        setBackendStatus("connected");
+      } catch {
+        if (!active) return;
+
+        if (isExplicitDevMockEnabled()) {
+          setBackendStatus("mock-dev");
+          try {
+            const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
+            const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+            const plan = localStorage.getItem("singulai_active_plan_id");
+            const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
+            if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
+            if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
+            if (u?.name) setProfileName(u.name);
+            if (plan) setActivePlanId(plan);
+            setModelChoiceEnabled(modelChoice === "true");
+          } catch {
+            // explicit dev fallback only
+          }
+          return;
+        }
+
+        setBackendStatus("unavailable");
+      }
+    }
+
+    void loadBackendState();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Omega animation logic
@@ -261,35 +340,82 @@ export default function SingulAIDashboard() {
         label: "Absorção",
         hint: "Nível de conhecimento",
         svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
-        onClick: () => setSubpanel("memories"),
+        onClick: async () => {
+          setSubpanel("memories");
+          try {
+            const state = await getAbsorptionState();
+            const value = Number((state.absorption || state.level || absorption).toString());
+            if (!Number.isNaN(value)) {
+              setAbsorption(Math.max(0, Math.min(100, value)));
+            }
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+          }
+        },
       },
       {
         id: "indices",
         label: "Índices",
         hint: "Métricas & Ω coesão",
         svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
-        onClick: () => setSubpanel("sync"),
+        onClick: async () => {
+          setSubpanel("sync");
+          try {
+            const metrics = await getPasMetrics();
+            const omega = Number((metrics.omega || metrics.pas || metrics.score || omegaLiveRef.current).toString());
+            if (!Number.isNaN(omega)) {
+              omegaTargetRef.current = omega;
+              animateOmega(omega, omegaLiveRef.current, 700);
+            }
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+          }
+        },
       },
       {
         id: "capsules",
         label: "Cápsulas",
         hint: "Acervo de envios",
         svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></>,
-        onClick: () => setActiveNav("capsules"),
+        onClick: async () => {
+          setActiveNav("capsules");
+          try {
+            const items = await listCapsules();
+            setCapsuleCount(Array.isArray(items) ? items.length : 0);
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+          }
+        },
       },
       {
         id: "legados",
         label: "Legados",
         hint: "Legados digitais",
         svg: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></>,
-        onClick: () => setActiveNav("docs"),
+        onClick: async () => {
+          setActiveNav("docs");
+          try {
+            const items = await listLegacyRules();
+            setLegacyCount(Array.isArray(items) ? items.length : 0);
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+          }
+        },
       },
       {
         id: "historicos",
         label: "Históricos",
         hint: "Log de sessões",
         svg: <><polyline points="12 8 12 12 14 14" /><path d="M3.05 11a9 9 0 1 0 .5-4.5" /><polyline points="3 3 3 9 9 9" /></>,
-        onClick: () => setSubpanel("memories"),
+        onClick: async () => {
+          setSubpanel("memories");
+          try {
+            const items = await getAuditHistory();
+            setHistoryCount(Array.isArray(items) ? items.length : 0);
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+          }
+        },
       },
       {
         id: "rascunhos",
@@ -382,6 +508,16 @@ export default function SingulAIDashboard() {
       const dir: "left" | "right" | "cancel" =
         dx > 55 ? "right" : dx < -55 ? "left" : "cancel";
       engineRef.current?.releaseGathered(dir);
+      if (dir === "left" || dir === "right") {
+        void submitAbsorptionFeedback({
+          direction: dir,
+          profile: profileRef.current,
+          intensity: Math.round(gs.fraction * 100),
+          source: "gather-zone",
+        }).catch(() => {
+          setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+        });
+      }
     } else if (engineRef.current && engineRef.current.gatheredIdxs.length > 0) {
       engineRef.current.releaseGathered("cancel");
     }
@@ -406,6 +542,15 @@ export default function SingulAIDashboard() {
     setTimeout(() => {
       eng.releaseGathered(dir === "positive" ? "right" : "left");
     }, 380);
+
+    void submitAbsorptionFeedback({
+      direction: dir === "positive" ? "right" : "left",
+      profile: profileRef.current,
+      intensity: 30,
+      source: "chat-bubble",
+    }).catch(() => {
+      setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+    });
   };
 
   // Profile switch
@@ -507,7 +652,11 @@ export default function SingulAIDashboard() {
           <div className="tb-actions-chip">
             <div className="tb-status">
               <span className="pulse-dot" style={{ width: 5, height: 5 }} />
-              <span className="tb-status-txt">ONLINE</span>
+              <span className="tb-status-txt">
+                {backendStatus === "connected" && "ONLINE"}
+                {backendStatus === "unavailable" && "Backend unavailable"}
+                {backendStatus === "mock-dev" && "MOCK DEV"}
+              </span>
             </div>
             <div className="tb-divider-v" />
             <div className="topbar-notif-wrap">
@@ -657,14 +806,16 @@ export default function SingulAIDashboard() {
                   <div className="sp-info">
                     <div className="sp-row"><span>Endereço</span><code>{walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "—"}</code></div>
                     <div className="sp-row"><span>Saldo SGL</span><code>{sglBalance.toLocaleString("pt-BR")}</code></div>
-                    <div className="sp-row"><span>Rede</span><code>SingulAI Alt</code></div>
+                    <div className="sp-row"><span>Rede</span><code>Sepolia</code></div>
+                    <div className="sp-row"><span>Perfil</span><code>{profileName}</code></div>
                   </div>
                 )}
                 {subpanel === "pro" && (
                   <div className="sp-info">
                     <div className="sp-row"><span>Plano</span><code>PRO</code></div>
-                    <div className="sp-row"><span>Cápsulas</span><code>ilimitadas</code></div>
-                    <div className="sp-row"><span>Renovação</span><code>12/2026</code></div>
+                    <div className="sp-row"><span>Cápsulas</span><code>{capsuleCount}</code></div>
+                    <div className="sp-row"><span>Legados</span><code>{legacyCount}</code></div>
+                    <div className="sp-row"><span>Históricos</span><code>{historyCount}</code></div>
                   </div>
                 )}
                 {subpanel === "settings" && (
