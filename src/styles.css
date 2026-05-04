@@ -2862,3 +2862,12 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.singulai-footer-inpi {
+  margin-left: 10px;
+  opacity: 0.42;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-xlo);
+}

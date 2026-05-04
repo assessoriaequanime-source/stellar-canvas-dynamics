@@ -891,6 +891,7 @@ export default function SingulAIDashboard() {
               <span className="footer-meta">
                 {modelChoiceEnabled ? "Modelo livre" : "Modelo bloqueado (aguardando contratação)"}
               </span>
+              <span className="singulai-footer-inpi">INPI 942284933</span>
             </div>
           </div>
         </main>
