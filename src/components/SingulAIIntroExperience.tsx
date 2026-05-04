@@ -347,8 +347,8 @@ export default function SingulAIIntroExperience() {
               <span className="rite-alpha">α&nbsp;·</span>custódia
             </div>
             <div className="rite-colophon-right">
-              <a href="https://singulai.site" target="_blank" rel="noopener noreferrer">
-                SINGULAI.SITE
+              <a href="https://singulai.live" target="_blank" rel="noopener noreferrer">
+                SINGULAI.LIVE
               </a>
               &nbsp;·&nbsp;
               <a href="https://rodrigo.run" target="_blank" rel="noopener noreferrer">

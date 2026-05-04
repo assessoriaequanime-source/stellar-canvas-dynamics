@@ -728,9 +728,9 @@ export default function SingulAIDashboard() {
 
           {/* Barra de créditos — rotada -90° na borda esquerda */}
           <nav id="meta-rail" aria-label="Créditos">
-            <a href="https://singulai.site" target="_blank" rel="noreferrer" className="meta-link">
+            <a href="https://singulai.live" target="_blank" rel="noreferrer" className="meta-link">
               <span className="meta-lbl">Oficial</span>
-              <span className="meta-val">singulai.site</span>
+              <span className="meta-val">singulai.live</span>
             </a>
             <span className="meta-dot" aria-hidden="true" />
             <a href="https://rodrigo.run" target="_blank" rel="noreferrer" className="meta-link">

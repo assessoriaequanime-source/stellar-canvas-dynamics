@@ -85,9 +85,31 @@ NEXT ACTION: Add controlled backend stubs/routes and connect remaining data read
 	- stellar-backend/src/api/routes/sgl.ts
 - Riscos identificados:
 	- Endpoints `avatarpro`, `capsules`, `legacy-rules` e `sgl` usam stubs controlados com TODO para integração contratual completa.
-	- Ainda existem referências públicas de marca para `singulai.site` em links de navegação/rodapé do frontend (não como base de API).
 	- Código de autenticação do backend mantém coleta de `req.ip` e `user-agent` para sessão (`/api/v1/auth/verify`), pré-existente ao PR #6.
 - Próximos passos recomendados:
 	- Substituir stubs por integração real com contratos Sepolia e trilha de prova completa.
-	- Alinhar política final para links de marca `singulai.site` caso o produto exija remoção total também na UI.
 	- Revisar se metadados de sessão (`ipAddress`/`userAgent`) permanecem necessários por compliance.
+
+## Auth Domain Fix
+
+- Scope: corrigir gate de autenticação e CTAs de domínio oficial sem alterar layout funcional do dashboard.
+- Ajustes aplicados:
+	- `src/routes/__root.tsx`
+		- Gate em modo login alterado para texto oficial em inglês:
+			- Título: "Official authentication required"
+			- Corpo: "Production access must use the official SingulAI Live login."
+		- Botão alterado para "Continue with Google".
+		- Link oficial alterado para `https://singulai.live`.
+		- Adicionada linha discreta "Product: singulai.live".
+	- `src/components/SingulAIDashboard.tsx`
+		- Meta rail "Oficial" atualizado de `singulai.site` para `singulai.live`.
+	- `src/components/SingulAIIntroExperience.tsx`
+		- Rodapé ritual atualizado de `SINGULAI.SITE` para `SINGULAI.LIVE`.
+- Validações executadas:
+	- Busca de domínio antigo no frontend: `grep -RIn "singulai\.site" src` sem ocorrências.
+	- Build frontend: `npm run build` OK.
+	- Rotas no dev server (`http://localhost:8080`):
+		- `/demo` = 200
+		- `/dashboard` = 200
+		- `/vault` = 200
+		- `/audit` = 200

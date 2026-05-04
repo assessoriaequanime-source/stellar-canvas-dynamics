@@ -245,16 +245,17 @@ function RootComponent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-md text-center">
-          <h2 className="text-xl font-semibold text-foreground">Autenticacao oficial obrigatoria</h2>
+          <h2 className="text-xl font-semibold text-foreground">Official authentication required</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            O acesso de producao deve ser realizado pelo login oficial.
+            Production access must use the official SingulAI Live login.
           </p>
           <a
-            href="https://singulai.site"
+            href="https://singulai.live"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Entrar via singulai.site
+            Continue with Google
           </a>
+          <p className="mt-2 text-xs text-muted-foreground">Product: singulai.live</p>
         </div>
       </div>
     );
