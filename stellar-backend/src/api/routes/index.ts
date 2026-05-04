@@ -9,6 +9,10 @@ import consentRoutes from "./consent";
 import transactionRoutes from "./transaction";
 import auditRoutes from "./audit";
 import aiModelsRoutes from "./ai-models";
+import avatarProRoutes from "./avatarpro";
+import capsulesRoutes from "./capsules";
+import legacyRulesRoutes from "./legacy-rules";
+import sglRoutes from "./sgl";
 
 /**
  * Setup all API routes
@@ -46,6 +50,12 @@ function setupRoutes(app: Express): void {
 
   // ─── AI Models Routes ─────────────────────────────────────────────────
   apiV1Router.use("/ai-models", aiModelsRoutes);
+
+  // ─── AvatarPro Integration Routes ─────────────────────────────────────
+  apiV1Router.use("/avatarpro", avatarProRoutes);
+  apiV1Router.use("/capsules", capsulesRoutes);
+  apiV1Router.use("/legacy-rules", legacyRulesRoutes);
+  apiV1Router.use("/sgl", sglRoutes);
 
   // Attach all routes under /api/v1 prefix
   app.use(apiVersion, apiV1Router);

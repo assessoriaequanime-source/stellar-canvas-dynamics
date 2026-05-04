@@ -6,6 +6,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 import { sendAvatarMessage } from "@/lib/altApi";
+import { getAvatarProStatus, getCurrentUser, getProfile, getWalletStatus } from "@/lib/avatarpro/avatarProApiClient";
+import { getAbsorptionState, getPasMetrics, submitAbsorptionFeedback } from "@/lib/avatarpro/absorptionApiClient";
+import { listCapsules } from "@/lib/avatarpro/capsuleApiClient";
+import { listLegacyRules } from "@/lib/avatarpro/legacyApiClient";
+import { getAuditHistory } from "@/lib/avatarpro/auditApiClient";
+import { getSglBalance } from "@/lib/avatarpro/sglApiClient";
+import { isExplicitAvatarProDemoMode } from "@/lib/avatarpro/demoMode";
 
 const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modeName: string; desc: string; omega: number }> = {
   pedro: {
@@ -13,23 +20,23 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
     hex: "#26B0E2",
     avatarName: "Pedro",
     modeName: "Safe Quantum",
-    desc: "Absorção de Conhecimento",
+    desc: "Knowledge Absorption",
     omega: 79.1,
   },
   laura: {
     rgb: [226, 38, 156],
     hex: "#E2269C",
     avatarName: "Laura",
-    modeName: "Difusão Spin",
-    desc: "Segurança & Privacidade",
+    modeName: "Diffusion Spin",
+    desc: "Security & Privacy",
     omega: 68.4,
   },
   leticia: {
     rgb: [226, 192, 38],
     hex: "#E2C026",
     avatarName: "Letícia",
-    modeName: "Foco Atômico",
-    desc: "Expertise Profissional",
+    modeName: "Atomic Focus",
+    desc: "Professional Expertise",
     omega: 91.3,
   },
 };
@@ -38,20 +45,20 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
 
 const AI_REPLIES: Record<Profile, string[]> = {
   pedro: [
-    "Analisando através do meu atlas neural… Padrões semânticos identificados.",
-    "Com base nas memórias absorvidas, identifico conexões relevantes para sua consulta.",
-    "Meu índice Ω está calibrado. O que mais deseja explorar no framework de conhecimento?",
-    "Input integrado ao modelo de coesão. As partículas se reorganizaram para esta inferência.",
+    "Analyzing through my neural atlas... semantic patterns identified.",
+    "Based on absorbed memory, I can map relevant connections for your query.",
+    "My Omega index is calibrated. What should we explore next?",
+    "Input integrated into the cohesion model. Particles reorganized for this inference.",
   ],
   laura: [
-    "Verificando protocolos de privacidade… Criptografia zero-knowledge ativa.",
-    "Suas chaves permanecem sob sua custódia. Esta sessão é protegida por design.",
-    "Padrões de segurança identificados. Processando com máxima confidencialidade.",
+    "Checking privacy protocols... zero-knowledge encryption active.",
+    "Your keys remain under your custody. This session is protected by design.",
+    "Security patterns identified. Processing with maximum confidentiality.",
   ],
   leticia: [
-    "Aplicando expertise profissional. Framework de contratos ativado.",
-    "Com base nos meus legados de longo prazo, posso elaborar uma estratégia detalhada.",
-    "Validação ICP-Brasil em progresso. Processando com rigor notarial.",
+    "Applying professional expertise. Contract framework active.",
+    "With long-term legacy context, I can draft a detailed strategy.",
+    "Compliance validation in progress. Processing with notarial rigor.",
   ],
 };
 
@@ -59,53 +66,57 @@ type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 
 const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
 
+function isExplicitDevMockEnabled(): boolean {
+  return isExplicitAvatarProDemoMode();
+}
+
 const PLATFORM_ARCHITECTURE = [
   {
     id: "core",
     title: "core",
-    description: "Nucleo da plataforma",
+    description: "Platform core",
     modules: ["blockchain", "privacy", "ai-integration", "contracts"],
   },
   {
     id: "tokenomics",
     title: "tokenomics",
-    description: "Economia SGL",
+    description: "SGL economy",
     modules: ["contracts", "services", "economics", "compliance"],
   },
   {
     id: "hardware",
     title: "hardware",
-    description: "Caneta SingulAI",
+    description: "SingulAI Pen",
     modules: ["firmware", "hardware", "mobile-integration", "security"],
   },
   {
     id: "b2b-white-label",
     title: "b2b-white-label",
-    description: "Plataforma B2B white-label",
+    description: "B2B white-label platform",
     modules: ["banking", "insurance", "digital-notary", "celebrity"],
   },
   {
     id: "frontend",
     title: "frontend",
-    description: "Interfaces de usuario",
+    description: "User interfaces",
     modules: ["web", "mobile", "components"],
   },
   {
     id: "backend",
     title: "backend",
-    description: "Backend da plataforma",
+    description: "Platform backend",
     modules: ["api", "services", "database", "infrastructure"],
   },
   {
     id: "docs",
     title: "docs",
-    description: "Documentacao e compliance",
+    description: "Documentation and compliance",
     modules: ["architecture", "business", "legal", "security", "integration"],
   },
   {
     id: "scripts",
     title: "scripts",
-    description: "Automacao operacional",
+    description: "Operational automation",
     modules: ["deployment", "testing", "monitoring", "maintenance"],
   },
 ] as const;
@@ -146,6 +157,37 @@ export default function SingulAIDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
+  const [backendStatus, setBackendStatus] = useState<"connected" | "unavailable" | "mock-dev">("connected");
+  const [profileName, setProfileName] = useState("Reviewer");
+  const [capsuleCount, setCapsuleCount] = useState(0);
+  const [legacyCount, setLegacyCount] = useState(0);
+  const [historyCount, setHistoryCount] = useState(0);
+  const [statusMessage, setStatusMessage] = useState("Preview ready");
+  const [avatarStatusLabel, setAvatarStatusLabel] = useState("active");
+  const [avatarModeLabel, setAvatarModeLabel] = useState("Safe Quantum");
+  const [absorptionStateLabel, setAbsorptionStateLabel] = useState("learning");
+  const [particleWhitening, setParticleWhitening] = useState(0.72);
+  const [pasScore, setPasScore] = useState(0.72);
+  const [interactionScore, setInteractionScore] = useState(0.69);
+  const [particlesScore, setParticlesScore] = useState(0.81);
+  const [latestHistoryEvent, setLatestHistoryEvent] = useState("AvatarPro Demo Initialization");
+  const [capsulePreview, setCapsulePreview] = useState<string[]>([]);
+  const [legacyPreview, setLegacyPreview] = useState<string[]>([]);
+  const [historyPreview, setHistoryPreview] = useState<string[]>([]);
+
+  const toPercentScale = useCallback((value: unknown, fallback: number) => {
+    const num = Number(value);
+    if (Number.isNaN(num)) return fallback;
+    if (num <= 1) return Number((num * 100).toFixed(1));
+    return num;
+  }, []);
+
+  const toFractionScale = useCallback((value: unknown, fallback: number) => {
+    const num = Number(value);
+    if (Number.isNaN(num)) return fallback;
+    if (num > 1) return Number((num / 100).toFixed(2));
+    return num;
+  }, []);
 
   // ── Gather-feedback gesture ────────────────────────────────────────────
   const gatherStateRef = useRef<{
@@ -183,18 +225,112 @@ export default function SingulAIDashboard() {
     };
   }, []);
 
-  // Load user/wallet from localStorage on mount
+  // Load user/wallet from backend (source of truth), using explicit dev fallback only
   useEffect(() => {
-    try {
-      const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
-      const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
-      const plan = localStorage.getItem("singulai_active_plan_id");
-      const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
-      if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
-      if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
-      if (plan) setActivePlanId(plan);
-      setModelChoiceEnabled(modelChoice === "true");
-    } catch {}
+    let active = true;
+
+    async function loadBackendState() {
+      try {
+        const [auth, profileData, walletData, avatarStatus, sglData, pasData, absorptionData, capsulesData, legacyData, auditData] = await Promise.all([
+          getCurrentUser(),
+          getProfile(),
+          getWalletStatus(),
+          getAvatarProStatus(),
+          getSglBalance(),
+          getPasMetrics(),
+          getAbsorptionState(),
+          listCapsules(),
+          listLegacyRules(),
+          getAuditHistory(),
+        ]);
+
+        if (!active) return;
+
+        const authUser = auth.user || {};
+        const userName = (profileData.nickname || profileData.name || authUser.name || "Reviewer").toString();
+        const wallet = (walletData.walletAddress || walletData.address || authUser.walletAddress || "").toString();
+
+        setProfileName(userName);
+        setWalletAddress(wallet);
+        setSglBalance(Number(sglData.balance || sglData.sglBalance || 0));
+        setCapsuleCount(Array.isArray(capsulesData) ? capsulesData.length : 0);
+        setLegacyCount(Array.isArray(legacyData) ? legacyData.length : 0);
+        setHistoryCount(Array.isArray(auditData) ? auditData.length : 0);
+        setCapsulePreview(
+          Array.isArray(capsulesData)
+            ? capsulesData.slice(0, 3).map((item) => (item.title || item.name || item.id || "Capsule item").toString())
+            : [],
+        );
+        setLegacyPreview(
+          Array.isArray(legacyData)
+            ? legacyData.slice(0, 3).map((item) => (item.title || item.name || item.id || "Legacy rule").toString())
+            : [],
+        );
+        setHistoryPreview(
+          Array.isArray(auditData)
+            ? auditData.slice(0, 3).map((item) => (item.serviceType || item.action || item.id || "History event").toString())
+            : [],
+        );
+
+        const omega = toPercentScale(pasData.omega || pasData.omegaScore || pasData.pas || pasData.score, omegaLiveRef.current);
+        if (!Number.isNaN(omega) && omega > 0) {
+          omegaTargetRef.current = omega;
+          animateOmega(omega, omegaLiveRef.current, 900);
+        }
+
+        const abs = toPercentScale(absorptionData.absorption || absorptionData.level || pasData.absorption || 42, 42);
+        if (!Number.isNaN(abs)) {
+          setAbsorption(Math.max(0, Math.min(100, abs)));
+        }
+
+        setPasScore(toFractionScale(pasData.pasScore || pasData.pas || 0.72, 0.72));
+        setInteractionScore(toFractionScale(pasData.interaction || 0.69, 0.69));
+        setParticlesScore(toFractionScale(pasData.particles || 0.81, 0.81));
+        setAvatarStatusLabel((avatarStatus.status || "active").toString());
+        setAvatarModeLabel((avatarStatus.mode || "Safe Quantum").toString());
+        setAbsorptionStateLabel((absorptionData.state || avatarStatus.status || "learning").toString());
+        setParticleWhitening(toFractionScale(absorptionData.particleWhitening || 0.72, 0.72));
+        if (Array.isArray(auditData) && auditData.length > 0) {
+          const eventTitle = (auditData[0].serviceType || auditData[0].action || auditData[0].resource || "AvatarPro event").toString();
+          setLatestHistoryEvent(eventTitle);
+        }
+
+        const modeName = (avatarStatus.mode || "Safe Quantum").toString();
+        setStatusMessage(`Ready · ${modeName} mode active`);
+
+        setBackendStatus("connected");
+      } catch {
+        if (!active) return;
+
+        if (isExplicitDevMockEnabled()) {
+          setBackendStatus("mock-dev");
+          setStatusMessage("Demo mode active");
+          try {
+            const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
+            const w = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+            const plan = localStorage.getItem("singulai_active_plan_id");
+            const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
+            if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
+            if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
+            if (u?.name) setProfileName(u.name);
+            if (plan) setActivePlanId(plan);
+            setModelChoiceEnabled(modelChoice === "true");
+          } catch {
+            // explicit dev fallback only
+          }
+          return;
+        }
+
+        setBackendStatus("unavailable");
+        setStatusMessage("Backend unavailable");
+      }
+    }
+
+    void loadBackendState();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Omega animation logic
@@ -258,83 +394,182 @@ export default function SingulAIDashboard() {
     setRailActions([
       {
         id: "absorption",
-        label: "Absorção",
-        hint: "Nível de conhecimento",
+        label: "Absorption",
+        hint: "Knowledge level",
         svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
-        onClick: () => setSubpanel("memories"),
+        onClick: async () => {
+          setSubpanel("memories");
+          try {
+            const state = await getAbsorptionState();
+            const value = toPercentScale(state.absorption || state.level || absorption, absorption);
+            if (!Number.isNaN(value)) {
+              setAbsorption(Math.max(0, Math.min(100, value)));
+            }
+            setAbsorptionStateLabel((state.state || "learning").toString());
+            setParticleWhitening(toFractionScale(state.particleWhitening || particleWhitening, particleWhitening));
+            setStatusMessage("Absorption state loaded");
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+            setStatusMessage("Backend unavailable");
+          }
+        },
       },
       {
         id: "indices",
-        label: "Índices",
-        hint: "Métricas & Ω coesão",
+        label: "Indexes",
+        hint: "PAS and Omega metrics",
         svg: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
-        onClick: () => setSubpanel("sync"),
+        onClick: async () => {
+          setSubpanel("sync");
+          try {
+            const metrics = await getPasMetrics();
+            const omega = toPercentScale(metrics.omega || metrics.omegaScore || metrics.pas || metrics.score, omegaLiveRef.current);
+            if (!Number.isNaN(omega)) {
+              omegaTargetRef.current = omega;
+              animateOmega(omega, omegaLiveRef.current, 700);
+            }
+            setPasScore(toFractionScale(metrics.pasScore || metrics.pas || 0.72, 0.72));
+            setInteractionScore(toFractionScale(metrics.interaction || 0.69, 0.69));
+            setParticlesScore(toFractionScale(metrics.particles || 0.81, 0.81));
+            setStatusMessage("Indexes updated");
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+            setStatusMessage("Backend unavailable");
+          }
+        },
       },
       {
         id: "capsules",
-        label: "Cápsulas",
-        hint: "Acervo de envios",
+        label: "Capsules",
+        hint: "Delivery collection",
         svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></>,
-        onClick: () => setActiveNav("capsules"),
+        onClick: async () => {
+          setActiveNav("capsules");
+          setSubpanel("pro");
+          try {
+            const items = await listCapsules();
+            setCapsuleCount(Array.isArray(items) ? items.length : 0);
+            setCapsulePreview(
+              Array.isArray(items)
+                ? items.slice(0, 3).map((item) => (item.title || item.name || item.id || "Capsule item").toString())
+                : [],
+            );
+            setStatusMessage("Capsules list loaded");
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+            setStatusMessage("Backend unavailable");
+          }
+        },
       },
       {
         id: "legados",
-        label: "Legados",
-        hint: "Legados digitais",
+        label: "Legacy",
+        hint: "Digital legacy rules",
         svg: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></>,
-        onClick: () => setActiveNav("docs"),
+        onClick: async () => {
+          setActiveNav("docs");
+          setSubpanel("pro");
+          try {
+            const items = await listLegacyRules();
+            setLegacyCount(Array.isArray(items) ? items.length : 0);
+            setLegacyPreview(
+              Array.isArray(items)
+                ? items.slice(0, 3).map((item) => (item.title || item.name || item.id || "Legacy rule").toString())
+                : [],
+            );
+            setStatusMessage("Legacy rules loaded");
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+            setStatusMessage("Backend unavailable");
+          }
+        },
       },
       {
         id: "historicos",
-        label: "Históricos",
-        hint: "Log de sessões",
+        label: "History",
+        hint: "Session events",
         svg: <><polyline points="12 8 12 12 14 14" /><path d="M3.05 11a9 9 0 1 0 .5-4.5" /><polyline points="3 3 3 9 9 9" /></>,
-        onClick: () => setSubpanel("memories"),
+        onClick: async () => {
+          setSubpanel("pro");
+          try {
+            const items = await getAuditHistory();
+            setHistoryCount(Array.isArray(items) ? items.length : 0);
+            setHistoryPreview(
+              Array.isArray(items)
+                ? items.slice(0, 3).map((item) => (item.serviceType || item.action || item.id || "History event").toString())
+                : [],
+            );
+            if (Array.isArray(items) && items.length > 0) {
+              const eventTitle = (items[0].serviceType || items[0].action || items[0].resource || "AvatarPro event").toString();
+              setLatestHistoryEvent(eventTitle);
+            }
+            setStatusMessage("History loaded");
+          } catch {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+            setStatusMessage("Backend unavailable");
+          }
+        },
       },
       {
         id: "rascunhos",
-        label: "Rascunhos",
-        hint: "Mensagens em criação",
+        label: "Drafts",
+        hint: "Messages in progress",
         svg: <><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></>,
-        onClick: () => setSubpanel("memories"),
+        onClick: () => {
+          setSubpanel("memories");
+          setStatusMessage("Drafts opened");
+        },
       },
       {
         id: "create",
-        label: "Criar Cápsula",
-        hint: "Novo legado digital",
+        label: "Create Capsule",
+        hint: "New digital legacy",
         svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
-        onClick: () => setModalOpen(true),
+        onClick: () => {
+          setModalOpen(true);
+          setStatusMessage("Create Capsule opened");
+        },
       },
       {
         id: "apis",
-        label: "APIs & Conectores",
-        hint: "Integrações externas",
+        label: "APIs and Connectors",
+        hint: "External integrations",
         svg: <><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></>,
-        onClick: () => setSubpanel("settings"),
+        onClick: () => {
+          setSubpanel("settings");
+          setStatusMessage("Settings opened");
+        },
       },
       {
         id: "skills",
-        label: "Skills & Recursos",
-        hint: "Capacidades ativas",
+        label: "Skills and Features",
+        hint: "Active capabilities",
         svg: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></>,
-        onClick: () => setSubpanel("sync"),
+        onClick: () => {
+          setSubpanel("sync");
+          setStatusMessage("Skills panel opened");
+        },
       },
       {
         id: "banco",
-        label: "Banco de Dados",
-        hint: "Informações absorvidas",
+        label: "Knowledge Base",
+        hint: "Absorbed information",
         svg: <><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></>,
-        onClick: () => setSubpanel("memories"),
+        onClick: () => {
+          setSubpanel("memories");
+          setStatusMessage("Knowledge base loaded");
+        },
       },
       {
         id: "recalibrate",
-        label: "Recalibrar",
-        hint: "Reorganizar atlas",
+        label: "Recalibrate",
+        hint: "Reorganize neural atlas",
         svg: <><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></>,
         onClick: () => {
           engineRef.current?.morphTo(profileRef.current);
           const t = Math.min(99.9, omegaLiveRef.current + 2);
           animateOmega(t, omegaLiveRef.current, 800);
+          setStatusMessage("Recalibration completed");
         },
       },
     ]);
@@ -382,6 +617,27 @@ export default function SingulAIDashboard() {
       const dir: "left" | "right" | "cancel" =
         dx > 55 ? "right" : dx < -55 ? "left" : "cancel";
       engineRef.current?.releaseGathered(dir);
+      if (dir === "left" || dir === "right") {
+        void submitAbsorptionFeedback({
+          direction: dir,
+          profile: profileRef.current,
+          intensity: Math.round(gs.fraction * 100),
+          source: "gather-zone",
+        })
+          .then((result) => {
+            const nextScore = toPercentScale(result.newScore, absorption);
+            setAbsorption(Math.max(0, Math.min(100, nextScore)));
+            if (dir === "right") {
+              setStatusMessage("Positive absorption feedback registered");
+            } else {
+              setStatusMessage("Corrective absorption feedback registered");
+            }
+          })
+          .catch(() => {
+            setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+            setStatusMessage("Backend unavailable");
+          });
+      }
     } else if (engineRef.current && engineRef.current.gatheredIdxs.length > 0) {
       engineRef.current.releaseGathered("cancel");
     }
@@ -406,6 +662,26 @@ export default function SingulAIDashboard() {
     setTimeout(() => {
       eng.releaseGathered(dir === "positive" ? "right" : "left");
     }, 380);
+
+    void submitAbsorptionFeedback({
+      direction: dir === "positive" ? "right" : "left",
+      profile: profileRef.current,
+      intensity: 30,
+      source: "chat-bubble",
+    })
+      .then((result) => {
+        const nextScore = toPercentScale(result.newScore, absorption);
+        setAbsorption(Math.max(0, Math.min(100, nextScore)));
+        setStatusMessage(
+          dir === "positive"
+            ? "Positive absorption feedback registered"
+            : "Corrective absorption feedback registered",
+        );
+      })
+      .catch(() => {
+        setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
+        setStatusMessage("Backend unavailable");
+      });
   };
 
   // Profile switch
@@ -507,11 +783,16 @@ export default function SingulAIDashboard() {
           <div className="tb-actions-chip">
             <div className="tb-status">
               <span className="pulse-dot" style={{ width: 5, height: 5 }} />
-              <span className="tb-status-txt">ONLINE</span>
+              <span className="tb-status-txt">
+                {backendStatus === "connected" && "ONLINE"}
+                {backendStatus === "unavailable" && "Backend unavailable"}
+                {backendStatus === "mock-dev" && "MOCK DEV"}
+              </span>
             </div>
             <div className="tb-divider-v" />
+            <span className="tb-status-txt">{statusMessage}</span>
             <div className="topbar-notif-wrap">
-              <button className="tb-btn topbar-notif-btn" title="Notificações" aria-label="Notificações">
+              <button className="tb-btn topbar-notif-btn" title="Notifications" aria-label="Notifications">
                 <Icon>
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -519,7 +800,7 @@ export default function SingulAIDashboard() {
               </button>
               <span className="topbar-notif-badge" aria-hidden="true" />
             </div>
-            <Link to="/demo" className="tb-btn" title="Voltar para Intro" aria-label="Voltar para Intro">
+            <Link to="/demo" className="tb-btn" title="Back to Intro" aria-label="Back to Intro">
               <Icon>
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                 <polyline points="9 22 9 12 15 12 15 22" />
@@ -528,8 +809,8 @@ export default function SingulAIDashboard() {
             <button
               className="tb-btn"
               onClick={() => setSettingsOpen(true)}
-              title="Configurações"
-              aria-label="Configurações do painel"
+              title="Settings"
+              aria-label="Panel settings"
             >
               <Icon>
                 <line x1="4" y1="6" x2="20" y2="6" />
@@ -552,13 +833,13 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
-          <section className="arch-constellation" aria-label="Arquitetura SingulAI Platform">
+          <section className="arch-constellation" aria-label="SingulAI Platform Architecture">
             <header className="arch-head">
               <p className="arch-kicker">SINGULAI PLATFORM BLUEPRINT</p>
-              <h2 className="arch-title">Arquitetura projetada em camadas integradas</h2>
+              <h2 className="arch-title">Architecture designed in integrated layers</h2>
               <p className="arch-sub">
-                Mapa estrutural de dominios tecnicos preservando core, tokenomics, hardware,
-                B2B white-label, frontend e backend.
+                Structural map of technical domains preserving core, tokenomics, hardware,
+                B2B white-label, frontend and backend.
               </p>
             </header>
 
@@ -567,7 +848,7 @@ export default function SingulAIDashboard() {
                 <article key={layer.id} className="arch-card" role="listitem">
                   <p className="arch-card-title">{layer.title}</p>
                   <p className="arch-card-desc">{layer.description}</p>
-                  <ul className="arch-card-tags" aria-label={`Modulos de ${layer.title}`}>
+                  <ul className="arch-card-tags" aria-label={`Modules for ${layer.title}`}>
                     {layer.modules.map((moduleName) => (
                       <li key={moduleName}>{moduleName}</li>
                     ))}
@@ -578,10 +859,10 @@ export default function SingulAIDashboard() {
           </section>
 
           {/* Barra de créditos — rotada -90° na borda esquerda */}
-          <nav id="meta-rail" aria-label="Créditos">
-            <a href="https://singulai.site" target="_blank" rel="noreferrer" className="meta-link">
-              <span className="meta-lbl">Oficial</span>
-              <span className="meta-val">singulai.site</span>
+          <nav id="meta-rail" aria-label="Credits">
+            <a href="https://singulai.live" target="_blank" rel="noreferrer" className="meta-link">
+              <span className="meta-lbl">Official</span>
+              <span className="meta-val">singulai.live</span>
             </a>
             <span className="meta-dot" aria-hidden="true" />
             <a href="https://rodrigo.run" target="_blank" rel="noreferrer" className="meta-link">
@@ -595,19 +876,19 @@ export default function SingulAIDashboard() {
             </a>
           </nav>
 
-          {/* SUBPANEL — renderizado on-demand pelo rail (Memórias / Sync / Emo / Wallet / PRO / Settings) */}
+          {/* SUBPANEL — rendered on-demand by rail (Memory / Sync / Emotion / Wallet / PRO / Settings) */}
           {subpanel && (
             <aside id="subpanel" onClick={(e) => e.stopPropagation()}>
               <header className="sp-hdr">
                 <span className="sp-title">
-                  {subpanel === "memories" && "Memórias Recentes"}
-                  {subpanel === "sync" && "Sincronização Neural"}
-                  {subpanel === "emo" && "Absorção Emocional"}
-                  {subpanel === "wallet" && "Carteira"}
-                  {subpanel === "pro" && "Plano PRO"}
-                  {subpanel === "settings" && "Configurações"}
+                  {subpanel === "memories" && "Recent Memory"}
+                  {subpanel === "sync" && "Neural Sync"}
+                  {subpanel === "emo" && "Emotional Absorption"}
+                  {subpanel === "wallet" && "Wallet"}
+                  {subpanel === "pro" && "PRO Plan"}
+                  {subpanel === "settings" && "Settings"}
                 </span>
-                <button className="sp-x" onClick={() => setSubpanel(null)} aria-label="Fechar">
+                <button className="sp-x" onClick={() => setSubpanel(null)} aria-label="Close">
                   <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
                 </button>
               </header>
@@ -623,7 +904,7 @@ export default function SingulAIDashboard() {
                   <div className="emo-row">
                     <div className="emo-labels">
                       <span className="emo-lbl">FEEDBACK</span>
-                      <span className="emo-lbl">CONHECIMENTO</span>
+                      <span className="emo-lbl">KNOWLEDGE</span>
                     </div>
                     <div className="emo-track">
                       <div className="emo-fill" style={{ width: `${emo}%` }} />
@@ -636,14 +917,16 @@ export default function SingulAIDashboard() {
                     <div className="abs-wrap">
                       <div className="abs-bar"><div className="abs-fill" style={{ width: `${absorption}%` }} /></div>
                       <div className="abs-meta">
-                        <span className="abs-label">Absorção</span>
+                        <span className="abs-label">Absorption</span>
                         <span className="abs-pct">{absorption}%</span>
                       </div>
                     </div>
+                    <div className="sp-row"><span>Memory state</span><code>{absorptionStateLabel}</code></div>
+                    <div className="sp-row"><span>Particles whitening</span><code>{(particleWhitening * 100).toFixed(0)}%</code></div>
                     {[
-                      { name: "Memória_Base_01", type: ".syn" },
-                      { name: "Legado_Digital", type: ".eth" },
-                      { name: "Valores_Familiares", type: ".dat" },
+                      { name: "Memory_Base_01", type: ".syn" },
+                      { name: "Digital_Legacy", type: ".eth" },
+                      { name: "Family_Values", type: ".dat" },
                     ].map((m) => (
                       <div className="mem-item" key={m.name}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
@@ -655,23 +938,39 @@ export default function SingulAIDashboard() {
                 )}
                 {subpanel === "wallet" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Endereço</span><code>{walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "—"}</code></div>
-                    <div className="sp-row"><span>Saldo SGL</span><code>{sglBalance.toLocaleString("pt-BR")}</code></div>
-                    <div className="sp-row"><span>Rede</span><code>SingulAI Alt</code></div>
+                    <div className="sp-row"><span>Address</span><code>{walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "—"}</code></div>
+                    <div className="sp-row"><span>SGL Balance</span><code>{sglBalance.toLocaleString("en-US")}</code></div>
+                    <div className="sp-row"><span>Network</span><code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Sepolia"}</code></div>
+                    <div className="sp-row"><span>Profile</span><code>{profileName}</code></div>
                   </div>
                 )}
                 {subpanel === "pro" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Plano</span><code>PRO</code></div>
-                    <div className="sp-row"><span>Cápsulas</span><code>ilimitadas</code></div>
-                    <div className="sp-row"><span>Renovação</span><code>12/2026</code></div>
+                    <div className="sp-row"><span>Plan</span><code>PRO</code></div>
+                    <div className="sp-row"><span>Capsules</span><code>{capsuleCount}</code></div>
+                    <div className="sp-row"><span>Legacy</span><code>{legacyCount}</code></div>
+                    <div className="sp-row"><span>History</span><code>{historyCount}</code></div>
+                    <div className="sp-row"><span>AvatarPro status</span><code>{avatarStatusLabel}</code></div>
+                    <div className="sp-row"><span>Avatar mode</span><code>{avatarModeLabel}</code></div>
+                    <div className="sp-row"><span>Latest event</span><code>{latestHistoryEvent}</code></div>
+                    <div className="sp-row"><span>Capsule preview</span><code>{capsulePreview.join(" | ") || "No capsules loaded"}</code></div>
+                    <div className="sp-row"><span>Legacy preview</span><code>{legacyPreview.join(" | ") || "No legacy rules loaded"}</code></div>
+                    <div className="sp-row"><span>History preview</span><code>{historyPreview.join(" | ") || "No events loaded"}</code></div>
                   </div>
                 )}
                 {subpanel === "settings" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Tema</span><code>Dark Tech</code></div>
-                    <div className="sp-row"><span>Idioma</span><code>pt-BR</code></div>
-                    <div className="sp-row"><span>Notificações</span><code>ativadas</code></div>
+                    <div className="sp-row"><span>Theme</span><code>Dark Tech</code></div>
+                    <div className="sp-row"><span>Language</span><code>en-US</code></div>
+                    <div className="sp-row"><span>Notifications</span><code>enabled</code></div>
+                  </div>
+                )}
+                {subpanel === "sync" && (
+                  <div className="sp-info">
+                    <div className="sp-row"><span>PAS</span><code>{pasScore.toFixed(2)}</code></div>
+                    <div className="sp-row"><span>Omega</span><code>{(omegaPct / 100).toFixed(2)}</code></div>
+                    <div className="sp-row"><span>Interaction</span><code>{interactionScore.toFixed(2)}</code></div>
+                    <div className="sp-row"><span>Particles</span><code>{particlesScore.toFixed(2)}</code></div>
                   </div>
                 )}
               </div>
@@ -710,13 +1009,13 @@ export default function SingulAIDashboard() {
               onBubbleFeedback={handleBubbleFeedback}
             />
             <div id="chat-bar">
-              <button className="cb" title="Microfone" aria-label="Microfone">
+              <button className="cb" title="Microphone" aria-label="Microphone">
                 <Icon><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></Icon>
               </button>
               <input
                 type="text"
                 id="chat-input"
-                placeholder="Converse com o avatar…"
+                placeholder="Talk to the avatar..."
                 autoComplete="off"
                 spellCheck={false}
                 value={input}
@@ -728,7 +1027,7 @@ export default function SingulAIDashboard() {
                   }
                 }}
               />
-              <button className="cb" id="btn-send" title="Enviar" aria-label="Enviar" onClick={sendMessage}>
+              <button className="cb" id="btn-send" title="Send" aria-label="Send" onClick={sendMessage}>
                 <Icon><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></Icon>
               </button>
             </div>
@@ -736,51 +1035,52 @@ export default function SingulAIDashboard() {
               <span className="footer-avatar-name" style={{ color: accentStr }}>
                 {prof.avatarName}
               </span>
-              <span className="footer-meta">{activePlanId.replace("plan-", "Plano ")}</span>
+              <span className="footer-meta">{activePlanId.replace("plan-", "Plan ")}</span>
               <span className="footer-meta">
-                {modelChoiceEnabled ? "Modelo livre" : "Modelo bloqueado (aguardando contratação)"}
+                {modelChoiceEnabled ? "Model unlocked" : "Model locked (pending upgrade)"}
               </span>
+              <span className="singulai-footer-inpi">INPI 942284933</span>
             </div>
           </div>
         </main>
       </div>
 
-      {/* SETTINGS PANEL — wallet / perfil / ajustes / modo / layouts */}
+      {/* SETTINGS PANEL — wallet / profile / panel settings / mode / layouts */}
       {settingsOpen && (
         <div className="settings-scrim" onClick={() => setSettingsOpen(false)} aria-hidden />
       )}
       {settingsOpen && (
-        <aside className="settings-panel" aria-label="Configurações do painel">
+        <aside className="settings-panel" aria-label="Panel settings">
           <header className="settings-panel-hdr">
-            <span className="settings-panel-title">Configurações</span>
-            <button className="settings-panel-close" onClick={() => setSettingsOpen(false)} aria-label="Fechar">
+            <span className="settings-panel-title">Settings</span>
+            <button className="settings-panel-close" onClick={() => setSettingsOpen(false)} aria-label="Close">
               <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
             </button>
           </header>
           <ul className="settings-panel-list">
             {[
               {
-                id: "wallet", label: "Carteira", hint: "Saldo & endereço",
+                id: "wallet", label: "Wallet", hint: "Balance and address",
                 svg: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>,
                 onClick: () => { setSettingsOpen(false); setSubpanel("wallet"); },
               },
               {
-                id: "profile", label: "Perfil", hint: "Identidade & avatar",
+                id: "profile", label: "Profile", hint: "Identity and avatar",
                 svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></>,
                 onClick: () => { setSettingsOpen(false); setActiveNav("profile"); },
               },
               {
-                id: "panel-settings", label: "Ajustes do Painel", hint: "Notificações & tema",
+                id: "panel-settings", label: "Panel Settings", hint: "Notifications and theme",
                 svg: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
                 onClick: () => { setSettingsOpen(false); setSubpanel("settings"); },
               },
               {
-                id: "nav-mode", label: "Modo de Navegação", hint: "Compact · Full · Focus",
+                id: "nav-mode", label: "Navigation Mode", hint: "Compact · Full · Focus",
                 svg: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></>,
                 onClick: () => setSettingsOpen(false),
               },
               {
-                id: "layouts", label: "Layouts", hint: "Organização visual",
+                id: "layouts", label: "Layouts", hint: "Visual organization",
                 svg: <><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></>,
                 onClick: () => setSettingsOpen(false),
               },
@@ -833,8 +1133,8 @@ export default function SingulAIDashboard() {
         className={railOpen ? "is-open" : ""}
         onClick={() => setRailOpen((v) => !v)}
         aria-pressed={railOpen}
-        aria-label={railOpen ? "Fechar funções IA" : "Abrir funções IA"}
-        title="Funções IA"
+        aria-label={railOpen ? "Close AI functions" : "Open AI functions"}
+        title="AI functions"
       >
         <span className="hook-tab" aria-hidden>
           <span className="hook-bar" />
@@ -855,28 +1155,28 @@ export default function SingulAIDashboard() {
               <BrandLogo size={64} />
             </div>
             <div className="modal-titles">
-              <h3>Criar Cápsula</h3>
-              <p>Envie mensagens imediatas ou agendadas</p>
+              <h3>Create Capsule</h3>
+              <p>Send immediate or scheduled messages</p>
             </div>
-            <button className="modal-x" onClick={() => setModalOpen(false)} aria-label="Fechar">
+            <button className="modal-x" onClick={() => setModalOpen(false)} aria-label="Close">
               <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
             </button>
           </div>
           <div className="modal-body">
             <div>
-              <label className="f-label">Título da Cápsula</label>
-              <input type="text" className="f-input" placeholder="Ex: Mensagem Importante" />
+              <label className="f-label">Capsule Title</label>
+              <input type="text" className="f-input" placeholder="Example: Important message" />
             </div>
             <div>
-              <label className="f-label">Email do Destinatário</label>
-              <input type="email" className="f-input" placeholder="destinatario@email.com" />
+              <label className="f-label">Recipient Email</label>
+              <input type="email" className="f-input" placeholder="reviewer@singulai.live" />
             </div>
             <div>
-              <label className="f-label">Nome do Destinatário</label>
-              <input type="text" className="f-input" placeholder="Nome (opcional)" />
+              <label className="f-label">Recipient Name</label>
+              <input type="text" className="f-input" placeholder="Name (optional)" />
             </div>
             <div>
-              <label className="f-label">WhatsApp (opcional)</label>
+              <label className="f-label">WhatsApp (optional)</label>
               <div className="wa-field">
                 <input type="tel" className="f-input" placeholder="+55 11 99999-9999" style={{ paddingRight: 42 }} />
                 <div className="wa-indicator" aria-hidden>
@@ -885,19 +1185,19 @@ export default function SingulAIDashboard() {
                   </svg>
                 </div>
               </div>
-              <div className="wa-note">Notifica via WhatsApp quando a cápsula for liberada</div>
+              <div className="wa-note">WhatsApp notification when the capsule unlocks</div>
             </div>
             <div>
-              <label className="f-label">Mensagem</label>
-              <textarea className="f-input f-textarea" placeholder="Escreva sua mensagem…" />
+              <label className="f-label">Message</label>
+              <textarea className="f-input f-textarea" placeholder="Write your message..." />
             </div>
             <div>
-              <label className="f-label">Anexos</label>
+              <label className="f-label">Attachments</label>
               <div className="attach-grid">
                 {[
-                  { l: "Arquivo", svg: <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /> },
-                  { l: "Áudio", svg: <><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /></> },
-                  { l: "Vídeo", svg: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></> },
+                  { l: "File", svg: <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /> },
+                  { l: "Audio", svg: <><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /></> },
+                  { l: "Video", svg: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></> },
                 ].map((a) => (
                   <button className="attach-btn" key={a.l}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">{a.svg}</svg>
@@ -907,21 +1207,21 @@ export default function SingulAIDashboard() {
               </div>
             </div>
             <div>
-              <label className="f-label">Tipo de Entrega</label>
+              <label className="f-label">Delivery Type</label>
               <div className="del-toggle">
-                <button className={`del-btn ${delivery === "immediate" ? "active" : ""}`} onClick={() => setDelivery("immediate")}>Imediato</button>
-                <button className={`del-btn ${delivery === "scheduled" ? "active" : ""}`} onClick={() => setDelivery("scheduled")}>Agendado</button>
+                <button className={`del-btn ${delivery === "immediate" ? "active" : ""}`} onClick={() => setDelivery("immediate")}>Immediate</button>
+                <button className={`del-btn ${delivery === "scheduled" ? "active" : ""}`} onClick={() => setDelivery("scheduled")}>Scheduled</button>
               </div>
             </div>
             <div className="cost-row">
-              <span className="cost-lbl">Custo</span>
+              <span className="cost-lbl">Cost</span>
               <span className="cost-val">100 SGL</span>
             </div>
           </div>
           <div className="modal-ftr">
             <button className="btn-primary">
               <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
-              Criar Cápsula
+              Create Capsule
             </button>
           </div>
         </div>

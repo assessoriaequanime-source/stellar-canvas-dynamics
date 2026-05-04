@@ -43,4 +43,19 @@ router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunct
   }
 });
 
+router.get("/events", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = ensureUserId(req);
+    const logs = await prisma.auditLog.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
+    res.status(200).json(logs);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

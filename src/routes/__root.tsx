@@ -11,8 +11,14 @@ const LOCAL_WALLET_KEY = "singulai_wallet";
 const AUTH_QUERY_PARAMS = ["auth", "session", "user", "wallet"];
 const PUBLIC_PATHS = new Set(["/demo"]);
 
-const DEV_SIMPLE_TEST_AUTH = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
+const DEV_SIMPLE_TEST_AUTH = ["1", "true"].includes(
+  (import.meta.env.VITE_SIMPLE_TEST_AUTH ?? "").toLowerCase(),
+);
+const DEV_SIMPLE_TEST_AUTH_ALT = ["1", "true"].includes(
+  (import.meta.env.VITE_DEV_SIMPLE_TEST_AUTH ?? "").toLowerCase(),
+);
 const DEV_SIMPLE_AUTH_HOSTNAMES = ["localhost", "127.0.0.1"];
+const DEV_SIMPLE_AUTH_SUFFIXES = [".app.github.dev", ".github.dev"];
 const DEV_SIMPLE_AUTH_SESSION = "dev-session-singulai-live";
 const DEV_SIMPLE_AUTH_USER = {
   id: "dev_user_singulai_live",
@@ -30,10 +36,18 @@ const DEV_SIMPLE_AUTH_WALLET = {
 };
 
 function isDevSimpleAuthMode() {
+  if (typeof window === "undefined") return false;
+
+  const host = window.location.hostname;
+  const isLocalHost = DEV_SIMPLE_AUTH_HOSTNAMES.includes(host);
+  const isCodespaceHost = DEV_SIMPLE_AUTH_SUFFIXES.some((suffix) => host.endsWith(suffix));
+  const hasDevAuthFlag = DEV_SIMPLE_TEST_AUTH || DEV_SIMPLE_TEST_AUTH_ALT;
+
   return (
-    DEV_SIMPLE_TEST_AUTH &&
-    typeof window !== "undefined" &&
-    DEV_SIMPLE_AUTH_HOSTNAMES.includes(window.location.hostname)
+    import.meta.env.DEV ||
+    hasDevAuthFlag ||
+    isLocalHost ||
+    isCodespaceHost
   );
 }
 
@@ -132,13 +146,13 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SingulAI — Intelligence Beyond Limits" },
-      { name: "description", content: "Dashboard SingulAI — partículas neurais, índice Ω e legados digitais." },
+      { name: "description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
       { property: "og:title", content: "SingulAI — Intelligence Beyond Limits" },
-      { property: "og:description", content: "Dashboard SingulAI — partículas neurais, índice Ω e legados digitais." },
+      { property: "og:description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "SingulAI — Intelligence Beyond Limits" },
-      { name: "twitter:description", content: "Dashboard SingulAI — partículas neurais, índice Ω e legados digitais." },
+      { name: "twitter:description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png" },
     ],
@@ -232,7 +246,7 @@ function RootComponent() {
   if (authState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="text-center text-sm text-muted-foreground">Inicializando…</div>
+        <div className="text-center text-sm text-muted-foreground">Initializing...</div>
       </div>
     );
   }
@@ -245,16 +259,17 @@ function RootComponent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="max-w-md text-center">
-          <h2 className="text-xl font-semibold text-foreground">Autenticacao oficial obrigatoria</h2>
+          <h2 className="text-xl font-semibold text-foreground">Official authentication required</h2>
           <p className="mt-3 text-sm text-muted-foreground">
-            O acesso de producao deve ser realizado pelo login oficial.
+            Production access must use the official SingulAI Live login.
           </p>
           <a
-            href="https://singulai.site"
+            href="/api/v1/auth/google"
             className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Entrar via singulai.site
+            Continue with Google
           </a>
+          <p className="mt-2 text-xs text-muted-foreground">Product: singulai.live</p>
         </div>
       </div>
     );
