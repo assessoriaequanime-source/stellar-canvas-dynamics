@@ -13,6 +13,7 @@ const PUBLIC_PATHS = new Set(["/demo"]);
 
 const DEV_SIMPLE_TEST_AUTH = import.meta.env.VITE_SIMPLE_TEST_AUTH === "1";
 const DEV_SIMPLE_AUTH_HOSTNAMES = ["localhost", "127.0.0.1"];
+const DEV_SIMPLE_AUTH_SUFFIXES = [".app.github.dev", ".github.dev"];
 const DEV_SIMPLE_AUTH_SESSION = "dev-session-singulai-live";
 const DEV_SIMPLE_AUTH_USER = {
   id: "dev_user_singulai_live",
@@ -30,10 +31,17 @@ const DEV_SIMPLE_AUTH_WALLET = {
 };
 
 function isDevSimpleAuthMode() {
+  if (!import.meta.env.DEV) return false;
+  if (!DEV_SIMPLE_TEST_AUTH) return false;
+  if (typeof window === "undefined") return false;
+
+  const host = window.location.hostname;
+  const isLocalHost = DEV_SIMPLE_AUTH_HOSTNAMES.includes(host);
+  const isCodespaceHost = DEV_SIMPLE_AUTH_SUFFIXES.some((suffix) => host.endsWith(suffix));
+
   return (
-    DEV_SIMPLE_TEST_AUTH &&
-    typeof window !== "undefined" &&
-    DEV_SIMPLE_AUTH_HOSTNAMES.includes(window.location.hostname)
+    isLocalHost ||
+    isCodespaceHost
   );
 }
 
