@@ -206,6 +206,19 @@ Three canonical domain policies are pre-configured:
 - **Program IDs** — Defined in the Devnet mapping (`fase-1-mapeamento-funcional-solana.md`)
 - **No EVM dependencies** — Architecture explicitly migrated from ethers.js contracts to Solana program accounts
 
+## Legacy Ethereum/Sepolia Prototype
+
+The previous Ethereum/Sepolia, MetaMask, ERC-20, ERC-721, Hardhat and Etherscan flow is retained only as historical prototype context and is not the official hackathon MVP.
+
+Official MVP validation for jurors:
+
+1. Open `/vault`
+2. Use generated Solana demo wallet
+3. Confirm `10,000 SGL` execution credits
+4. Execute paid services
+5. Open `/audit`
+6. Verify balances, hashes, signatures, proof labels and explorer links
+
 ---
 
 ## CEO / Project Lead
