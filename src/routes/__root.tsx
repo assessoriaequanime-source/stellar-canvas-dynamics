@@ -146,13 +146,13 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SingulAI — Intelligence Beyond Limits" },
-      { name: "description", content: "Dashboard SingulAI — partículas neurais, índice Ω e legados digitais." },
+      { name: "description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
       { property: "og:title", content: "SingulAI — Intelligence Beyond Limits" },
-      { property: "og:description", content: "Dashboard SingulAI — partículas neurais, índice Ω e legados digitais." },
+      { property: "og:description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "SingulAI — Intelligence Beyond Limits" },
-      { name: "twitter:description", content: "Dashboard SingulAI — partículas neurais, índice Ω e legados digitais." },
+      { name: "twitter:description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png" },
     ],
@@ -246,7 +246,7 @@ function RootComponent() {
   if (authState === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="text-center text-sm text-muted-foreground">Inicializando…</div>
+        <div className="text-center text-sm text-muted-foreground">Initializing...</div>
       </div>
     );
   }
