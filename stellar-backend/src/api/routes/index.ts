@@ -13,6 +13,7 @@ import avatarProRoutes from "./avatarpro";
 import capsulesRoutes from "./capsules";
 import legacyRulesRoutes from "./legacy-rules";
 import sglRoutes from "./sgl";
+import walletsRoutes from "./wallets";
 
 /**
  * Setup all API routes
@@ -56,6 +57,7 @@ function setupRoutes(app: Express): void {
   apiV1Router.use("/capsules", capsulesRoutes);
   apiV1Router.use("/legacy-rules", legacyRulesRoutes);
   apiV1Router.use("/sgl", sglRoutes);
+  apiV1Router.use("/wallets", walletsRoutes);
 
   // Attach all routes under /api/v1 prefix
   app.use(apiVersion, apiV1Router);

@@ -2,6 +2,8 @@ import { Router, Request, Response, NextFunction } from "express";
 import prisma from "../../lib/prisma";
 import { requireAuth } from "../middlewares/auth";
 import { AppError } from "../middlewares/errorHandler";
+import { PublicKey } from "@solana/web3.js";
+import { getSglBalance } from "../../services/sglSolanaService";
 
 const router = Router();
 
@@ -48,14 +50,23 @@ router.get("/status", requireAuth, async (req: Request, res: Response, next: Nex
   }
 });
 
-router.get("/wallet", requireAuth, async (req: Request, res: Response) => {
-  const { walletAddress } = ensureUser(req);
-  res.status(200).json({
-    walletAddress,
-    network: "sepolia",
-    chainId: 11155111,
-    source: "backend",
-  });
+router.get("/wallet", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const walletFromQuery = req.query.walletAddress?.toString();
+    const walletAddress = walletFromQuery ? new PublicKey(walletFromQuery).toBase58() : ensureUser(req).walletAddress;
+    const balance = await getSglBalance(walletAddress);
+
+    res.status(200).json({
+      walletAddress,
+      network: "solana-devnet",
+      chainId: "devnet",
+      tokenAccount: balance.tokenAccount,
+      sglBalance: balance.balance,
+      source: "solana-devnet",
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get("/metrics", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
