@@ -6,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 import { sendAvatarMessage } from "@/lib/altApi";
-import { getAvatarProStatus, getCurrentUser, getProfile, getWalletStatus } from "@/lib/avatarpro/avatarProApiClient";
+import { getAvatarProStatus, getCurrentUser, getProfile, getWalletStatus, provisionWallet } from "@/lib/avatarpro/avatarProApiClient";
 import { getAbsorptionState, getPasMetrics, submitAbsorptionFeedback } from "@/lib/avatarpro/absorptionApiClient";
 import { listCapsules } from "@/lib/avatarpro/capsuleApiClient";
 import { listLegacyRules } from "@/lib/avatarpro/legacyApiClient";
@@ -174,6 +174,7 @@ export default function SingulAIDashboard() {
   const [capsulePreview, setCapsulePreview] = useState<string[]>([]);
   const [legacyPreview, setLegacyPreview] = useState<string[]>([]);
   const [historyPreview, setHistoryPreview] = useState<string[]>([]);
+  const [lastProvisionExplorer, setLastProvisionExplorer] = useState("");
 
   const toPercentScale = useCallback((value: unknown, fallback: number) => {
     const num = Number(value);
@@ -733,6 +734,29 @@ export default function SingulAIDashboard() {
     omegaTargetRef.current = Math.min(99.5, omegaLiveRef.current + 0.4);
   };
 
+  const connectSolanaWallet = async () => {
+    try {
+      const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
+      if (!provider) {
+        setStatusMessage("Phantom/Solflare wallet extension not found");
+        return;
+      }
+
+      const response = await provider.connect();
+      const publicKey = response.publicKey.toString();
+      const provision = await provisionWallet({ walletAddress: publicKey });
+
+      setWalletAddress(publicKey);
+      setSglBalance(Number(provision.sglBalance || 0));
+      setLastProvisionExplorer((provision.explorerUrl || "").toString());
+      setSubpanel("wallet");
+      setStatusMessage("Solana Devnet wallet connected and provisioned");
+      setBackendStatus("connected");
+    } catch {
+      setStatusMessage("Wallet connection failed");
+    }
+  };
+
   // ESC closes modal
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -806,6 +830,17 @@ export default function SingulAIDashboard() {
                 <polyline points="9 22 9 12 15 12 15 22" />
               </Icon>
             </Link>
+            <button
+              className="tb-btn"
+              onClick={() => void connectSolanaWallet()}
+              title="Connect Solana Wallet"
+              aria-label="Connect Solana Wallet"
+            >
+              <Icon>
+                <path d="M2 7h20v10H2z" />
+                <path d="M16 12h4" />
+              </Icon>
+            </button>
             <button
               className="tb-btn"
               onClick={() => setSettingsOpen(true)}
@@ -940,7 +975,8 @@ export default function SingulAIDashboard() {
                   <div className="sp-info">
                     <div className="sp-row"><span>Address</span><code>{walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "—"}</code></div>
                     <div className="sp-row"><span>SGL Balance</span><code>{sglBalance.toLocaleString("en-US")}</code></div>
-                    <div className="sp-row"><span>Network</span><code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Sepolia"}</code></div>
+                    <div className="sp-row"><span>Network</span><code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Solana Devnet"}</code></div>
+                    {lastProvisionExplorer ? <div className="sp-row"><span>Explorer</span><code>{lastProvisionExplorer}</code></div> : null}
                     <div className="sp-row"><span>Profile</span><code>{profileName}</code></div>
                   </div>
                 )}

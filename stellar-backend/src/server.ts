@@ -58,8 +58,9 @@ async function startServer() {
   }
 }
 
-// Only start server if this is the main module
-if (require.main === module) {
+// Only start server if this is the main module (ESM-compatible)
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+if (isMain) {
   startServer();
 }
 

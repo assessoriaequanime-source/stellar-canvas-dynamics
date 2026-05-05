@@ -219,6 +219,31 @@ Official MVP validation for jurors:
 5. Open `/audit`
 6. Verify balances, hashes, signatures, proof labels and explorer links
 
+## Solana Devnet Real Layer
+
+This repository now contains a minimal real Solana Devnet layer for AvatarPro Vault MVP.
+
+Implemented now:
+
+1. Real wallet provisioning endpoint at /api/v1/wallets/provision.
+2. Real ATA create/find flow for SGL mint on Devnet.
+3. One-time initial credit mint (10,000 SGL default) per wallet and mint.
+4. Real balance read from SPL token account.
+5. Real audit proof registration using Solana Memo Program.
+6. Explorer URL and txSignature returned for verification.
+7. Frontend Vault and Audit panels consuming backend proof events.
+
+Important honesty rule in MVP:
+
+- Debit is represented as pending_wallet_signature when user wallet signature is still required.
+- The UI does not claim final debit confirmation without wallet signature.
+
+Environment:
+
+- See stellar-backend/.env.example for required Solana Devnet variables.
+- Use scripts/verify-real-solana-env.sh before running real flows.
+- Use scripts/smoke-solana-real-layer.sh for smoke validation.
+
 ---
 
 ## CEO / Project Lead

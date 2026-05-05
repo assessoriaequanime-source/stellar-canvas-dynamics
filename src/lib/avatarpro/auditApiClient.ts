@@ -23,6 +23,36 @@ export function getAuditHistory() {
   return requestJson<Array<Record<string, unknown>>>("/audit/events");
 }
 
+export function getAuditEventsByWallet(walletAddress: string) {
+  if (isExplicitAvatarProDemoMode()) {
+    return Promise.resolve(demoAuditEvents());
+  }
+  return requestJson<Array<Record<string, unknown>>>(`/audit/events?walletAddress=${encodeURIComponent(walletAddress)}`);
+}
+
+export function createAuditProof(payload: {
+  walletAddress: string;
+  avatarId?: string;
+  eventType: string;
+  payloadHash: string;
+  serviceType?: string;
+}) {
+  if (isExplicitAvatarProDemoMode()) {
+    return Promise.resolve({
+      proofTxSignature: "DEMO-TX-AUDIT-001",
+      txSignature: "DEMO-TX-AUDIT-001",
+      explorerUrl: "https://explorer.solana.com/tx/DEMO-TX-AUDIT-001?cluster=devnet",
+      ...payload,
+      network: "solana-devnet",
+      createdAt: new Date().toISOString(),
+    });
+  }
+  return requestJson<Record<string, unknown>>("/audit/proof", {
+    method: "POST",
+    body: payload,
+  });
+}
+
 export function getSessionHistory() {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve(demoAuditEvents());
@@ -34,5 +64,5 @@ export function getProofEvents() {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve(demoAuditEvents());
   }
-  return requestJson<Array<Record<string, unknown>>>("/audit/events?type=proof");
+  return requestJson<Array<Record<string, unknown>>>("/audit/events");
 }
