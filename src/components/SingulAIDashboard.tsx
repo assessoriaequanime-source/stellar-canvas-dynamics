@@ -786,7 +786,7 @@ export default function SingulAIDashboard() {
               <span className="tb-status-txt">
                 {backendStatus === "connected" && "ONLINE"}
                 {backendStatus === "unavailable" && "Backend unavailable"}
-                {backendStatus === "mock-dev" && "MOCK DEV"}
+                {backendStatus === "mock-dev" && "DEVNET DEMO"}
               </span>
             </div>
             <div className="tb-divider-v" />
@@ -833,49 +833,6 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
-          <section className="arch-constellation" aria-label="SingulAI Platform Architecture">
-            <header className="arch-head">
-              <p className="arch-kicker">SINGULAI PLATFORM BLUEPRINT</p>
-              <h2 className="arch-title">Architecture designed in integrated layers</h2>
-              <p className="arch-sub">
-                Structural map of technical domains preserving core, tokenomics, hardware,
-                B2B white-label, frontend and backend.
-              </p>
-            </header>
-
-            <div className="arch-grid" role="list">
-              {PLATFORM_ARCHITECTURE.map((layer) => (
-                <article key={layer.id} className="arch-card" role="listitem">
-                  <p className="arch-card-title">{layer.title}</p>
-                  <p className="arch-card-desc">{layer.description}</p>
-                  <ul className="arch-card-tags" aria-label={`Modules for ${layer.title}`}>
-                    {layer.modules.map((moduleName) => (
-                      <li key={moduleName}>{moduleName}</li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          {/* Barra de créditos — rotada -90° na borda esquerda */}
-          <nav id="meta-rail" aria-label="Credits">
-            <a href="https://singulai.live" target="_blank" rel="noreferrer" className="meta-link">
-              <span className="meta-lbl">Official</span>
-              <span className="meta-val">singulai.live</span>
-            </a>
-            <span className="meta-dot" aria-hidden="true" />
-            <a href="https://rodrigo.run" target="_blank" rel="noreferrer" className="meta-link">
-              <span className="meta-lbl">CEO & Founder</span>
-              <span className="meta-val">rodrigo.run</span>
-            </a>
-            <span className="meta-dot" aria-hidden="true" />
-            <a href="https://vitor.business" target="_blank" rel="noreferrer" className="meta-link">
-              <span className="meta-lbl">Design</span>
-              <span className="meta-val">vitor.business</span>
-            </a>
-          </nav>
-
           {subpanel && (
             <div className="subpanel-backdrop" onClick={() => setSubpanel(null)} aria-hidden="true" />
           )}
@@ -1122,7 +1079,7 @@ export default function SingulAIDashboard() {
       )}
       <div className={`rail-shell ${railOpen ? "rail-shell-open" : ""}`} aria-hidden={!railOpen}>
         <ActionRail
-          actions={railActions}
+          actions={railActions.map((a) => ({ ...a, onClick: () => { setRailOpen(false); return a.onClick(); } }))}
           onReorder={setRailActions}
           onClose={() => setRailOpen(false)}
           omegaPct={omegaPct}

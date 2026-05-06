@@ -5,7 +5,10 @@ function envFlagEnabled(value: string | undefined): boolean {
 }
 
 export function isExplicitAvatarProDemoMode(): boolean {
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+  const isSingulaiLive = hostname === "singulai.live" || hostname.endsWith(".singulai.live");
   return (
+    isSingulaiLive ||
     envFlagEnabled(import.meta.env.VITE_ENABLE_MOCK_VAULT) ||
     envFlagEnabled(import.meta.env.VITE_DEV_SIMPLE_TEST_AUTH) ||
     envFlagEnabled(import.meta.env.VITE_SIMPLE_TEST_AUTH)
