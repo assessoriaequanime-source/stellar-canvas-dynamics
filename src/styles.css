@@ -2055,6 +2055,310 @@
   .footer-avatar-desc { font-size: 8px; }
 }
 
+/* ════ Wallet Onboarding (.wonb-*) ════ */
+@keyframes wonbFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes wonbFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes wonbSpin {
+  to { transform: rotate(360deg); }
+}
+
+.wonb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(6, 6, 9, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: wonbFadeIn 0.35s ease both;
+}
+.wonb-overlay--exit {
+  animation: wonbFadeOut 0.35s ease both;
+}
+
+.wonb-shell {
+  width: 100%;
+  max-width: 420px;
+  background: #0f0f14;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7);
+  animation: wonbFadeIn 0.4s 0.05s ease both;
+}
+.wonb-shell--compact {
+  max-width: 340px;
+  padding: 32px 24px;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.wonb-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wonb-network-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: rgba(20, 241, 149, 0.07);
+  border: 1px solid rgba(20, 241, 149, 0.18);
+  border-radius: 99px;
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(20, 241, 149, 0.85);
+  text-transform: uppercase;
+}
+
+.wonb-title {
+  font-family: "Syne", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.wonb-sub {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+}
+
+.wonb-success-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  background: rgba(20, 241, 149, 0.07);
+  border: 1px solid rgba(20, 241, 149, 0.15);
+  border-radius: 8px;
+  font-family: "Space Mono", monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: rgba(20, 241, 149, 0.85);
+}
+.wonb-success-row svg { flex-shrink: 0; color: #14f195; }
+
+.wonb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.wonb-label {
+  font-family: "Space Mono", monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.wonb-addr-box {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.wonb-addr-code {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+  word-break: break-all;
+  display: block;
+}
+
+.wonb-addr-chip {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.wonb-balance-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.wonb-balance-num {
+  font-family: "Syne", sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #14f195;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.wonb-balance-unit {
+  font-family: "Space Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(20, 241, 149, 0.8);
+  text-transform: uppercase;
+}
+.wonb-balance-note {
+  font-family: "Space Mono", monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.28);
+  width: 100%;
+}
+
+.wonb-seed {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+.wonb-seed-word {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.65);
+}
+.wonb-seed-n {
+  font-size: 7.5px;
+  color: rgba(255, 255, 255, 0.25);
+  min-width: 12px;
+  flex-shrink: 0;
+}
+
+.wonb-disclaimer {
+  font-family: "Space Mono", monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 200, 80, 0.55);
+  padding: 7px 10px;
+  background: rgba(255, 200, 80, 0.05);
+  border: 1px solid rgba(255, 200, 80, 0.1);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.wonb-save-row {
+  display: flex;
+  gap: 8px;
+}
+.wonb-save-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s, background 0.18s;
+}
+.wonb-save-btn:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.wonb-enter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, #14f195 0%, #09c56e 100%);
+  border: none;
+  border-radius: 10px;
+  font-family: "Syne", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #030a06;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.14s;
+}
+.wonb-enter-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.wonb-enter-btn:active {
+  transform: translateY(0);
+}
+
+.wonb-dots-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+}
+
+.wonb-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(20, 241, 149, 0.15);
+  border-top-color: #14f195;
+  animation: wonbSpin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.wonb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+  width: 100%;
+}
+.wonb-step {
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.22);
+}
+.wonb-step--done {
+  color: rgba(20, 241, 149, 0.7);
+}
+.wonb-step--active {
+  color: rgba(255, 255, 255, 0.75);
+}
+
 /* ════ Settings Panel ════ */
 .settings-scrim {
   position: fixed;

@@ -2,86 +2,71 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { useEffect, useState, useRef } from "react";
 
 import appCss from "../styles.css?url";
-import { verifyAltSession } from "@/lib/altApi";
-import SimpleDemoLogin from "@/components/SimpleDemoLogin";
+import WalletOnboarding from "@/components/WalletOnboarding";
 
 const LOCAL_SESSION_KEY = "singulai_session";
 const LOCAL_USER_KEY = "singulai_user";
 const LOCAL_WALLET_KEY = "singulai_wallet";
-const AUTH_QUERY_PARAMS = ["auth", "session", "user", "wallet"];
-const PUBLIC_PATHS = new Set(["/demo"]);
+const DEMO_WALLET_KEY = "singulai_demo_wallet";
+const AUTH_QUERY_PARAMS = ["auth", "session", "user", "wallet", "access"];
+const PUBLIC_PATHS = new Set(["/demo", "/"]);
 
-const DEV_SIMPLE_TEST_AUTH = ["1", "true"].includes(
-  (import.meta.env.VITE_SIMPLE_TEST_AUTH ?? "").toLowerCase(),
-);
-const DEV_SIMPLE_TEST_AUTH_ALT = ["1", "true"].includes(
-  (import.meta.env.VITE_DEV_SIMPLE_TEST_AUTH ?? "").toLowerCase(),
-);
-const DEV_SIMPLE_AUTH_HOSTNAMES = ["localhost", "127.0.0.1"];
-const DEV_SIMPLE_AUTH_SUFFIXES = [".app.github.dev", ".github.dev"];
-const DEV_SIMPLE_AUTH_SESSION = "dev-session-singulai-live";
-const DEV_SIMPLE_AUTH_USER = {
-  id: "dev_user_singulai_live",
-  name: "SingulAI Test User",
-  email: "dev@singulai.live",
-  walletAddress: "0x0000000000000000000000000000000000000000",
-  sglBalance: 10000,
-};
-const DEV_SIMPLE_AUTH_WALLET = {
-  address: "0x0000000000000000000000000000000000000000",
-  walletAddress: "0x0000000000000000000000000000000000000000",
-  network: "sepolia",
-  chainId: 11155111,
-  type: "native_singulai_dev",
-};
+// Fixed public demo wallet for jurors — auditable on Solana Devnet explorer
+const JUDGE_WALLET_ADDRESS = "SingulAIJudge1AvatarPro1Hackathon1Devnet111";
+const JUDGE_SGL_BALANCE = 1000;
 
-function isDevSimpleAuthMode() {
+function isJudgeAccess() {
   if (typeof window === "undefined") return false;
-
-  const host = window.location.hostname;
-  const isLocalHost = DEV_SIMPLE_AUTH_HOSTNAMES.includes(host);
-  const isCodespaceHost = DEV_SIMPLE_AUTH_SUFFIXES.some((suffix) => host.endsWith(suffix));
-  const hasDevAuthFlag = DEV_SIMPLE_TEST_AUTH || DEV_SIMPLE_TEST_AUTH_ALT;
-
-  return (
-    import.meta.env.DEV ||
-    hasDevAuthFlag ||
-    isLocalHost ||
-    isCodespaceHost
-  );
+  return new URLSearchParams(window.location.search).get("access") === "judge";
 }
 
-function useDevSimpleAuthSession() {
-  localStorage.setItem(LOCAL_SESSION_KEY, DEV_SIMPLE_AUTH_SESSION);
-  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(DEV_SIMPLE_AUTH_USER));
-  localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(DEV_SIMPLE_AUTH_WALLET));
+function hasStoredWallet() {
+  if (typeof window === "undefined") return false;
+  return !!localStorage.getItem(DEMO_WALLET_KEY);
 }
 
-function DevTestAuthBadge() {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: "max(10px, env(safe-area-inset-top, 0px) + 10px)",
-        right: 12,
-        zIndex: 9999,
-        padding: "5px 8px",
-        fontSize: "10px",
-        lineHeight: 1,
-        background: "rgba(11, 11, 11, 0.88)",
-        color: "rgba(255, 255, 255, 0.78)",
-        borderRadius: "10px",
-        border: "1px solid rgba(38, 176, 226, 0.22)",
-        pointerEvents: "none",
-        opacity: 0.78,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-      }}
-    >
-      DEV TEST AUTH
-    </div>
-  );
+function setJudgeSession() {
+  const addr = JUDGE_WALLET_ADDRESS;
+  localStorage.setItem(DEMO_WALLET_KEY, addr);
+  localStorage.setItem(LOCAL_SESSION_KEY, `judge-session-${addr.slice(0, 8)}`);
+  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify({
+    id: "judge-avatarpro-demo",
+    name: "Hackathon Judge",
+    email: "judge@singulai.live",
+    walletAddress: addr,
+    sglBalance: JUDGE_SGL_BALANCE,
+  }));
+  localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify({
+    address: addr,
+    walletAddress: addr,
+    network: "solana-devnet",
+    chainId: "devnet",
+    type: "avatarpro_judge",
+    sglBalance: JUDGE_SGL_BALANCE,
+  }));
 }
+
+function removeQueryParam(key: string) {
+  const url = new URL(window.location.href);
+  if (url.searchParams.has(key)) {
+    url.searchParams.delete(key);
+    window.history.replaceState({}, document.title, url.toString());
+  }
+}
+
+function removeQueryParams() {
+  const url = new URL(window.location.href);
+  let hasChanges = false;
+  AUTH_QUERY_PARAMS.forEach((key) => {
+    if (url.searchParams.has(key)) { url.searchParams.delete(key); hasChanges = true; }
+  });
+  if (!hasChanges) return;
+  const nextSearch = url.searchParams.toString();
+  url.search = nextSearch ? `?${nextSearch}` : "";
+  window.history.replaceState({}, document.title, url.toString());
+}
+
+void removeQueryParam; // used inline below
 
 function NotFoundComponent() {
   return (
@@ -105,38 +90,12 @@ function NotFoundComponent() {
   );
 }
 
-function parseJsonParam(value: string | null) {
-  if (!value) return null;
-  try {
-    return JSON.parse(decodeURIComponent(value));
-  } catch {
-    return null;
-  }
-}
-
 function isPublicPath() {
   if (typeof window === "undefined") return false;
   const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
   return PUBLIC_PATHS.has(normalizedPath);
 }
 
-function removeQueryParams() {
-  const url = new URL(window.location.href);
-  let hasChanges = false;
-
-  AUTH_QUERY_PARAMS.forEach((key) => {
-    if (url.searchParams.has(key)) {
-      url.searchParams.delete(key);
-      hasChanges = true;
-    }
-  });
-
-  if (!hasChanges) return;
-
-  const nextSearch = url.searchParams.toString();
-  url.search = nextSearch ? `?${nextSearch}` : "";
-  window.history.replaceState({}, document.title, url.toString());
-}
 
 
 
@@ -186,99 +145,50 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
-  const [authState, setAuthState] = useState<"loading" | "login" | "ready">("loading");
+  const [authState, setAuthState] = useState<"loading" | "onboarding" | "ready">("loading");
   const triedAuth = useRef(false);
 
-  const handleLoginSuccess = () => setAuthState("ready");
-  const canUseLocalSimpleLogin = isDevSimpleAuthMode();
+  const handleOnboardingSuccess = () => setAuthState("ready");
 
   useEffect(() => {
-    const handleAuth = async () => {
-      if (isPublicPath()) {
-        setAuthState("ready");
-        return;
-      }
+    if (triedAuth.current) return;
+    triedAuth.current = true;
 
-      if (isDevSimpleAuthMode()) {
-        useDevSimpleAuthSession();
-        removeQueryParams();
-        setAuthState("ready");
-        return;
-      }
-
-      removeQueryParams();
-
-      const sessionToken = localStorage.getItem(LOCAL_SESSION_KEY);
-      if (!sessionToken) {
-        setAuthState("login");
-        return;
-      }
-
-      const verification = await verifyAltSession(sessionToken);
-      const sessionValid =
-        verification?.valid === true ||
-        (verification != null && "user" in verification && typeof verification.user === "object");
-
-      if (!verification || !sessionValid) {
-        localStorage.removeItem(LOCAL_SESSION_KEY);
-        localStorage.removeItem(LOCAL_USER_KEY);
-        localStorage.removeItem(LOCAL_WALLET_KEY);
-        setAuthState("login");
-        return;
-      }
-
-      if (verification.user) {
-        localStorage.setItem(LOCAL_USER_KEY, JSON.stringify(verification.user));
-      }
-      if (verification.wallet) {
-        localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify(verification.wallet));
-      }
-
+    // Public paths (/, /demo) → no auth gate
+    if (isPublicPath()) {
       setAuthState("ready");
-    };
-
-    if (!triedAuth.current) {
-      triedAuth.current = true;
-      handleAuth();
+      return;
     }
+
+    // Judge bypass: ?access=judge → fixed public demo wallet, instant entry
+    if (isJudgeAccess()) {
+      setJudgeSession();
+      removeQueryParams();
+      setAuthState("ready");
+      return;
+    }
+
+    // Returning user with stored demo wallet → WalletOnboarding handles reconnect
+    if (hasStoredWallet()) {
+      setAuthState("onboarding"); // WalletOnboarding will auto-reconnect and call onSuccess
+      return;
+    }
+
+    // New user → show WalletOnboarding to create wallet
+    setAuthState("onboarding");
   }, []);
 
   if (authState === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="text-center text-sm text-muted-foreground">Initializing...</div>
+      <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", background: "#0b0b0b" }}>
+        <div style={{ fontFamily: "monospace", fontSize: 11, letterSpacing: "0.18em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase" }}>Initializing…</div>
       </div>
     );
   }
 
-  if (authState === "login" && canUseLocalSimpleLogin) {
-    return <SimpleDemoLogin onSuccess={handleLoginSuccess} />;
+  if (authState === "onboarding") {
+    return <WalletOnboarding onSuccess={handleOnboardingSuccess} />;
   }
 
-  if (authState === "login") {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <div className="max-w-md text-center">
-          <h2 className="text-xl font-semibold text-foreground">Official authentication required</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Production access must use the official SingulAI Live login.
-          </p>
-          <a
-            href="/api/v1/auth/google"
-            className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Continue with Google
-          </a>
-          <p className="mt-2 text-xs text-muted-foreground">Product: singulai.live</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <Outlet />
-      {isDevSimpleAuthMode() ? <DevTestAuthBadge /> : null}
-    </>
-  );
+  return <Outlet />;
 }
