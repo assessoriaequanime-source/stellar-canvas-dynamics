@@ -751,7 +751,7 @@ export default function SingulAIDashboard() {
       <div id="canvas-bg" ref={canvasRef} />
       <div className="glass-grid" aria-hidden />
 
-      <div id="app">
+      <div id="app" className={subpanel ? "subpanel-open" : ""}>
         {/* TOPBAR — premium expandable intelligence dock */}
         <header id="topbar">
           {/* Brand — logo + Ω live readout chip */}
@@ -875,6 +875,10 @@ export default function SingulAIDashboard() {
               <span className="meta-val">vitor.business</span>
             </a>
           </nav>
+
+          {subpanel && (
+            <div className="subpanel-backdrop" onClick={() => setSubpanel(null)} aria-hidden="true" />
+          )}
 
           {/* SUBPANEL — rendered on-demand by rail (Memory / Sync / Emotion / Wallet / PRO / Settings) */}
           {subpanel && (

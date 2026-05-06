@@ -238,21 +238,21 @@ export default function SingulAIIntroExperience() {
             <p className="rite-folio-label">I · ABERTURA</p>
 
             <p className="rite-phrase">
-              <span className="rite-word rite-word--large">Inicie</span>
-              <span className="rite-word rite-word--mid">o rito de</span>
+              <span className="rite-word rite-word--large">SingulAI</span>
+              <span className="rite-word rite-word--mid">AvatarPro Vault</span>
               <span className="rite-word rite-word--end">
-                memória<span className="rite-accent">.</span>
+                Hackathon Demo<span className="rite-accent">.</span>
               </span>
             </p>
 
             <p className="rite-nota">
-              Esta página é uma soleira. Não um <em>onboarding</em>.<br />
-              Ao cruzar, você consente que algo seja lembrado de você.
+              A plataforma de prova auditável no Solana Devnet.
+              <br />Crie AvatarPro, agende TimeCapsules, simule entrega e gere prova.
             </p>
 
             <div className="rite-passage">
               <p className="rite-passage-label">
-                II · PASSAGEM · DUAS INSCRIÇÕES · UMA SOLEIRA
+                II · MVP FLOW · AVATARPRO · TIMECAPSULE · PROOF
               </p>
 
               <div className="rite-inscriptions">
@@ -261,11 +261,11 @@ export default function SingulAIIntroExperience() {
                   className="rite-inscription"
                   onClick={() => handleInscription(true)}
                   disabled={state !== "idle"}
-                  aria-label="Iniciar experiência com som"
+                  aria-label="Iniciar demo com som"
                 >
                   <span className="rite-ins-roman">I</span>
-                  <span className="rite-ins-name">com som</span>
-                  <span className="rite-ins-sub">→ iniciar experiência</span>
+                  <span className="rite-ins-name">demo ativo</span>
+                  <span className="rite-ins-sub">→ iniciar demo</span>
                 </button>
 
                 {/* Inscription II */}
@@ -273,11 +273,11 @@ export default function SingulAIIntroExperience() {
                   className="rite-inscription"
                   onClick={() => handleInscription(false)}
                   disabled={state !== "idle"}
-                  aria-label="Atravessar sem som"
+                  aria-label="Iniciar demo silencioso"
                 >
                   <span className="rite-ins-roman">II</span>
-                  <span className="rite-ins-name">em silêncio</span>
-                  <span className="rite-ins-sub">→ atravessar sem som</span>
+                  <span className="rite-ins-name">demo silencioso</span>
+                  <span className="rite-ins-sub">→ iniciar sem áudio</span>
                 </button>
 
                 {/* Inscription III — appears only when ready */}
@@ -285,11 +285,11 @@ export default function SingulAIIntroExperience() {
                   <button
                     className="rite-inscription rite-inscription--ready"
                     onClick={handleEnter}
-                    aria-label="Entrar no painel"
+                    aria-label="Abrir dashboard"
                   >
                     <span className="rite-ins-roman">III</span>
-                    <span className="rite-ins-name">entrar no painel</span>
-                    <span className="rite-ins-sub">→ cruzar a soleira</span>
+                    <span className="rite-ins-name">abrir dashboard</span>
+                    <span className="rite-ins-sub">→ ir para o painel</span>
                   </button>
                 )}
               </div>

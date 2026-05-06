@@ -375,18 +375,19 @@
 /* ════ Topbar — Neural Command Bar ════ */
 #topbar {
   grid-area: topbar;
+  position: sticky;
+  top: 0;
   height: 56px;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   padding: 0 16px 0 12px;
-  background: rgba(5, 5, 9, 0.90);
+  background: rgba(5, 5, 9, 0.95);
   backdrop-filter: blur(36px) saturate(180%);
   -webkit-backdrop-filter: blur(36px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.055);
-  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.085);
   overflow: hidden;
-  z-index: 10;
+  z-index: 20;
   transition: background 0.4s var(--ease);
 }
 
@@ -791,18 +792,22 @@
   overflow: hidden;
   min-height: 0;
   max-height: 100%;
+  padding: 96px 32px 32px;
+  display: grid;
+  gap: 24px;
 }
 
 /* ════ Architecture Constellation ════ */
 .arch-constellation {
-  position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
   z-index: 7;
-  width: min(1040px, calc(100vw - 140px));
-  max-height: min(45vh, 420px);
-  padding: 14px;
+  width: min(1040px, calc(100% - 64px));
+  max-height: none;
+  margin: 0 auto;
+  padding: 18px;
   border-radius: 18px;
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   background:
@@ -813,7 +818,7 @@
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.52),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  overflow: auto;
+  overflow: hidden;
   scrollbar-width: none;
   animation: archReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -1939,7 +1944,7 @@
   top: 14px; right: 14px;
   width: 280px;
   max-height: calc(100% - 28px);
-  z-index: 12;
+  z-index: 25;
   display: flex; flex-direction: column;
   border-radius: var(--r-lg);
   background: rgba(8, 8, 12, 0.92);
@@ -1952,6 +1957,13 @@
 @keyframes spIn {
   from { opacity: 0; transform: translateY(-8px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.subpanel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 22;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
 }
 .sp-hdr {
   display: flex; align-items: center; justify-content: space-between;
