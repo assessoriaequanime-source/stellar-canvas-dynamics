@@ -149,7 +149,7 @@ export default function SingulAIIntroExperience() {
   const handleEnter = useCallback(() => {
     setVeilActive(true);
     setTimeout(() => {
-      window.location.href = getDashboardUrl("/dashboard");
+      window.location.href = getDashboardUrl("/vault");
     }, 900);
   }, []);
 
@@ -220,10 +220,10 @@ export default function SingulAIIntroExperience() {
             <div className="rite-header-left">
               <span className="rite-head-title">SINGULAI</span>
               <span className="rite-head-sep">·</span>
-              <span className="rite-head-sub">RITUS MEMORIÆ</span>
+              <span className="rite-head-sub">AVATARPRO VAULT</span>
             </div>
             <div className="rite-header-right">
-              <span className="rite-folio">FOLIO I · EDITIO PRIMA</span>
+              <span className="rite-folio">SOLANA FRONTIER HACKATHON · 2026</span>
               <span className="rite-head-sep">·</span>
               <span className="rite-date">{liveDate}</span>
             </div>
@@ -235,24 +235,24 @@ export default function SingulAIIntroExperience() {
         <div className="rite-body">
           {/* main text */}
           <main className="rite-main">
-            <p className="rite-folio-label">I · ABERTURA</p>
+            <p className="rite-folio-label">I · OPEN TRACK · SOLANA DEVNET</p>
 
             <p className="rite-phrase">
-              <span className="rite-word rite-word--large">SingulAI</span>
-              <span className="rite-word rite-word--mid">AvatarPro Vault</span>
+              <span className="rite-word rite-word--large">AvatarPro</span>
+              <span className="rite-word rite-word--mid">Vault</span>
               <span className="rite-word rite-word--end">
-                Hackathon Demo<span className="rite-accent">.</span>
+                Executable Identity<span className="rite-accent">.</span>
               </span>
             </p>
 
             <p className="rite-nota">
-              A plataforma de prova auditável no Solana Devnet.
-              <br />Crie AvatarPro, agende TimeCapsules, simule entrega e gere prova.
+              Professional expertise. Verifiable. On-chain.
+              <br />Create an AvatarPro, register snapshots, program TimeCapsules and generate execution proofs on Solana Devnet.
             </p>
 
             <div className="rite-passage">
               <p className="rite-passage-label">
-                II · MVP FLOW · AVATARPRO · TIMECAPSULE · PROOF
+                II · AVATARPRO · TIMECAPSULE · PAS SCORE · SOLANA PROOF
               </p>
 
               <div className="rite-inscriptions">
@@ -261,11 +261,11 @@ export default function SingulAIIntroExperience() {
                   className="rite-inscription"
                   onClick={() => handleInscription(true)}
                   disabled={state !== "idle"}
-                  aria-label="Iniciar demo com som"
+                  aria-label="Enter with audio"
                 >
                   <span className="rite-ins-roman">I</span>
-                  <span className="rite-ins-name">demo ativo</span>
-                  <span className="rite-ins-sub">→ iniciar demo</span>
+                  <span className="rite-ins-name">with audio</span>
+                  <span className="rite-ins-sub">→ enter experience</span>
                 </button>
 
                 {/* Inscription II */}
@@ -273,11 +273,11 @@ export default function SingulAIIntroExperience() {
                   className="rite-inscription"
                   onClick={() => handleInscription(false)}
                   disabled={state !== "idle"}
-                  aria-label="Iniciar demo silencioso"
+                  aria-label="Enter silently"
                 >
                   <span className="rite-ins-roman">II</span>
-                  <span className="rite-ins-name">demo silencioso</span>
-                  <span className="rite-ins-sub">→ iniciar sem áudio</span>
+                  <span className="rite-ins-name">silent mode</span>
+                  <span className="rite-ins-sub">→ enter without audio</span>
                 </button>
 
                 {/* Inscription III — appears only when ready */}
@@ -285,11 +285,11 @@ export default function SingulAIIntroExperience() {
                   <button
                     className="rite-inscription rite-inscription--ready"
                     onClick={handleEnter}
-                    aria-label="Abrir dashboard"
+                    aria-label="Open vault"
                   >
                     <span className="rite-ins-roman">III</span>
-                    <span className="rite-ins-name">abrir dashboard</span>
-                    <span className="rite-ins-sub">→ ir para o painel</span>
+                    <span className="rite-ins-name">open vault</span>
+                    <span className="rite-ins-sub">→ enter demo</span>
                   </button>
                 )}
               </div>
@@ -297,7 +297,7 @@ export default function SingulAIIntroExperience() {
               {isReady && (
                 <p className="rite-restart">
                   <button className="rite-restart-btn" onClick={handleRestart}>
-                    reiniciar
+                    restart
                   </button>
                 </p>
               )}
@@ -344,7 +344,7 @@ export default function SingulAIIntroExperience() {
           <div style={{ height: "0.5rem" }} />
           <div className="rite-footer-inner">
             <div className="rite-colophon-left">
-              <span className="rite-alpha">α&nbsp;·</span>custódia
+              <span className="rite-alpha">α&nbsp;·</span>custody
             </div>
             <div className="rite-colophon-right">
               <a href="https://singulai.live" target="_blank" rel="noopener noreferrer">
@@ -359,9 +359,9 @@ export default function SingulAIIntroExperience() {
                 VITOR.BUSINESS
               </a>
               <br />
-              PRESSED IN OBSIDIAN&nbsp;·&nbsp;EDITIO MMXXVI
+              BUILT ON SOLANA&nbsp;·&nbsp;EDITIO MMXXVI
               <br />
-              RITUS&nbsp;·&nbsp;MEMORIÆ&nbsp;·&nbsp;SOLEIRA&nbsp;·&nbsp;I
+              AVATARPRO&nbsp;·&nbsp;TIMECAPSULE&nbsp;·&nbsp;PROOF&nbsp;·&nbsp;I
             </div>
           </div>
         </footer>
