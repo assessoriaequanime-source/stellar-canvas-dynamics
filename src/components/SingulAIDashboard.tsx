@@ -11,6 +11,7 @@ import {
   getCurrentUser,
   getProfile,
   getWalletStatus,
+  provisionWallet,
 } from "@/lib/avatarpro/avatarProApiClient";
 import {
   getAbsorptionState,
@@ -213,6 +214,7 @@ export default function SingulAIDashboard() {
   const [chatAuditLog, setChatAuditLog] = useState<ChatAuditEntry[]>([]);
   const [capsuleContent, setCapsuleContent] = useState("");
   const [capsuleCost, setCapsuleCost] = useState(100);
+  const [lastProvisionExplorer, setLastProvisionExplorer] = useState("");
 
   const toPercentScale = useCallback((value: unknown, fallback: number) => {
     const num = Number(value);
@@ -962,6 +964,29 @@ export default function SingulAIDashboard() {
       });
   };
 
+  const connectSolanaWallet = async () => {
+    try {
+      const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
+      if (!provider) {
+        setStatusMessage("Phantom/Solflare wallet extension not found");
+        return;
+      }
+
+      const response = await provider.connect();
+      const publicKey = response.publicKey.toString();
+      const provision = await provisionWallet({ walletAddress: publicKey });
+
+      setWalletAddress(publicKey);
+      setSglBalance(Number(provision.sglBalance || 0));
+      setLastProvisionExplorer((provision.explorerUrl || "").toString());
+      setSubpanel("wallet");
+      setStatusMessage("Solana Devnet wallet connected and provisioned");
+      setBackendStatus("connected");
+    } catch {
+      setStatusMessage("Wallet connection failed");
+    }
+  };
+
   // ESC closes modal
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -1039,6 +1064,17 @@ export default function SingulAIDashboard() {
                 <polyline points="9 22 9 12 15 12 15 22" />
               </Icon>
             </Link>
+            <button
+              className="tb-btn"
+              onClick={() => void connectSolanaWallet()}
+              title="Connect Solana Wallet"
+              aria-label="Connect Solana Wallet"
+            >
+              <Icon>
+                <path d="M2 7h20v10H2z" />
+                <path d="M16 12h4" />
+              </Icon>
+            </button>
             <button
               className="tb-btn"
               onClick={() => setSettingsOpen(true)}
@@ -1181,12 +1217,18 @@ export default function SingulAIDashboard() {
                     </div>
                     <div className="sp-row">
                       <span>Network</span>
-                      <code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Sepolia"}</code>
+                      <code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Solana Devnet"}</code>
                     </div>
                     <div className="sp-row">
                       <span>Profile</span>
                       <code>{profileName}</code>
                     </div>
+                    {lastProvisionExplorer ? (
+                      <div className="sp-row">
+                        <span>Explorer</span>
+                        <code style={{ wordBreak: "break-all", fontSize: 10 }}>{lastProvisionExplorer.slice(0, 40)}…</code>
+                      </div>
+                    ) : null}
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
                       <Link
                         to="/vault"
