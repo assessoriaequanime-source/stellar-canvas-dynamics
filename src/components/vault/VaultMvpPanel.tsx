@@ -226,6 +226,13 @@ export default function VaultMvpPanel() {
 
       <p style={{ marginTop: 16, opacity: 0.9 }}>{message}</p>
       <p style={{ marginTop: 6, opacity: 0.8 }}>Initial SGL balance for this MVP is fixed at {INITIAL_SGL_BALANCE.toLocaleString()}.</p>
+      <footer style={{ marginTop: 40, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.22)", lineHeight: 1.8 }}>
+        DEV -{" "}
+        <a href="https://rodrigo.run" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(143,211,255,0.5)", textDecoration: "none" }}>
+          rodrigo.run
+        </a>{" "}
+        © 2026 SingulAI - Todos os direitos reservados
+      </footer>
     </main>
     </div>
   );

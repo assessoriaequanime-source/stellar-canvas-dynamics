@@ -1491,7 +1491,9 @@ export default function SingulAIDashboard() {
               <span className="footer-meta">
                 {modelChoiceEnabled ? "Model unlocked" : "Model locked (pending upgrade)"}
               </span>
-              <span className="footer-meta">demo local · Solana pending_wallet_signature</span>
+              {isExplicitDevMockEnabled() && (
+                <span className="footer-meta">demo local · Solana pending_wallet_signature</span>
+              )}
               <span className="singulai-footer-inpi">INPI 942284933</span>
             </div>
           </div>
@@ -1793,6 +1795,13 @@ export default function SingulAIDashboard() {
           </div>
         </div>
       </div>
+      <footer style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.22)", padding: "16px 0 8px", lineHeight: 1.8 }}>
+        DEV -{" "}
+        <a href="https://rodrigo.run" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(143,211,255,0.5)", textDecoration: "none" }}>
+          rodrigo.run
+        </a>{" "}
+        © 2026 SingulAI - Todos os direitos reservados
+      </footer>
     </div>
   );
 }

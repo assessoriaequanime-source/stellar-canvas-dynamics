@@ -388,6 +388,13 @@ export default function SingulAIIntroExperience() {
               AVATARPRO&nbsp;·&nbsp;TIMECAPSULE&nbsp;·&nbsp;PROOF&nbsp;·&nbsp;I
             </div>
           </div>
+          <div style={{ textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.18)", marginTop: "0.75rem" }}>
+            DEV -{" "}
+            <a href="https://rodrigo.run" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(143,211,255,0.4)", textDecoration: "none" }}>
+              rodrigo.run
+            </a>{" "}
+            © 2026 SingulAI - Todos os direitos reservados
+          </div>
         </footer>
       </div>
     </section>
