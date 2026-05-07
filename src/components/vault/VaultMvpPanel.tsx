@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
+import { Link } from "@tanstack/react-router";
 import { executePaidService, getPublicAuditSummary, loadAuditRecords, type AuditRecord } from "@/lib/sgl/execution";
 import { INITIAL_SGL_BALANCE, SERVICE_CATALOG, SERVICE_TYPES, type ServiceType } from "@/lib/sgl/services";
 import { RealSolanaAdapter } from "@/lib/solana/realSolanaAdapter";
@@ -111,6 +112,39 @@ export default function VaultMvpPanel() {
 
   return (
     <div style={{ height: "100dvh", overflowY: "auto", background: "#0b0b0b" }}>
+
+    {/* Barra de navegação */}
+    <nav style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)",
+      background: "rgba(0,0,0,0.5)", position: "sticky", top: 0, zIndex: 10,
+    }}>
+      <Link to="/dashboard" style={{
+        display: "flex", alignItems: "center", gap: 6,
+        color: "rgba(255,255,255,0.65)", fontSize: 12, textDecoration: "none",
+        letterSpacing: "0.06em",
+      }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        Dashboard
+      </Link>
+      <span style={{ fontSize: 11, letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>
+        AvatarPro Vault
+      </span>
+      <Link to="/audit" style={{
+        display: "flex", alignItems: "center", gap: 6,
+        color: "#8fd3ff", fontSize: 12, textDecoration: "none",
+        letterSpacing: "0.06em",
+      }}>
+        Auditoria
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+      </Link>
+    </nav>
+
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px", color: "#f7f5ef" }}>
       <h1 style={{ fontSize: 32, marginBottom: 8 }}>SingulAI AvatarPro Vault</h1>
       <p style={{ opacity: 0.9, marginBottom: 20 }}>Operational MVP for paid execution services with Solana demo audit proofs.</p>
@@ -125,7 +159,10 @@ export default function VaultMvpPanel() {
       <section style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginBottom: 20 }}>
         <div style={CARD}>
           <h3 style={{ marginTop: 0 }}>Wallet</h3>
-          <p style={{ wordBreak: "break-all" }}>{walletAddress}</p>
+          <p style={{ wordBreak: "break-all", fontSize: 12, fontFamily: "monospace", opacity: 0.85 }}>
+            {walletAddress.slice(0, 10)}…{walletAddress.slice(-8)}
+          </p>
+          <p style={{ fontSize: 10, opacity: 0.5, marginBottom: 8, wordBreak: "break-all" }}>{walletAddress}</p>
           <button style={BUTTON} onClick={() => copyValue(walletAddress, "wallet")}>Copy wallet</button>
         </div>
         <div style={CARD}>

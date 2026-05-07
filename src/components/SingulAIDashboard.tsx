@@ -1187,6 +1187,37 @@ export default function SingulAIDashboard() {
                       <span>Profile</span>
                       <code>{profileName}</code>
                     </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
+                      <Link
+                        to="/vault"
+                        style={{
+                          display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                          background: "rgba(143,211,255,0.08)", border: "1px solid rgba(143,211,255,0.22)",
+                          borderRadius: 8, color: "#8fd3ff", fontSize: 12, textDecoration: "none",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        AvatarPro Vault — Serviços Pagos
+                      </Link>
+                      <Link
+                        to="/audit"
+                        style={{
+                          display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)",
+                          borderRadius: 8, color: "rgba(255,255,255,0.7)", fontSize: 12, textDecoration: "none",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg>
+                        Auditoria Devnet — Provas on-chain
+                      </Link>
+                    </div>
                   </div>
                 )}
                 {subpanel === "pro" && (
