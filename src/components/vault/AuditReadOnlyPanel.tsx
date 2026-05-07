@@ -274,7 +274,7 @@ export default function AuditReadOnlyPanel() {
           getSglBalance(addr),
         ]);
         setRecords(Array.isArray(events) ? events : []);
-        setBalance(Number(balanceData.sglBalance || balanceData.balance || INITIAL_SGL_BALANCE));
+        setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
         setMessage(
           Array.isArray(events) && events.length > 0
             ? `${events.length} evento(s) verificado(s) na Solana Devnet.`
@@ -312,7 +312,7 @@ export default function AuditReadOnlyPanel() {
         getSglBalance(addr),
       ]);
       setRecords(Array.isArray(events) ? events : []);
-      setBalance(Number(balanceData.sglBalance || balanceData.balance || INITIAL_SGL_BALANCE));
+      setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
       setMessage(`${Array.isArray(events) ? events.length : 0} evento(s) atualizados.`);
     } catch {
       setMessage("Erro ao recarregar.");

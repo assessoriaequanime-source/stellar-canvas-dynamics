@@ -4,7 +4,7 @@ Enterprise-grade backend for Stellar Canvas Dynamics - a Web3 avatar platform wi
 
 ## 🏗️ Architecture
 
-```
+```text
 stellar-backend (Node.js + Express + TypeScript)
     ├── PostgreSQL 15 (stellar_db)
     ├── Redis 7 (caching + sessions)
@@ -38,6 +38,7 @@ nano .env
 ```
 
 Key variables to set:
+
 - `DB_PASSWORD`: PostgreSQL password
 - `REDIS_PASSWORD`: Redis password
 - `JWT_SECRET`: JWT signing secret (min 32 chars)
@@ -54,6 +55,7 @@ Server runs at: `http://localhost:9200`
 ## 📚 Available Commands
 
 ### Development
+
 ```bash
 npm run dev           # Start with hot-reload (nodemon)
 npm run build         # Build TypeScript to dist/
@@ -62,6 +64,7 @@ npm run stop          # Stop running server
 ```
 
 ### Testing
+
 ```bash
 npm test              # Run all tests
 npm run test:watch   # Watch mode
@@ -69,6 +72,7 @@ npm run test:coverage # Coverage report
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint          # Check code style
 npm run lint:fix      # Auto-fix code style
@@ -76,12 +80,14 @@ npm run typecheck     # TypeScript type checking
 ```
 
 ### Database
+
 ```bash
 npm run prisma:migrate  # Run Prisma migrations
 npm run prisma:studio   # Open Prisma Studio GUI
 ```
 
 ### Docker
+
 ```bash
 npm run docker:up     # Start PostgreSQL + Redis
 npm run docker:down   # Stop and remove containers
@@ -92,7 +98,7 @@ npm run docker:logs   # View Docker logs
 
 ### PostgreSQL (Development)
 
-```
+```text
 Host: 127.0.0.1
 Port: 5433
 Database: stellar_db
@@ -101,7 +107,7 @@ User: stellar_user
 
 ### Redis (Development)
 
-```
+```text
 Host: 127.0.0.1
 Port: 6380
 Auth: ${REDIS_PASSWORD}
@@ -112,6 +118,7 @@ Auth: ${REDIS_PASSWORD}
 See `.env.example` for all available options.
 
 **Critical variables**:
+
 - `NODE_ENV`: Set to `development` or `production`
 - `UDP_PASSWORD`: Secure password for database
 - `JWT_SECRET`: Secret for JWT signing
@@ -119,7 +126,7 @@ See `.env.example` for all available options.
 
 ## 📖 Project Structure
 
-```
+```text
 src/
 ├── api/                    # HTTP API layer
 │   ├── controllers/        # Request handlers
@@ -147,7 +154,7 @@ This repository now includes a non-invasive scaffold for future avatar interacti
 
 Location:
 
-```
+```text
 src/integrations/avatar-interaction/
 ├── contracts/
 ├── providers/
@@ -166,7 +173,7 @@ Activation status:
 ## 🔌 API Endpoints (v1)
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+| ------ | -------- | ----------- |
 | `GET` | `/health` | Health check |
 | `POST` | `/api/v1/auth/login` | User authentication |
 | `GET` | `/api/v1/avatars` | List avatars |
@@ -179,11 +186,13 @@ Full API documentation: See `docs/API.md` (coming in Week 2)
 ## 🧪 Testing
 
 Run all tests:
+
 ```bash
 npm test
 ```
 
 With coverage:
+
 ```bash
 npm run test:coverage
 ```
@@ -191,21 +200,25 @@ npm run test:coverage
 ## 🐳 Docker Commands
 
 Start containers:
+
 ```bash
 docker-compose up -d
 ```
 
 View status:
+
 ```bash
 docker-compose ps
 ```
 
 View logs:
+
 ```bash
 docker-compose logs -f postgres redis
 ```
 
 Stop everything:
+
 ```bash
 docker-compose down
 ```
@@ -231,10 +244,12 @@ docker run -p 9200:9200 --env-file .env stellar-backend:latest
 ## 📝 Logs
 
 Development logs are written to:
+
 - Console (stdout)
 - `logs/app.log`
 
 View logs:
+
 ```bash
 tail -f logs/app.log
 ```

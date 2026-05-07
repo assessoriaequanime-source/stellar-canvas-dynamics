@@ -3,7 +3,7 @@
 ## Estrutura do ambiente
 
 | Item | Valor |
-|---|---|
+| --- | --- |
 | VPS IP | `72.60.147.56` |
 | Projeto na VPS | `/projects/active/stellar-canvas-dynamics` |
 | PM2 process | `singulai-live-dashboard` (id: 60) |
@@ -70,7 +70,7 @@ pm2 startup
 ## 7. Variáveis de ambiente obrigatórias no build
 
 | Variável | Valor |
-|---|---|
+| --- | --- |
 | `VITE_ALT_API_BASE` | `https://singulai.live/alt-api` |
 | `VITE_SIMPLE_TEST_AUTH` | `0` (desativa auth simplificada em prod) |
 
@@ -78,7 +78,7 @@ pm2 startup
 
 ## Fluxo completo de uma mudança
 
-```
+```text
 1. Editar código no Codespace
 2. git add -A && git commit -m "feat: …" && git push origin main
 3. Na VPS: (comando do item 1 acima)

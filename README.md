@@ -1,4 +1,3 @@
-# SingulAI — Executable Digital Legacy on Solana
 # SingulAI AvatarPro Vault
 
 > **Professional continuity. Verifiable memory. Executable AI identity.**
@@ -12,7 +11,7 @@ The MVP combines AI, privacy and Solana to make professional knowledge scalable,
 ## Solana Frontier Hackathon — Project Summary
 
 | Field | Value |
-|---|---|
+| --- | --- |
 | **Track** | Open Track |
 | **Network** | Solana Devnet |
 | **Language** | TypeScript (frontend + orchestration logic) |
@@ -60,7 +59,7 @@ SingulAI AvatarPro Vault inverts this: professionals create a verifiable AvatarP
 ### Solana Program Architecture
 
 | Program | Role |
-|---|---|
+| --- | --- |
 | `Avatar Identity Program` | Stores expertise profile and maturity state |
 | `TimeCapsule Program` | Manages creation, arming, and delivery of capsules |
 | `Legacy Vault Program` | Execution reserves and multi-party release logic |
@@ -68,7 +67,7 @@ SingulAI AvatarPro Vault inverts this: professionals create a verifiable AvatarP
 
 ### Avatar Maturity States
 
-```
+```text
 Draft → Assisted → Trusted
 ```
 
@@ -80,7 +79,7 @@ Promotion is governed by the **Governance Engine** using the domain policy thres
 
 The PAS is a normalized score `[0.0, 1.0]` calculated per avatar per evaluation cycle:
 
-```
+```text
 PAS = (interactionFactor × 0.25)
     + (assertivenessFactor × 0.45)
     + (executionFactor: +0.20 correct / -0.15 incorrect)
@@ -88,7 +87,7 @@ PAS = (interactionFactor × 0.25)
 ```
 
 | State Transition | PAS Threshold |
-|---|---|
+| --- | --- |
 | Draft → Assisted | ≥ 0.75 |
 | Assisted → Trusted | ≥ 0.80 (+ low escalation rate) |
 | Any → Demotion | < 0.45 (domain-specific) |
@@ -106,7 +105,8 @@ const result = await runMvpFlow();
 // Returns: MvpFlowResult with avatarId, capsuleId, proofEvents[], absorptionState
 ```
 
-### What it demonstrates:
+### What it demonstrates
+
 1. `createAvatarIdentity` — avatar identity anchored to slot
 2. `createTimeCapsule` — capsule created with 5-year trigger window
 3. `simulateTrigger` — trigger condition marked on-chain
@@ -154,7 +154,7 @@ npm run build
 
 ## Project Structure
 
-```
+```text
 src/lib/hackathon/
 ├── types.ts              # Core TypeScript interfaces
 ├── governance-types.ts   # Governance and assertiveness cycle types
@@ -177,7 +177,7 @@ docs/
 Every execution step records a `ProofEvent`:
 
 | Event Type | Meaning |
-|---|---|
+| --- | --- |
 | `SnapshotAnchored` | Avatar identity committed to a Solana slot |
 | `CapsuleCreated` | TimeCapsule registered with trigger conditions |
 | `TriggerSimulated` | Trigger condition verified and recorded |
@@ -191,7 +191,7 @@ Every execution step records a `ProofEvent`:
 Three canonical domain policies are pre-configured:
 
 | Domain | Promotion Threshold | Demotion Threshold | Max Escalation Rate |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `professional-method` | 0.75 | 0.45 | 0.20 |
 | `time-capsule-delivery` | 0.80 | 0.50 | 0.15 |
 | `legacy-execution` | 0.85 | 0.55 | 0.10 |
@@ -212,11 +212,13 @@ The previous Ethereum/Sepolia, MetaMask, ERC-20, ERC-721, Hardhat and Etherscan 
 
 Official MVP validation for jurors:
 
+**Audit panel access password: `judge2026`**
+
 1. Open `/vault`
 2. Use generated Solana demo wallet
 3. Confirm `10,000 SGL` execution credits
 4. Execute paid services
-5. Open `/audit`
+5. Open `/audit` — enter password `judge2026` when prompted
 6. Verify balances, hashes, signatures, proof labels and explorer links
 
 ## Solana Devnet Real Layer

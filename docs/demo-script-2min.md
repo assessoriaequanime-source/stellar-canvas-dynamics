@@ -1,4 +1,3 @@
-# SingulAI — Demo Script (2 min)
 # SingulAI AvatarPro Vault — Demo Script (2 min)
 
 ## Context for presenter
@@ -44,7 +43,8 @@ console.log(result.proofEvents); // 5 events, each with a signature and slot
 > At 0.80+ with low escalation, it becomes **Trusted** — able to execute autonomously."
 
 **[Show governance output]:**
-```
+
+```text
 Decision: promoted = true
 State: Draft → Assisted
 Reason: PAS 0.82 meets threshold 0.75 for domain professional-method
@@ -61,7 +61,8 @@ Reason: PAS 0.82 meets threshold 0.75 for domain professional-method
 > on a Solana slot — immutable, traceable, verifiable."
 
 **[Show proof event]:**
-```
+
+```text
 ProofEvent: DeliveryRecorded
 Signature: sig_f3a9b201c...
 Slot: 100004
