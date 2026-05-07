@@ -638,19 +638,35 @@
 @media (max-width: 767px) {
   #topbar {
     grid-template-columns: auto 1fr auto;
-    padding: 0 12px;
+    padding: 0 8px;
+    overflow: hidden;
   }
-  .tb-mode { min-width: 72px; padding: 7px 10px; }
+  .tb-switcher {
+    gap: 2px; padding: 3px;
+    overflow: hidden;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .tb-mode {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 6px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .tb-mode-label { font-size: 10px; overflow: hidden; text-overflow: ellipsis; }
   .tb-mode-sub { display: none; }
   .tb-omega-live { display: none; }
   .tb-status { display: none; }
-  .tb-switcher { gap: 2px; padding: 4px; }
-  .tb-actions-chip { padding: 4px 5px; }
+  .tb-actions-chip { padding: 4px 4px; gap: 4px; flex-shrink: 0; }
+  .tb-divider-v { display: none; }
+  /* Oculta texto de status no chip em mobile, mantém só os botões */
+  .tb-actions-chip > .tb-status-txt:not(:last-child) { display: none; }
 }
 
 @media (max-width: 400px) {
-  .tb-mode { min-width: 60px; padding: 6px 7px; }
-  .tb-mode-label { font-size: 10.5px; }
+  .tb-mode { padding: 5px 4px; }
+  .tb-mode-label { font-size: 9px; }
 }
 
 
@@ -1229,6 +1245,8 @@
   width: 100%;
   max-width: 600px;
   display: flex; align-items: center; justify-content: center;
+  flex-wrap: nowrap;
+  overflow: hidden;
   margin-top: 8px; position: relative; z-index: 2;
   flex-shrink: 0;
   padding-bottom: 2px;
@@ -1240,9 +1258,8 @@
   letter-spacing: 0.22em; text-transform: uppercase;
   transition: color 0.4s var(--ease);
   text-shadow: 0 0 14px rgba(var(--accent-rgb), 0.35);
-  min-width: 0;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .footer-avatar-desc {
   display: none;
@@ -1854,9 +1871,14 @@
   #chat-footer {
     font-size: 9px; gap: 4px;
     flex-wrap: nowrap;
+    overflow: hidden;
     margin-top: 6px;
     flex-shrink: 0;
   }
+  /* Em mobile, oculta metadados secundários, mantém só o nome do avatar */
+  #chat-footer .footer-meta { display: none; }
+  #chat-footer .singulai-footer-inpi { display: none; }
+  .footer-avatar-name { font-size: 10px; }
   #chat-bar {
     max-width: 100%;
     padding: 8px 10px;

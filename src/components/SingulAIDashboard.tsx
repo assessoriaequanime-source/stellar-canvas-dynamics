@@ -965,17 +965,32 @@ export default function SingulAIDashboard() {
   };
 
   const connectSolanaWallet = async () => {
+    // Primeiro tenta usar a wallet da sessão (localStorage)
+    try {
+      const stored = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+      const sessionAddr = stored?.address || stored?.walletAddress || "";
+      if (sessionAddr) {
+        setWalletAddress(sessionAddr);
+        const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
+        if (u?.sglBalance !== undefined) setSglBalance(Number(u.sglBalance));
+        setSubpanel("wallet");
+        setStatusMessage("Wallet da sessão carregada");
+        return;
+      }
+    } catch {
+      // ignora erro de parse
+    }
+
+    // Fallback: tenta Phantom/Solflare
     try {
       const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
       if (!provider) {
-        setStatusMessage("Phantom/Solflare wallet extension not found");
+        setStatusMessage("Nenhuma wallet encontrada. Faça login novamente.");
         return;
       }
-
       const response = await provider.connect();
       const publicKey = response.publicKey.toString();
       const provision = await provisionWallet({ walletAddress: publicKey });
-
       setWalletAddress(publicKey);
       setSglBalance(Number(provision.sglBalance || 0));
       setLastProvisionExplorer((provision.explorerUrl || "").toString());
@@ -983,7 +998,7 @@ export default function SingulAIDashboard() {
       setStatusMessage("Solana Devnet wallet connected and provisioned");
       setBackendStatus("connected");
     } catch {
-      setStatusMessage("Wallet connection failed");
+      setStatusMessage("Falha ao conectar wallet");
     }
   };
 
@@ -1333,16 +1348,44 @@ export default function SingulAIDashboard() {
                 {subpanel === "settings" && (
                   <div className="sp-info">
                     <div className="sp-row">
-                      <span>Theme</span>
-                      <code>Dark Tech</code>
+                      <span>Usuário</span>
+                      <code>{profileName || "—"}</code>
                     </div>
                     <div className="sp-row">
-                      <span>Language</span>
-                      <code>en-US</code>
+                      <span>Wallet</span>
+                      <code>
+                        {walletAddress
+                          ? `${walletAddress.slice(0, 8)}…${walletAddress.slice(-6)}`
+                          : "Não conectada"}
+                      </code>
                     </div>
                     <div className="sp-row">
-                      <span>Notifications</span>
-                      <code>enabled</code>
+                      <span>SGL Balance</span>
+                      <code>{sglBalance.toLocaleString("en-US")} SGL</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Avatar ativo</span>
+                      <code>{prof.avatarName} · {prof.modeName}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Status</span>
+                      <code>{avatarStatusLabel}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Rede</span>
+                      <code>Solana Devnet</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Backend</span>
+                      <code>{backendStatus === "connected" ? "Online" : backendStatus === "mock-dev" ? "Demo local" : "Indisponível"}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Absorção</span>
+                      <code>{absorption.toFixed(1)}%</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Omega Ω</span>
+                      <code>{omegaPct.toFixed(1)} · {omegaStatus}</code>
                     </div>
                   </div>
                 )}

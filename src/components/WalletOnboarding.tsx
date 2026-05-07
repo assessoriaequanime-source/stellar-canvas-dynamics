@@ -68,6 +68,7 @@ export default function WalletOnboarding({ onSuccess }: Props) {
   const [step, setStep] = useState<Step>(existingAddr ? "reconnecting" : "creating");
   const [walletAddress] = useState<string>(existingAddr ?? generateSolanaAddress());
   const [seedPhrase] = useState<string[]>(generateSeedPhrase());
+  const [countdown, setCountdown] = useState(8);
   const SGL_BONUS = 1000;
 
   // Returning user → mostra endereço brevemente, depois avança para "reconnected"
@@ -76,18 +77,27 @@ export default function WalletOnboarding({ onSuccess }: Props) {
     const t = setTimeout(() => {
       persistSession(walletAddress);
       setStep("reconnected");
+      setCountdown(8);
     }, 1800);
     return () => clearTimeout(t);
   }, [step, walletAddress]);
 
-  // Auto-avança do estado reconnected após 3s
+  // Auto-avança do estado reconnected após 8s com contador regressivo
   useEffect(() => {
     if (step !== "reconnected") return;
-    const t = setTimeout(() => {
-      onSuccess();
-      void navigate({ to: "/dashboard" });
-    }, 3000);
-    return () => clearTimeout(t);
+    setCountdown(8);
+    const ticker = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          clearInterval(ticker);
+          onSuccess();
+          void navigate({ to: "/dashboard" });
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
+    return () => clearInterval(ticker);
   }, [step, onSuccess, navigate]);
 
   // First visit → animate "creating" then show wallet
@@ -185,7 +195,7 @@ export default function WalletOnboarding({ onSuccess }: Props) {
               <code className="wonb-addr-code">{walletAddress}</code>
             </div>
           </section>
-          <p className="wonb-sub" style={{ marginTop: 8 }}>Redirecionando para o Dashboard…</p>
+          <p className="wonb-sub" style={{ marginTop: 8 }}>Entrando no Dashboard em <strong>{countdown}s</strong>…</p>
           <div className="wonb-dots-row">
             <span className="tdot" />
             <span className="tdot" />
