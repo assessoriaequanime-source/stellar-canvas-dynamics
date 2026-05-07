@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import BrandLogo from "@/components/BrandLogo";
 import { BRAND_LOGO_USAGE } from "@/lib/brand";
 
@@ -58,25 +59,36 @@ interface Props {
   onSuccess: () => void;
 }
 
-type Step = "reconnecting" | "creating" | "reveal" | "exiting";
+type Step = "reconnecting" | "reconnected" | "creating" | "reveal" | "exiting";
 
 export default function WalletOnboarding({ onSuccess }: Props) {
   const existingAddr = localStorage.getItem(WALLET_KEY);
+  const navigate = useNavigate();
 
   const [step, setStep] = useState<Step>(existingAddr ? "reconnecting" : "creating");
   const [walletAddress] = useState<string>(existingAddr ?? generateSolanaAddress());
   const [seedPhrase] = useState<string[]>(generateSeedPhrase());
   const SGL_BONUS = 1000;
 
-  // Returning user → auto-reconnect
+  // Returning user → mostra endereço brevemente, depois avança para "reconnected"
   useEffect(() => {
     if (step !== "reconnecting") return;
     const t = setTimeout(() => {
       persistSession(walletAddress);
-      onSuccess();
+      setStep("reconnected");
     }, 1800);
     return () => clearTimeout(t);
-  }, [step, walletAddress, onSuccess]);
+  }, [step, walletAddress]);
+
+  // Auto-avança do estado reconnected após 3s
+  useEffect(() => {
+    if (step !== "reconnected") return;
+    const t = setTimeout(() => {
+      onSuccess();
+      void navigate({ to: "/dashboard" });
+    }, 3000);
+    return () => clearTimeout(t);
+  }, [step, onSuccess, navigate]);
 
   // First visit → animate "creating" then show wallet
   useEffect(() => {
@@ -126,7 +138,10 @@ export default function WalletOnboarding({ onSuccess }: Props) {
   function handleEnter() {
     persistSession(walletAddress);
     setStep("exiting");
-    setTimeout(onSuccess, 400);
+    setTimeout(() => {
+      onSuccess();
+      void navigate({ to: "/dashboard" });
+    }, 400);
   }
 
   // ── Reconnecting screen ────────────────────────────────────────────
@@ -136,8 +151,10 @@ export default function WalletOnboarding({ onSuccess }: Props) {
         <div className="wonb-shell wonb-shell--compact">
           <BrandLogo {...BRAND_LOGO_USAGE.modal} />
           <p className="wonb-title">Welcome back</p>
-          <div className="wonb-addr-chip">
-            {walletAddress.slice(0, 8)}…{walletAddress.slice(-6)}
+          <div className="wonb-addr-box" style={{ margin: "10px 0" }}>
+            <code className="wonb-addr-code" style={{ fontSize: "0.7em", wordBreak: "break-all" }}>
+              {walletAddress}
+            </code>
           </div>
           <p className="wonb-sub">Reconnecting to Solana Devnet…</p>
           <div className="wonb-dots-row">
@@ -145,6 +162,46 @@ export default function WalletOnboarding({ onSuccess }: Props) {
             <span className="tdot" />
             <span className="tdot" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Reconnected screen ────────────────────────────────────────────
+  if (step === "reconnected") {
+    return (
+      <div className="wonb-overlay">
+        <div className="wonb-shell wonb-shell--compact">
+          <BrandLogo {...BRAND_LOGO_USAGE.modal} />
+          <div className="wonb-success-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} width={14} height={14}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Solana Devnet · Conectado
+          </div>
+          <section className="wonb-section">
+            <p className="wonb-label">WALLET ADDRESS</p>
+            <div className="wonb-addr-box">
+              <code className="wonb-addr-code">{walletAddress}</code>
+            </div>
+          </section>
+          <p className="wonb-sub" style={{ marginTop: 8 }}>Redirecionando para o Dashboard…</p>
+          <div className="wonb-dots-row">
+            <span className="tdot" />
+            <span className="tdot" />
+            <span className="tdot" />
+          </div>
+          <button
+            className="wonb-enter-btn"
+            style={{ marginTop: 16 }}
+            onClick={() => { onSuccess(); void navigate({ to: "/dashboard" }); }}
+          >
+            Entrar agora
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={14} height={14}>
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
         </div>
       </div>
     );
@@ -239,7 +296,7 @@ export default function WalletOnboarding({ onSuccess }: Props) {
         </div>
 
         <button className="wonb-enter-btn" onClick={handleEnter}>
-          Enter the Vault
+          Entrar no Dashboard
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={14} height={14}>
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />

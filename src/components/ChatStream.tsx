@@ -14,6 +14,7 @@ type Props = {
   profile: Profile;
   engineRef?: React.MutableRefObject<AvatarEngine | null>;
   onBubbleFeedback?: (msgId: number, dir: "positive" | "negative") => void;
+  onSaveToCapsule?: (msgId: number, text: string) => void;
 };
 
 /**
@@ -46,9 +47,9 @@ function trajectoryFor(_profile: Profile, depth: number, fromUser: boolean, _mob
   // As depth increases (messages age), they drift toward x=0 (sphere center).
   const laneNudge = (fromUser ? 22 : -22) * (1 - t);
 
-  const opacityLadder = [1.0, 0.75, 0.50, 0.28, 0.11];
-  const scaleLadder  = [1.0, 0.95, 0.87, 0.76, 0.60];
-  const blurLadder   = [0, 0.3, 1.0, 2.2, 4.0];
+  const opacityLadder = [1.0, 0.75, 0.5, 0.28, 0.11];
+  const scaleLadder = [1.0, 0.95, 0.87, 0.76, 0.6];
+  const blurLadder = [0, 0.3, 1.0, 2.2, 4.0];
 
   const opacity = opacityLadder[depth] ?? 0;
   const scale = scaleLadder[depth] ?? 0.5;
@@ -57,7 +58,13 @@ function trajectoryFor(_profile: Profile, depth: number, fromUser: boolean, _mob
   return { opacity, scale, x: laneNudge, y: liftY, blur, hidden: false };
 }
 
-export default function ChatStream({ messages, profile, engineRef, onBubbleFeedback }: Props) {
+export default function ChatStream({
+  messages,
+  profile,
+  engineRef,
+  onBubbleFeedback,
+  onSaveToCapsule,
+}: Props) {
   const isMobile = useIsMobile();
   const indexed = useMemo(() => {
     const arr = [...messages];
@@ -139,48 +146,75 @@ export default function ChatStream({ messages, profile, engineRef, onBubbleFeedb
                 const maxDx = 80;
                 const clampedDx = Math.max(-maxDx, Math.min(maxDx, dx));
                 const ratio = clampedDx / maxDx;
-                const tint = ratio > 0
-                  ? `rgba(var(--accent-rgb), ${Math.abs(ratio) * 0.22})`
-                  : `rgba(220, 38, 38, ${Math.abs(ratio) * 0.22})`;
+                const tint =
+                  ratio > 0
+                    ? `rgba(var(--accent-rgb), ${Math.abs(ratio) * 0.22})`
+                    : `rgba(220, 38, 38, ${Math.abs(ratio) * 0.22})`;
                 return {
                   transform: `translateX(${clampedDx * 0.6}px)`,
                   transition: "none",
                   background: tint,
-                  boxShadow: ratio > 0
-                    ? `0 0 20px rgba(var(--accent-rgb), ${Math.abs(ratio) * 0.35})`
-                    : `0 0 20px rgba(220, 38, 38, ${Math.abs(ratio) * 0.30})`,
+                  boxShadow:
+                    ratio > 0
+                      ? `0 0 20px rgba(var(--accent-rgb), ${Math.abs(ratio) * 0.35})`
+                      : `0 0 20px rgba(220, 38, 38, ${Math.abs(ratio) * 0.3})`,
                 };
               })()}
-              onPointerDown={depth === 0 && !isVanished && msg.role !== "typing" ? (e) => {
-                e.currentTarget.setPointerCapture(e.pointerId);
-                bubbleSwipeRef.current.set(msg.id, { dragging: true, startX: e.clientX, dx: 0, pointerId: e.pointerId });
-              } : undefined}
-              onPointerMove={depth === 0 && !isVanished && msg.role !== "typing" ? (e) => {
-                const state = bubbleSwipeRef.current.get(msg.id);
-                if (!state?.dragging) return;
-                const dx = e.clientX - state.startX;
-                state.dx = dx;
-                setBubbleDxMap((m) => new Map(m).set(msg.id, dx));
-              } : undefined}
-              onPointerUp={depth === 0 && !isVanished && msg.role !== "typing" ? (e) => {
-                const state = bubbleSwipeRef.current.get(msg.id);
-                if (!state?.dragging) return;
-                state.dragging = false;
-                const dx = state.dx;
-                bubbleSwipeRef.current.delete(msg.id);
-                // Snap back with spring transition
-                setBubbleDxMap((m) => {
-                  const next = new Map(m);
-                  next.delete(msg.id);
-                  return next;
-                });
-                if (dx > 55) onBubbleFeedback?.(msg.id, "positive");
-                else if (dx < -55) onBubbleFeedback?.(msg.id, "negative");
-              } : undefined}
-              onPointerCancel={depth === 0 ? () => {
-                bubbleSwipeRef.current.delete(msg.id);
-                setBubbleDxMap((m) => { const n = new Map(m); n.delete(msg.id); return n; });
-              } : undefined}
+              onPointerDown={
+                depth === 0 && !isVanished && msg.role !== "typing"
+                  ? (e) => {
+                      e.currentTarget.setPointerCapture(e.pointerId);
+                      bubbleSwipeRef.current.set(msg.id, {
+                        dragging: true,
+                        startX: e.clientX,
+                        dx: 0,
+                        pointerId: e.pointerId,
+                      });
+                    }
+                  : undefined
+              }
+              onPointerMove={
+                depth === 0 && !isVanished && msg.role !== "typing"
+                  ? (e) => {
+                      const state = bubbleSwipeRef.current.get(msg.id);
+                      if (!state?.dragging) return;
+                      const dx = e.clientX - state.startX;
+                      state.dx = dx;
+                      setBubbleDxMap((m) => new Map(m).set(msg.id, dx));
+                    }
+                  : undefined
+              }
+              onPointerUp={
+                depth === 0 && !isVanished && msg.role !== "typing"
+                  ? (e) => {
+                      const state = bubbleSwipeRef.current.get(msg.id);
+                      if (!state?.dragging) return;
+                      state.dragging = false;
+                      const dx = state.dx;
+                      bubbleSwipeRef.current.delete(msg.id);
+                      // Snap back with spring transition
+                      setBubbleDxMap((m) => {
+                        const next = new Map(m);
+                        next.delete(msg.id);
+                        return next;
+                      });
+                      if (dx > 55) onBubbleFeedback?.(msg.id, "positive");
+                      else if (dx < -55) onBubbleFeedback?.(msg.id, "negative");
+                    }
+                  : undefined
+              }
+              onPointerCancel={
+                depth === 0
+                  ? () => {
+                      bubbleSwipeRef.current.delete(msg.id);
+                      setBubbleDxMap((m) => {
+                        const n = new Map(m);
+                        n.delete(msg.id);
+                        return n;
+                      });
+                    }
+                  : undefined
+              }
             >
               {msg.role === "typing" ? (
                 <div className="typing">
@@ -189,7 +223,21 @@ export default function ChatStream({ messages, profile, engineRef, onBubbleFeedb
                   <div className="tdot" />
                 </div>
               ) : (
-                msg.text
+                <>
+                  {msg.text}
+                  {msg.role === "ai" && depth === 0 && !isVanished && onSaveToCapsule && (
+                    <button
+                      className="save-capsule-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSaveToCapsule(msg.id, msg.text ?? "");
+                      }}
+                      title="Cost: 150 SGL"
+                    >
+                      Save to Capsule
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>

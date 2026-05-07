@@ -1,10 +1,55 @@
-import { useMemo, useState, useEffect, type CSSProperties } from "react";
-import { getAuditEventsByWallet } from "@/lib/avatarpro/auditApiClient";
-import { debitSglForService, getSglBalance } from "@/lib/avatarpro/sglApiClient";
-import { provisionWallet } from "@/lib/avatarpro/avatarProApiClient";
+import { useMemo, useState, type CSSProperties } from "react";
+import { Link } from "@tanstack/react-router";
+import { executePaidService, getPublicAuditSummary, loadAuditRecords, type AuditRecord } from "@/lib/sgl/execution";
 import { INITIAL_SGL_BALANCE, SERVICE_CATALOG, SERVICE_TYPES, type ServiceType } from "@/lib/sgl/services";
+import { RealSolanaAdapter } from "@/lib/solana/realSolanaAdapter";
+import { DEMO_WALLET_ADDRESS } from "@/lib/avatarpro/demoMode";
 
-type VaultAuditEvent = Record<string, unknown>;
+const AVATAR_ID_KEY = "singulai_vault_avatar_id";
+
+function randomId(size: number): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
+  let out = "";
+
+  for (let i = 0; i < size; i += 1) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+
+  return out;
+}
+
+/** Lê o endereço de carteira da sessão do login (localStorage). */
+function getSessionWalletAddress(): string {
+  try {
+    const raw = localStorage.getItem("singulai_wallet");
+    if (raw) {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof parsed.address === "string" && parsed.address.length > 0) {
+        return parsed.address;
+      }
+    }
+  } catch {
+    // fallthrough
+  }
+  return DEMO_WALLET_ADDRESS;
+}
+
+/** Retorna o avatarId persistido na sessão ou cria um novo. */
+function getOrCreateAvatarId(): string {
+  try {
+    const stored = localStorage.getItem(AVATAR_ID_KEY);
+    if (stored && stored.length > 0) return stored;
+  } catch {
+    // fallthrough
+  }
+  const id = `avatar-${randomId(10)}`;
+  try {
+    localStorage.setItem(AVATAR_ID_KEY, id);
+  } catch {
+    // fallthrough
+  }
+  return id;
+}
 
 const CARD: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.16)",
@@ -23,109 +68,30 @@ const BUTTON: CSSProperties = {
 };
 
 export default function VaultMvpPanel() {
-  const [records, setRecords] = useState<VaultAuditEvent[]>([]);
-  const [walletAddress, setWalletAddress] = useState<string>("");
-  const [tokenAccount, setTokenAccount] = useState<string>("");
-  const [mintAddress, setMintAddress] = useState<string>("");
-  const [sglBalance, setSglBalance] = useState<number>(INITIAL_SGL_BALANCE);
+  const adapter = useMemo(() => new RealSolanaAdapter(), []);
+  const [records, setRecords] = useState<AuditRecord[]>(() => loadAuditRecords());
+  const [walletAddress] = useState<string>(getSessionWalletAddress);
+  const [avatarId] = useState<string>(getOrCreateAvatarId);
   const [isRunning, setIsRunning] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
   const [message, setMessage] = useState("Ready to execute paid services.");
 
-  const summary = useMemo(() => {
-    const totalSpent = records.reduce((sum, item) => sum + Number(item.cost || 0), 0);
-    return {
-      balance: sglBalance,
-      totalSpent,
-      totalActions: records.length,
-    };
-  }, [records, sglBalance]);
-
-  function randomAvatarId(): string {
-    return `avatar-${Math.random().toString(36).slice(2, 10)}`;
-  }
-
-  function payloadHash(input: string): string {
-    let hash = 0;
-    for (let i = 0; i < input.length; i += 1) {
-      hash = (hash << 5) - hash + input.charCodeAt(i);
-      hash |= 0;
-    }
-    return `hash-${Math.abs(hash).toString(16)}`;
-  }
-
-  async function refreshWalletState(address: string) {
-    const [balanceData, auditData] = await Promise.all([
-      getSglBalance(address),
-      getAuditEventsByWallet(address),
-    ]);
-
-    setSglBalance(Number(balanceData.sglBalance || balanceData.balance || 0));
-    setTokenAccount((balanceData.tokenAccount || "").toString());
-    setRecords(Array.isArray(auditData) ? auditData : []);
-  }
-
-  async function connectWallet() {
-    setIsConnecting(true);
-    try {
-      const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
-      if (!provider) {
-        throw new Error("Phantom/Solflare wallet not found in browser.");
-      }
-
-      const response = await provider.connect();
-      const publicKey = response.publicKey.toString();
-      setWalletAddress(publicKey);
-
-      const provision = await provisionWallet({ walletAddress: publicKey });
-      setMintAddress((provision.sglMintAddress || "").toString());
-      setTokenAccount((provision.tokenAccount || "").toString());
-      setSglBalance(Number(provision.sglBalance || 0));
-
-      await refreshWalletState(publicKey);
-
-      setMessage(
-        `Solana Devnet wallet connected. proofTx=${(provision.proofTxSignature || "").toString()} explorer=${(provision.explorerUrl || "").toString()}`,
-      );
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Failed to connect wallet.");
-    } finally {
-      setIsConnecting(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!walletAddress) return;
-    void refreshWalletState(walletAddress);
-  }, [walletAddress]);
+  const summary = useMemo(() => getPublicAuditSummary(records), [records]);
 
   async function handleExecute(serviceType: ServiceType) {
-    if (!walletAddress) {
-      setMessage("Connect Solana Wallet before running services.");
-      return;
-    }
-
     setIsRunning(true);
 
     try {
-      const hash = payloadHash(`${walletAddress}:${serviceType}:${Date.now()}`);
-      const result = await debitSglForService({
+      const result = await executePaidService({
         walletAddress,
+        avatarId,
         serviceType,
-        cost: SERVICE_CATALOG[serviceType].cost,
-        avatarId: randomAvatarId(),
-        payloadHash: hash,
+        currentBalance: summary.balance,
+        totalSpent: summary.totalSpent,
+        adapter: adapter,
       });
 
-      await refreshWalletState(walletAddress);
-
-      const status = (result.debitStatus || "pending_wallet_signature").toString();
-      const txSignature = (result.txSignature || result.proofTxSignature || "").toString();
-      const explorerUrl = (result.explorerUrl || "").toString();
-
-      setMessage(
-        `Solana Devnet proof registered. txSignature=${txSignature} explorer=${explorerUrl} payloadHash=${hash} debitStatus=${status}`,
-      );
+      setRecords((current) => [result.record, ...current]);
+      setMessage(`Executed ${serviceType} for ${SERVICE_CATALOG[serviceType].cost} SGL.`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Execution failed.");
     } finally {
@@ -142,13 +108,46 @@ export default function VaultMvpPanel() {
     }
   }
 
-  const latest = records[0] || null;
+  const latest = records[0];
 
   return (
     <div style={{ height: "100dvh", overflowY: "auto", background: "#0b0b0b" }}>
+
+    {/* Barra de navegação */}
+    <nav style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      padding: "12px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)",
+      background: "rgba(0,0,0,0.5)", position: "sticky", top: 0, zIndex: 10,
+    }}>
+      <Link to="/dashboard" style={{
+        display: "flex", alignItems: "center", gap: 6,
+        color: "rgba(255,255,255,0.65)", fontSize: 12, textDecoration: "none",
+        letterSpacing: "0.06em",
+      }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        Dashboard
+      </Link>
+      <span style={{ fontSize: 11, letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" }}>
+        AvatarPro Vault
+      </span>
+      <Link to="/audit" style={{
+        display: "flex", alignItems: "center", gap: 6,
+        color: "#8fd3ff", fontSize: 12, textDecoration: "none",
+        letterSpacing: "0.06em",
+      }}>
+        Auditoria
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+        </svg>
+      </Link>
+    </nav>
+
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px", color: "#f7f5ef" }}>
       <h1 style={{ fontSize: 32, marginBottom: 8 }}>SingulAI AvatarPro Vault</h1>
-      <p style={{ opacity: 0.9, marginBottom: 20 }}>Operational MVP for paid execution services with real Solana Devnet audit proofs.</p>
+      <p style={{ opacity: 0.9, marginBottom: 20 }}>Operational MVP for paid execution services with Solana demo audit proofs.</p>
 
       <section style={{ ...CARD, marginBottom: 16 }}>
         <p>SOL pays Solana network fees.</p>
@@ -157,25 +156,18 @@ export default function VaultMvpPanel() {
         <p>Private content is never stored on-chain. Only hashes, proofs and execution states are public.</p>
       </section>
 
-      <section style={{ marginBottom: 16 }}>
-        <button style={BUTTON} onClick={connectWallet} disabled={isConnecting}>
-          {isConnecting ? "Connecting..." : "Connect Solana Wallet"}
-        </button>
-      </section>
-
       <section style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginBottom: 20 }}>
         <div style={CARD}>
           <h3 style={{ marginTop: 0 }}>Wallet</h3>
-          <p style={{ wordBreak: "break-all" }}>{walletAddress || "Not connected"}</p>
+          <p style={{ wordBreak: "break-all", fontSize: 12, fontFamily: "monospace", opacity: 0.85 }}>
+            {walletAddress.slice(0, 10)}…{walletAddress.slice(-8)}
+          </p>
+          <p style={{ fontSize: 10, opacity: 0.5, marginBottom: 8, wordBreak: "break-all" }}>{walletAddress}</p>
           <button style={BUTTON} onClick={() => copyValue(walletAddress, "wallet")}>Copy wallet</button>
         </div>
         <div style={CARD}>
-          <h3 style={{ marginTop: 0 }}>SGL Mint</h3>
-          <p style={{ wordBreak: "break-all" }}>{mintAddress || "Not provisioned"}</p>
-        </div>
-        <div style={CARD}>
-          <h3 style={{ marginTop: 0 }}>Token Account</h3>
-          <p style={{ wordBreak: "break-all" }}>{tokenAccount || "Not provisioned"}</p>
+          <h3 style={{ marginTop: 0 }}>Avatar ID</h3>
+          <p>{avatarId}</p>
         </div>
         <div style={CARD}>
           <h3 style={{ marginTop: 0 }}>SGL Balance</h3>
@@ -202,32 +194,31 @@ export default function VaultMvpPanel() {
       {latest ? (
         <section style={{ ...CARD, marginBottom: 16 }}>
           <h2 style={{ marginTop: 0 }}>Latest Execution</h2>
-          <p>Service: {(latest.serviceType || "unknown").toString()}</p>
-          <p>debitStatus: {(latest.debitStatus || "pending_wallet_signature").toString()}</p>
-          <p>txSignature: {(latest.txSignature || "").toString()}</p>
-          <p>payloadHash: {(latest.payloadHash || "").toString()}</p>
-          <p>explorerUrl: {(latest.explorerUrl || "").toString()}</p>
-          {(latest.debitStatus || "").toString() === "pending_wallet_signature" ? (
-            <p>Proof registered on Solana Devnet. SGL debit requires wallet signature.</p>
-          ) : null}
+          <p>Service: {latest.serviceType}</p>
+          <p>txSignature: {latest.txSignature}</p>
+          <p>payloadHash: {latest.payloadHash}</p>
+          <p>snapshotHash: {latest.snapshotHash}</p>
+          <p>explorerUrl: {latest.explorerUrl}</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button style={BUTTON} onClick={() => copyValue((latest.txSignature || "").toString(), "txSignature")}>Copy txSignature</button>
-            <button style={BUTTON} onClick={() => copyValue((latest.payloadHash || "").toString(), "payloadHash")}>Copy payloadHash</button>
-            <button style={BUTTON} onClick={() => copyValue((latest.explorerUrl || "").toString(), "explorerUrl")}>Copy explorerUrl</button>
+            <button style={BUTTON} onClick={() => copyValue(latest.txSignature, "txSignature")}>Copy txSignature</button>
+            <button style={BUTTON} onClick={() => copyValue(latest.payloadHash, "payloadHash")}>Copy payloadHash</button>
+            <button style={BUTTON} onClick={() => copyValue(latest.snapshotHash, "snapshotHash")}>Copy snapshotHash</button>
+            <button style={BUTTON} onClick={() => copyValue(latest.explorerUrl, "explorerUrl")}>Copy explorerUrl</button>
           </div>
         </section>
       ) : null}
 
       <section style={CARD}>
-        <h2 style={{ marginTop: 0 }}>Audit Records (Solana Devnet proofs)</h2>
+        <h2 style={{ marginTop: 0 }}>Audit Records (localStorage)</h2>
         {records.length === 0 ? <p>No records yet.</p> : null}
         <div style={{ display: "grid", gap: 10 }}>
           {records.map((record, index) => (
-            <article key={`${(record.txSignature || "tx").toString()}-${index}`} style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: 12 }}>
-              <p style={{ margin: "0 0 6px" }}><strong>{(record.serviceType || record.eventType || "event").toString()}</strong> - {Number(record.cost || 0)} SGL</p>
-              <p style={{ margin: "0 0 6px" }}>Status: {(record.debitStatus || "pending_wallet_signature").toString()}</p>
-              <p style={{ margin: "0 0 6px", wordBreak: "break-all" }}>tx: {(record.txSignature || "").toString()}</p>
-              <a href={(record.explorerUrl || "").toString()} target="_blank" rel="noreferrer" style={{ color: "#8fd3ff" }}>Open explorer</a>
+            <article key={`${record.txSignature}-${index}`} style={{ border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, padding: 12 }}>
+              <p style={{ margin: "0 0 6px" }}><strong>{record.serviceType}</strong> - {record.cost} SGL</p>
+              <p style={{ margin: "0 0 6px" }}>Balance: {record.previousBalance} to {record.newBalance}</p>
+              <p style={{ margin: "0 0 6px" }}>Status: {record.status}</p>
+              <p style={{ margin: "0 0 6px", wordBreak: "break-all" }}>tx: {record.txSignature}</p>
+              <a href={record.explorerUrl} target="_blank" rel="noreferrer" style={{ color: "#8fd3ff" }}>Open explorer</a>
             </article>
           ))}
         </div>

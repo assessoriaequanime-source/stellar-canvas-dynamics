@@ -3309,3 +3309,90 @@
   text-transform: uppercase;
   color: var(--text-xlo);
 }
+
+/* ════ Hackathon proof section (judge-facing summary) ════ */
+.hackathon-proof {
+  padding: clamp(16px, 3vw, 28px) clamp(16px, 3vw, 28px) 0;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.12);
+  margin-bottom: 24px;
+}
+.hackathon-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(var(--accent-rgb), 0.7);
+  margin-bottom: 6px;
+}
+.hackathon-title {
+  font-family: var(--font-ui);
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-weight: 700;
+  color: var(--text-hi);
+  margin: 0 0 6px;
+}
+.hackathon-sub {
+  font-size: 0.8rem;
+  color: var(--text-md);
+  margin-bottom: 14px;
+  max-width: 560px;
+}
+.hackathon-proof-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 18px;
+}
+.hackathon-proof-card {
+  background: rgba(var(--accent-rgb), 0.05);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 180px;
+  max-width: 340px;
+}
+.hackathon-proof-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(var(--accent-rgb), 0.75);
+}
+.hackathon-proof-value {
+  font-size: 0.74rem;
+  color: var(--text-md);
+  line-height: 1.4;
+}
+
+/* ── Save to Capsule button (chat AI bubble) ─────────────────────────────── */
+.save-capsule-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 4px 10px;
+  font-family: var(--font-mono, "Space Mono", monospace);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.save-capsule-btn:hover {
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: rgba(var(--accent-rgb), 0.7);
+}
+
+/* ── Chat SGL cost hint ──────────────────────────────────────────────────── */
+.chat-cost-hint {
+  color: rgba(var(--accent-rgb), 0.7);
+  font-family: var(--font-mono, "Space Mono", monospace);
+  letter-spacing: 0.04em;
+}

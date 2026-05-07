@@ -6,15 +6,35 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
 import { sendAvatarMessage } from "@/lib/altApi";
-import { getAvatarProStatus, getCurrentUser, getProfile, getWalletStatus, provisionWallet } from "@/lib/avatarpro/avatarProApiClient";
-import { getAbsorptionState, getPasMetrics, submitAbsorptionFeedback } from "@/lib/avatarpro/absorptionApiClient";
+import {
+  getAvatarProStatus,
+  getCurrentUser,
+  getProfile,
+  getWalletStatus,
+  provisionWallet,
+} from "@/lib/avatarpro/avatarProApiClient";
+import {
+  getAbsorptionState,
+  getPasMetrics,
+  submitAbsorptionFeedback,
+} from "@/lib/avatarpro/absorptionApiClient";
 import { listCapsules } from "@/lib/avatarpro/capsuleApiClient";
 import { listLegacyRules } from "@/lib/avatarpro/legacyApiClient";
 import { getAuditHistory } from "@/lib/avatarpro/auditApiClient";
-import { getSglBalance } from "@/lib/avatarpro/sglApiClient";
+import { getSglBalance, debitSglForService } from "@/lib/avatarpro/sglApiClient";
 import { isExplicitAvatarProDemoMode } from "@/lib/avatarpro/demoMode";
 
-const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; avatarName: string; modeName: string; desc: string; omega: number }> = {
+const PROFILES: Record<
+  Profile,
+  {
+    rgb: [number, number, number];
+    hex: string;
+    avatarName: string;
+    modeName: string;
+    desc: string;
+    omega: number;
+  }
+> = {
   pedro: {
     rgb: [38, 176, 226],
     hex: "#26B0E2",
@@ -41,8 +61,6 @@ const PROFILES: Record<Profile, { rgb: [number, number, number]; hex: string; av
   },
 };
 
-
-
 const AI_REPLIES: Record<Profile, string[]> = {
   pedro: [
     "Analyzing through my neural atlas... semantic patterns identified.",
@@ -63,6 +81,7 @@ const AI_REPLIES: Record<Profile, string[]> = {
 };
 
 type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
+type ChatAuditEntry = { id: string; action: string; cost: number; status: string; ts: string };
 
 const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
 
@@ -73,51 +92,67 @@ function isExplicitDevMockEnabled(): boolean {
 const PLATFORM_ARCHITECTURE = [
   {
     id: "core",
-    title: "core",
-    description: "Platform core",
-    modules: ["blockchain", "privacy", "ai-integration", "contracts"],
+    title: "AI Memory Vault",
+    description: "AvatarPro preserves memory, context and user intent",
+    modules: ["avatar-ai", "memory-vault", "privacy", "capsules"],
   },
   {
     id: "tokenomics",
-    title: "tokenomics",
-    description: "SGL economy",
-    modules: ["contracts", "services", "economics", "compliance"],
+    title: "SGL Credits / Solana Devnet",
+    description: "Auditable credit layer prepared for SPL Token Devnet",
+    modules: ["solana-devnet", "sgl-credit", "audit-trail", "pending_wallet_signature"],
   },
   {
     id: "hardware",
-    title: "hardware",
-    description: "SingulAI Pen",
-    modules: ["firmware", "hardware", "mobile-integration", "security"],
+    title: "AvatarPro Interface",
+    description: "Visual experience with particles, neural modes and human feedback",
+    modules: ["particles", "voice-ready", "gesture-feedback", "mobile-ready"],
   },
   {
     id: "b2b-white-label",
-    title: "b2b-white-label",
-    description: "B2B white-label platform",
+    title: "B2B White Label",
+    description: "Packages for banks, insurance, digital notaries and creators",
     modules: ["banking", "insurance", "digital-notary", "celebrity"],
   },
   {
     id: "frontend",
-    title: "frontend",
-    description: "User interfaces",
-    modules: ["web", "mobile", "components"],
+    title: "Public + Dashboard UX",
+    description: "Landing, public demo and AvatarPro panel with particles",
+    modules: ["web", "mobile", "components", "judge-mode"],
   },
   {
     id: "backend",
-    title: "backend",
-    description: "Platform backend",
+    title: "Backend Orchestration",
+    description: "APIs, sessions, chat and digital capsule services",
     modules: ["api", "services", "database", "infrastructure"],
   },
   {
     id: "docs",
-    title: "docs",
-    description: "Documentation and compliance",
+    title: "Hackathon Evidence",
+    description: "Demo script, architecture, compliance and next steps",
     modules: ["architecture", "business", "legal", "security", "integration"],
   },
   {
     id: "scripts",
-    title: "scripts",
-    description: "Operational automation",
+    title: "Operational Checks",
+    description: "Automation for smoke tests, build and Solana Devnet readiness",
     modules: ["deployment", "testing", "monitoring", "maintenance"],
+  },
+] as const;
+
+const HACKATHON_PROOF_POINTS = [
+  {
+    label: "Product",
+    value: "AI avatar that creates memory capsules and preserves user intent",
+  },
+  {
+    label: "Demo",
+    value: "Local dashboard flow with AvatarPro chat, capsule UX and audit-ready states",
+  },
+  {
+    label: "Solana",
+    value:
+      "Devnet readiness — pending_wallet_signature until public mint/wallet envs are configured",
   },
 ] as const;
 
@@ -157,7 +192,9 @@ export default function SingulAIDashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [subpanel, setSubpanel] = useState<string | null>(null);
   const [sigmaFlash, setSigmaFlash] = useState(0);
-  const [backendStatus, setBackendStatus] = useState<"connected" | "unavailable" | "mock-dev">("connected");
+  const [backendStatus, setBackendStatus] = useState<"connected" | "unavailable" | "mock-dev">(
+    "connected",
+  );
   const [profileName, setProfileName] = useState("Reviewer");
   const [capsuleCount, setCapsuleCount] = useState(0);
   const [legacyCount, setLegacyCount] = useState(0);
@@ -174,6 +211,9 @@ export default function SingulAIDashboard() {
   const [capsulePreview, setCapsulePreview] = useState<string[]>([]);
   const [legacyPreview, setLegacyPreview] = useState<string[]>([]);
   const [historyPreview, setHistoryPreview] = useState<string[]>([]);
+  const [chatAuditLog, setChatAuditLog] = useState<ChatAuditEntry[]>([]);
+  const [capsuleContent, setCapsuleContent] = useState("");
+  const [capsuleCost, setCapsuleCost] = useState(100);
   const [lastProvisionExplorer, setLastProvisionExplorer] = useState("");
 
   const toPercentScale = useCallback((value: unknown, fallback: number) => {
@@ -202,14 +242,19 @@ export default function SingulAIDashboard() {
     holdElapsed: number;
   }>({
     phase: "idle",
-    startX: 0, startY: 0, currentX: 0,
+    startX: 0,
+    startY: 0,
+    currentX: 0,
     fraction: 0,
     holdTimer: null,
     holdInterval: null,
     holdElapsed: 0,
   });
   const [gatherRing, setGatherRing] = useState<{
-    x: number; y: number; active: boolean; fraction: number;
+    x: number;
+    y: number;
+    active: boolean;
+    fraction: number;
   }>({ x: 0, y: 0, active: false, fraction: 0 });
 
   const MAX_STREAM = 10;
@@ -232,7 +277,18 @@ export default function SingulAIDashboard() {
 
     async function loadBackendState() {
       try {
-        const [auth, profileData, walletData, avatarStatus, sglData, pasData, absorptionData, capsulesData, legacyData, auditData] = await Promise.all([
+        const [
+          auth,
+          profileData,
+          walletData,
+          avatarStatus,
+          sglData,
+          pasData,
+          absorptionData,
+          capsulesData,
+          legacyData,
+          auditData,
+        ] = await Promise.all([
           getCurrentUser(),
           getProfile(),
           getWalletStatus(),
@@ -248,8 +304,18 @@ export default function SingulAIDashboard() {
         if (!active) return;
 
         const authUser = auth.user || {};
-        const userName = (profileData.nickname || profileData.name || authUser.name || "Reviewer").toString();
-        const wallet = (walletData.walletAddress || walletData.address || authUser.walletAddress || "").toString();
+        const userName = (
+          profileData.nickname ||
+          profileData.name ||
+          authUser.name ||
+          "Reviewer"
+        ).toString();
+        const wallet = (
+          walletData.walletAddress ||
+          walletData.address ||
+          authUser.walletAddress ||
+          ""
+        ).toString();
 
         setProfileName(userName);
         setWalletAddress(wallet);
@@ -259,27 +325,41 @@ export default function SingulAIDashboard() {
         setHistoryCount(Array.isArray(auditData) ? auditData.length : 0);
         setCapsulePreview(
           Array.isArray(capsulesData)
-            ? capsulesData.slice(0, 3).map((item) => (item.title || item.name || item.id || "Capsule item").toString())
+            ? capsulesData
+                .slice(0, 3)
+                .map((item) => (item.title || item.name || item.id || "Capsule item").toString())
             : [],
         );
         setLegacyPreview(
           Array.isArray(legacyData)
-            ? legacyData.slice(0, 3).map((item) => (item.title || item.name || item.id || "Legacy rule").toString())
+            ? legacyData
+                .slice(0, 3)
+                .map((item) => (item.title || item.name || item.id || "Legacy rule").toString())
             : [],
         );
         setHistoryPreview(
           Array.isArray(auditData)
-            ? auditData.slice(0, 3).map((item) => (item.serviceType || item.action || item.id || "History event").toString())
+            ? auditData
+                .slice(0, 3)
+                .map((item) =>
+                  (item.serviceType || item.action || item.id || "History event").toString(),
+                )
             : [],
         );
 
-        const omega = toPercentScale(pasData.omega || pasData.omegaScore || pasData.pas || pasData.score, omegaLiveRef.current);
+        const omega = toPercentScale(
+          pasData.omega || pasData.omegaScore || pasData.pas || pasData.score,
+          omegaLiveRef.current,
+        );
         if (!Number.isNaN(omega) && omega > 0) {
           omegaTargetRef.current = omega;
           animateOmega(omega, omegaLiveRef.current, 900);
         }
 
-        const abs = toPercentScale(absorptionData.absorption || absorptionData.level || pasData.absorption || 42, 42);
+        const abs = toPercentScale(
+          absorptionData.absorption || absorptionData.level || pasData.absorption || 42,
+          42,
+        );
         if (!Number.isNaN(abs)) {
           setAbsorption(Math.max(0, Math.min(100, abs)));
         }
@@ -289,10 +369,17 @@ export default function SingulAIDashboard() {
         setParticlesScore(toFractionScale(pasData.particles || 0.81, 0.81));
         setAvatarStatusLabel((avatarStatus.status || "active").toString());
         setAvatarModeLabel((avatarStatus.mode || "Safe Quantum").toString());
-        setAbsorptionStateLabel((absorptionData.state || avatarStatus.status || "learning").toString());
+        setAbsorptionStateLabel(
+          (absorptionData.state || avatarStatus.status || "learning").toString(),
+        );
         setParticleWhitening(toFractionScale(absorptionData.particleWhitening || 0.72, 0.72));
         if (Array.isArray(auditData) && auditData.length > 0) {
-          const eventTitle = (auditData[0].serviceType || auditData[0].action || auditData[0].resource || "AvatarPro event").toString();
+          const eventTitle = (
+            auditData[0].serviceType ||
+            auditData[0].action ||
+            auditData[0].resource ||
+            "AvatarPro event"
+          ).toString();
           setLatestHistoryEvent(eventTitle);
         }
 
@@ -312,7 +399,8 @@ export default function SingulAIDashboard() {
             const plan = localStorage.getItem("singulai_active_plan_id");
             const modelChoice = localStorage.getItem("singulai_model_choice_enabled");
             if (u?.sglBalance !== undefined) setSglBalance(u.sglBalance);
-            if (w?.walletAddress || w?.address) setWalletAddress(w.walletAddress || w.address || "");
+            if (w?.walletAddress || w?.address)
+              setWalletAddress(w.walletAddress || w.address || "");
             if (u?.name) setProfileName(u.name);
             if (plan) setActivePlanId(plan);
             setModelChoiceEnabled(modelChoice === "true");
@@ -344,7 +432,15 @@ export default function SingulAIDashboard() {
       omegaLiveRef.current = v;
       setOmegaPct(v);
       const s =
-        v < 30 ? "Fragmentado" : v < 60 ? "Acumulando" : v < 85 ? "Em calibração" : v < 96 ? "Quase soberano" : "Soberano Ω";
+        v < 30
+          ? "Fragmentado"
+          : v < 60
+            ? "Acumulando"
+            : v < 85
+              ? "Em calibração"
+              : v < 96
+                ? "Quase soberano"
+                : "Soberano Ω";
       setOmegaStatus(s);
       if (p < 1) requestAnimationFrame(tick);
     };
@@ -397,7 +493,12 @@ export default function SingulAIDashboard() {
         id: "absorption",
         label: "Absorption",
         hint: "Knowledge level",
-        svg: <><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" /></>,
+        svg: (
+          <>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v6m0 10v6m11-11h-6m-10 0H1" />
+          </>
+        ),
         onClick: async () => {
           setSubpanel("memories");
           try {
@@ -407,7 +508,9 @@ export default function SingulAIDashboard() {
               setAbsorption(Math.max(0, Math.min(100, value)));
             }
             setAbsorptionStateLabel((state.state || "learning").toString());
-            setParticleWhitening(toFractionScale(state.particleWhitening || particleWhitening, particleWhitening));
+            setParticleWhitening(
+              toFractionScale(state.particleWhitening || particleWhitening, particleWhitening),
+            );
             setStatusMessage("Absorption state loaded");
           } catch {
             setBackendStatus(isExplicitDevMockEnabled() ? "mock-dev" : "unavailable");
@@ -424,7 +527,10 @@ export default function SingulAIDashboard() {
           setSubpanel("sync");
           try {
             const metrics = await getPasMetrics();
-            const omega = toPercentScale(metrics.omega || metrics.omegaScore || metrics.pas || metrics.score, omegaLiveRef.current);
+            const omega = toPercentScale(
+              metrics.omega || metrics.omegaScore || metrics.pas || metrics.score,
+              omegaLiveRef.current,
+            );
             if (!Number.isNaN(omega)) {
               omegaTargetRef.current = omega;
               animateOmega(omega, omegaLiveRef.current, 700);
@@ -443,7 +549,12 @@ export default function SingulAIDashboard() {
         id: "capsules",
         label: "Capsules",
         hint: "Delivery collection",
-        svg: <><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></>,
+        svg: (
+          <>
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </>
+        ),
         onClick: async () => {
           setActiveNav("capsules");
           setSubpanel("pro");
@@ -452,7 +563,11 @@ export default function SingulAIDashboard() {
             setCapsuleCount(Array.isArray(items) ? items.length : 0);
             setCapsulePreview(
               Array.isArray(items)
-                ? items.slice(0, 3).map((item) => (item.title || item.name || item.id || "Capsule item").toString())
+                ? items
+                    .slice(0, 3)
+                    .map((item) =>
+                      (item.title || item.name || item.id || "Capsule item").toString(),
+                    )
                 : [],
             );
             setStatusMessage("Capsules list loaded");
@@ -466,7 +581,14 @@ export default function SingulAIDashboard() {
         id: "legados",
         label: "Legacy",
         hint: "Digital legacy rules",
-        svg: <><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></>,
+        svg: (
+          <>
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 00-3-3.87" />
+            <path d="M16 3.13a4 4 0 010 7.75" />
+          </>
+        ),
         onClick: async () => {
           setActiveNav("docs");
           setSubpanel("pro");
@@ -475,7 +597,9 @@ export default function SingulAIDashboard() {
             setLegacyCount(Array.isArray(items) ? items.length : 0);
             setLegacyPreview(
               Array.isArray(items)
-                ? items.slice(0, 3).map((item) => (item.title || item.name || item.id || "Legacy rule").toString())
+                ? items
+                    .slice(0, 3)
+                    .map((item) => (item.title || item.name || item.id || "Legacy rule").toString())
                 : [],
             );
             setStatusMessage("Legacy rules loaded");
@@ -489,7 +613,13 @@ export default function SingulAIDashboard() {
         id: "historicos",
         label: "History",
         hint: "Session events",
-        svg: <><polyline points="12 8 12 12 14 14" /><path d="M3.05 11a9 9 0 1 0 .5-4.5" /><polyline points="3 3 3 9 9 9" /></>,
+        svg: (
+          <>
+            <polyline points="12 8 12 12 14 14" />
+            <path d="M3.05 11a9 9 0 1 0 .5-4.5" />
+            <polyline points="3 3 3 9 9 9" />
+          </>
+        ),
         onClick: async () => {
           setSubpanel("pro");
           try {
@@ -497,11 +627,20 @@ export default function SingulAIDashboard() {
             setHistoryCount(Array.isArray(items) ? items.length : 0);
             setHistoryPreview(
               Array.isArray(items)
-                ? items.slice(0, 3).map((item) => (item.serviceType || item.action || item.id || "History event").toString())
+                ? items
+                    .slice(0, 3)
+                    .map((item) =>
+                      (item.serviceType || item.action || item.id || "History event").toString(),
+                    )
                 : [],
             );
             if (Array.isArray(items) && items.length > 0) {
-              const eventTitle = (items[0].serviceType || items[0].action || items[0].resource || "AvatarPro event").toString();
+              const eventTitle = (
+                items[0].serviceType ||
+                items[0].action ||
+                items[0].resource ||
+                "AvatarPro event"
+              ).toString();
               setLatestHistoryEvent(eventTitle);
             }
             setStatusMessage("History loaded");
@@ -515,7 +654,12 @@ export default function SingulAIDashboard() {
         id: "rascunhos",
         label: "Drafts",
         hint: "Messages in progress",
-        svg: <><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" /></>,
+        svg: (
+          <>
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </>
+        ),
         onClick: () => {
           setSubpanel("memories");
           setStatusMessage("Drafts opened");
@@ -527,6 +671,8 @@ export default function SingulAIDashboard() {
         hint: "New digital legacy",
         svg: <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
         onClick: () => {
+          setCapsuleContent("");
+          setCapsuleCost(100);
           setModalOpen(true);
           setStatusMessage("Create Capsule opened");
         },
@@ -535,7 +681,12 @@ export default function SingulAIDashboard() {
         id: "apis",
         label: "APIs and Connectors",
         hint: "External integrations",
-        svg: <><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></>,
+        svg: (
+          <>
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </>
+        ),
         onClick: () => {
           setSubpanel("settings");
           setStatusMessage("Settings opened");
@@ -545,7 +696,11 @@ export default function SingulAIDashboard() {
         id: "skills",
         label: "Skills and Features",
         hint: "Active capabilities",
-        svg: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></>,
+        svg: (
+          <>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </>
+        ),
         onClick: () => {
           setSubpanel("sync");
           setStatusMessage("Skills panel opened");
@@ -555,7 +710,13 @@ export default function SingulAIDashboard() {
         id: "banco",
         label: "Knowledge Base",
         hint: "Absorbed information",
-        svg: <><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></>,
+        svg: (
+          <>
+            <ellipse cx="12" cy="5" rx="9" ry="3" />
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+          </>
+        ),
         onClick: () => {
           setSubpanel("memories");
           setStatusMessage("Knowledge base loaded");
@@ -565,7 +726,13 @@ export default function SingulAIDashboard() {
         id: "recalibrate",
         label: "Recalibrate",
         hint: "Reorganize neural atlas",
-        svg: <><polyline points="1 4 1 10 7 10" /><polyline points="23 20 23 14 17 14" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></>,
+        svg: (
+          <>
+            <polyline points="1 4 1 10 7 10" />
+            <polyline points="23 20 23 14 17 14" />
+            <path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
+          </>
+        ),
         onClick: () => {
           engineRef.current?.morphTo(profileRef.current);
           const t = Math.min(99.9, omegaLiveRef.current + 2);
@@ -609,14 +776,19 @@ export default function SingulAIDashboard() {
   };
 
   const _commitGather = (gs: typeof gatherStateRef.current) => {
-    if (gs.holdTimer) { clearTimeout(gs.holdTimer); gs.holdTimer = null; }
-    if (gs.holdInterval) { clearInterval(gs.holdInterval); gs.holdInterval = null; }
+    if (gs.holdTimer) {
+      clearTimeout(gs.holdTimer);
+      gs.holdTimer = null;
+    }
+    if (gs.holdInterval) {
+      clearInterval(gs.holdInterval);
+      gs.holdInterval = null;
+    }
     setGatherRing((r) => ({ ...r, active: false, fraction: 0 }));
 
     if (gs.fraction > 0.01) {
       const dx = gs.currentX - gs.startX;
-      const dir: "left" | "right" | "cancel" =
-        dx > 55 ? "right" : dx < -55 ? "left" : "cancel";
+      const dir: "left" | "right" | "cancel" = dx > 55 ? "right" : dx < -55 ? "left" : "cancel";
       engineRef.current?.releaseGathered(dir);
       if (dir === "left" || dir === "right") {
         void submitAbsorptionFeedback({
@@ -685,6 +857,15 @@ export default function SingulAIDashboard() {
       });
   };
 
+  // Save to Capsule — opened from chat AI response button
+  const handleSaveToCapsule = useCallback((msgId: number, text: string) => {
+    void msgId;
+    setCapsuleContent(text);
+    setCapsuleCost(150);
+    setModalOpen(true);
+    setStatusMessage("Save to Capsule — Cost: 150 SGL");
+  }, []);
+
   // Profile switch
   const switchProfile = (p: Profile) => {
     if (p === profile) return;
@@ -704,7 +885,13 @@ export default function SingulAIDashboard() {
     const userId = ++msgIdRef.current;
     const typingId = ++msgIdRef.current;
     setMessages((m) =>
-      ([...m, { role: "user" as const, text, id: userId }, { role: "typing" as const, id: typingId }] as Msg[]).slice(-MAX_STREAM),
+      (
+        [
+          ...m,
+          { role: "user" as const, text, id: userId },
+          { role: "typing" as const, id: typingId },
+        ] as Msg[]
+      ).slice(-MAX_STREAM),
     );
 
     const sessionToken = localStorage.getItem("singulai_session");
@@ -713,7 +900,11 @@ export default function SingulAIDashboard() {
       if (sessionToken) {
         const data = await sendAvatarMessage(sessionToken, text, MODEL_IDS[profileRef.current]);
         const raw = (data.message || data.reply || data.text || "").trim();
-        reply = raw || AI_REPLIES[profileRef.current][Math.floor(Math.random() * AI_REPLIES[profileRef.current].length)];
+        reply =
+          raw ||
+          AI_REPLIES[profileRef.current][
+            Math.floor(Math.random() * AI_REPLIES[profileRef.current].length)
+          ];
         if (data.sglBalance !== undefined) setSglBalance(data.sglBalance);
         else if (data.balance !== undefined) setSglBalance(data.balance);
       } else {
@@ -729,9 +920,48 @@ export default function SingulAIDashboard() {
 
     const aiId = ++msgIdRef.current;
     setMessages((m) =>
-      m.filter((x) => x.id !== typingId).concat({ role: "ai", text: reply, id: aiId }).slice(-MAX_STREAM),
+      m
+        .filter((x) => x.id !== typingId)
+        .concat({ role: "ai", text: reply, id: aiId })
+        .slice(-MAX_STREAM),
     );
     omegaTargetRef.current = Math.min(99.5, omegaLiveRef.current + 0.4);
+
+    // Particle color reaction based on response quality
+    const replyLen = reply.length;
+    const [pr, pg, pb]: [number, number, number] =
+      replyLen > 80
+        ? [0.18, 0.92, 0.46] // complete → green (absorção)
+        : replyLen > 30
+          ? [1.0, 0.84, 0.12] // partial  → yellow (difusão)
+          : [0.92, 0.18, 0.22]; // insufficient → red (dispersão)
+    engineRef.current?.flashReactionColor(pr, pg, pb);
+
+    // SGL debit + audit log (non-blocking)
+    void debitSglForService({ serviceType: "avatar-chat", amount: 10 })
+      .then((result) => {
+        if (result.newBalance !== undefined) setSglBalance(Number(result.newBalance));
+        const txStatus = String(result.txSignature ?? "pending_wallet_signature");
+        const entry: ChatAuditEntry = {
+          id: `chat-${Date.now()}`,
+          action: "Avatar Chat",
+          cost: 10,
+          status: txStatus,
+          ts: new Date().toISOString(),
+        };
+        setChatAuditLog((log) => [entry, ...log].slice(0, 20));
+        setStatusMessage(`SGL debited · ${txStatus.slice(0, 20)}`);
+      })
+      .catch(() => {
+        const entry: ChatAuditEntry = {
+          id: `chat-${Date.now()}`,
+          action: "Avatar Chat",
+          cost: 10,
+          status: "pending_wallet_signature",
+          ts: new Date().toISOString(),
+        };
+        setChatAuditLog((log) => [entry, ...log].slice(0, 20));
+      });
   };
 
   const connectSolanaWallet = async () => {
@@ -816,7 +1046,11 @@ export default function SingulAIDashboard() {
             <div className="tb-divider-v" />
             <span className="tb-status-txt">{statusMessage}</span>
             <div className="topbar-notif-wrap">
-              <button className="tb-btn topbar-notif-btn" title="Notifications" aria-label="Notifications">
+              <button
+                className="tb-btn topbar-notif-btn"
+                title="Notifications"
+                aria-label="Notifications"
+              >
                 <Icon>
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -868,8 +1102,29 @@ export default function SingulAIDashboard() {
         </div>
 
         <main id="main">
+          <section className="hackathon-proof" aria-label="SingulAI hackathon demo summary">
+            <p className="hackathon-kicker">Solana Frontier Hackathon · Judge Mode</p>
+            <h1 className="hackathon-title">SingulAI AvatarPro Vault</h1>
+            <p className="hackathon-sub">
+              An AI memory vault where users chat with an AvatarPro, create digital capsules, and
+              prepare SGL credit events for Solana Devnet auditability.
+            </p>
+            <div className="hackathon-proof-grid" role="list">
+              {HACKATHON_PROOF_POINTS.map((item) => (
+                <article key={item.label} className="hackathon-proof-card" role="listitem">
+                  <span className="hackathon-proof-label">{item.label}</span>
+                  <span className="hackathon-proof-value">{item.value}</span>
+                </article>
+              ))}
+            </div>
+          </section>
+
           {subpanel && (
-            <div className="subpanel-backdrop" onClick={() => setSubpanel(null)} aria-hidden="true" />
+            <div
+              className="subpanel-backdrop"
+              onClick={() => setSubpanel(null)}
+              aria-hidden="true"
+            />
           )}
 
           {/* SUBPANEL — rendered on-demand by rail (Memory / Sync / Emotion / Wallet / PRO / Settings) */}
@@ -885,7 +1140,10 @@ export default function SingulAIDashboard() {
                   {subpanel === "settings" && "Settings"}
                 </span>
                 <button className="sp-x" onClick={() => setSubpanel(null)} aria-label="Close">
-                  <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
+                  <Icon>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </Icon>
                 </button>
               </header>
               <div className="sp-body">
@@ -911,21 +1169,32 @@ export default function SingulAIDashboard() {
                 {subpanel === "memories" && (
                   <>
                     <div className="abs-wrap">
-                      <div className="abs-bar"><div className="abs-fill" style={{ width: `${absorption}%` }} /></div>
+                      <div className="abs-bar">
+                        <div className="abs-fill" style={{ width: `${absorption}%` }} />
+                      </div>
                       <div className="abs-meta">
                         <span className="abs-label">Absorption</span>
                         <span className="abs-pct">{absorption}%</span>
                       </div>
                     </div>
-                    <div className="sp-row"><span>Memory state</span><code>{absorptionStateLabel}</code></div>
-                    <div className="sp-row"><span>Particles whitening</span><code>{(particleWhitening * 100).toFixed(0)}%</code></div>
+                    <div className="sp-row">
+                      <span>Memory state</span>
+                      <code>{absorptionStateLabel}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Particles whitening</span>
+                      <code>{(particleWhitening * 100).toFixed(0)}%</code>
+                    </div>
                     {[
                       { name: "Memory_Base_01", type: ".syn" },
                       { name: "Digital_Legacy", type: ".eth" },
                       { name: "Family_Values", type: ".dat" },
                     ].map((m) => (
                       <div className="mem-item" key={m.name}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
                         <span className="mem-name">{m.name}</span>
                         <span className="mem-type">{m.type}</span>
                       </div>
@@ -934,40 +1203,167 @@ export default function SingulAIDashboard() {
                 )}
                 {subpanel === "wallet" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Address</span><code>{walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : "—"}</code></div>
-                    <div className="sp-row"><span>SGL Balance</span><code>{sglBalance.toLocaleString("en-US")}</code></div>
-                    <div className="sp-row"><span>Network</span><code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Solana Devnet"}</code></div>
-                    {lastProvisionExplorer ? <div className="sp-row"><span>Explorer</span><code>{lastProvisionExplorer}</code></div> : null}
-                    <div className="sp-row"><span>Profile</span><code>{profileName}</code></div>
+                    <div className="sp-row">
+                      <span>Address</span>
+                      <code>
+                        {walletAddress
+                          ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}`
+                          : "—"}
+                      </code>
+                    </div>
+                    <div className="sp-row">
+                      <span>SGL Balance</span>
+                      <code>{sglBalance.toLocaleString("en-US")}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Network</span>
+                      <code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Solana Devnet"}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Profile</span>
+                      <code>{profileName}</code>
+                    </div>
+                    {lastProvisionExplorer ? (
+                      <div className="sp-row">
+                        <span>Explorer</span>
+                        <code style={{ wordBreak: "break-all", fontSize: 10 }}>{lastProvisionExplorer.slice(0, 40)}…</code>
+                      </div>
+                    ) : null}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
+                      <Link
+                        to="/vault"
+                        style={{
+                          display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                          background: "rgba(143,211,255,0.08)", border: "1px solid rgba(143,211,255,0.22)",
+                          borderRadius: 8, color: "#8fd3ff", fontSize: 12, textDecoration: "none",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        AvatarPro Vault — Serviços Pagos
+                      </Link>
+                      <Link
+                        to="/audit"
+                        style={{
+                          display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
+                          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)",
+                          borderRadius: 8, color: "rgba(255,255,255,0.7)", fontSize: 12, textDecoration: "none",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+                          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg>
+                        Auditoria Devnet — Provas on-chain
+                      </Link>
+                    </div>
                   </div>
                 )}
                 {subpanel === "pro" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Plan</span><code>PRO</code></div>
-                    <div className="sp-row"><span>Capsules</span><code>{capsuleCount}</code></div>
-                    <div className="sp-row"><span>Legacy</span><code>{legacyCount}</code></div>
-                    <div className="sp-row"><span>History</span><code>{historyCount}</code></div>
-                    <div className="sp-row"><span>AvatarPro status</span><code>{avatarStatusLabel}</code></div>
-                    <div className="sp-row"><span>Avatar mode</span><code>{avatarModeLabel}</code></div>
-                    <div className="sp-row"><span>Latest event</span><code>{latestHistoryEvent}</code></div>
-                    <div className="sp-row"><span>Capsule preview</span><code>{capsulePreview.join(" | ") || "No capsules loaded"}</code></div>
-                    <div className="sp-row"><span>Legacy preview</span><code>{legacyPreview.join(" | ") || "No legacy rules loaded"}</code></div>
-                    <div className="sp-row"><span>History preview</span><code>{historyPreview.join(" | ") || "No events loaded"}</code></div>
+                    <div className="sp-row">
+                      <span>Plan</span>
+                      <code>PRO</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Capsules</span>
+                      <code>{capsuleCount}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Legacy</span>
+                      <code>{legacyCount}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>History</span>
+                      <code>{historyCount}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>AvatarPro status</span>
+                      <code>{avatarStatusLabel}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Avatar mode</span>
+                      <code>{avatarModeLabel}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Latest event</span>
+                      <code>{latestHistoryEvent}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Capsule preview</span>
+                      <code>{capsulePreview.join(" | ") || "No capsules loaded"}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Legacy preview</span>
+                      <code>{legacyPreview.join(" | ") || "No legacy rules loaded"}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>History preview</span>
+                      <code>{historyPreview.join(" | ") || "No events loaded"}</code>
+                    </div>
+                    {chatAuditLog.length > 0 && (
+                      <>
+                        <div
+                          className="sp-row sp-audit-header"
+                          style={{
+                            marginTop: 8,
+                            borderTop: "1px solid rgba(255,255,255,0.07)",
+                            paddingTop: 8,
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, letterSpacing: "0.04em" }}>
+                            Chat Transactions
+                          </span>
+                        </div>
+                        {chatAuditLog.slice(0, 6).map((entry) => (
+                          <div key={entry.id} className="sp-row">
+                            <span>{entry.action}</span>
+                            <code>
+                              {entry.cost} SGL · {entry.status.slice(0, 18)}…
+                            </code>
+                          </div>
+                        ))}
+                      </>
+                    )}
                   </div>
                 )}
                 {subpanel === "settings" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>Theme</span><code>Dark Tech</code></div>
-                    <div className="sp-row"><span>Language</span><code>en-US</code></div>
-                    <div className="sp-row"><span>Notifications</span><code>enabled</code></div>
+                    <div className="sp-row">
+                      <span>Theme</span>
+                      <code>Dark Tech</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Language</span>
+                      <code>en-US</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Notifications</span>
+                      <code>enabled</code>
+                    </div>
                   </div>
                 )}
                 {subpanel === "sync" && (
                   <div className="sp-info">
-                    <div className="sp-row"><span>PAS</span><code>{pasScore.toFixed(2)}</code></div>
-                    <div className="sp-row"><span>Omega</span><code>{(omegaPct / 100).toFixed(2)}</code></div>
-                    <div className="sp-row"><span>Interaction</span><code>{interactionScore.toFixed(2)}</code></div>
-                    <div className="sp-row"><span>Particles</span><code>{particlesScore.toFixed(2)}</code></div>
+                    <div className="sp-row">
+                      <span>PAS</span>
+                      <code>{pasScore.toFixed(2)}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Omega</span>
+                      <code>{(omegaPct / 100).toFixed(2)}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Interaction</span>
+                      <code>{interactionScore.toFixed(2)}</code>
+                    </div>
+                    <div className="sp-row">
+                      <span>Particles</span>
+                      <code>{particlesScore.toFixed(2)}</code>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1004,10 +1400,16 @@ export default function SingulAIDashboard() {
               profile={profile}
               engineRef={engineRef}
               onBubbleFeedback={handleBubbleFeedback}
+              onSaveToCapsule={handleSaveToCapsule}
             />
             <div id="chat-bar">
               <button className="cb" title="Microphone" aria-label="Microphone">
-                <Icon><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></Icon>
+                <Icon>
+                  <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                  <path d="M19 10v2a7 7 0 01-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
+                </Icon>
               </button>
               <input
                 type="text"
@@ -1024,18 +1426,29 @@ export default function SingulAIDashboard() {
                   }
                 }}
               />
-              <button className="cb" id="btn-send" title="Send" aria-label="Send" onClick={sendMessage}>
-                <Icon><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></Icon>
+              <button
+                className="cb"
+                id="btn-send"
+                title="Send"
+                aria-label="Send"
+                onClick={sendMessage}
+              >
+                <Icon>
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </Icon>
               </button>
             </div>
             <div id="chat-footer">
               <span className="footer-avatar-name" style={{ color: accentStr }}>
                 {prof.avatarName}
               </span>
+              <span className="footer-meta chat-cost-hint">10 SGL · per message</span>
               <span className="footer-meta">{activePlanId.replace("plan-", "Plan ")}</span>
               <span className="footer-meta">
                 {modelChoiceEnabled ? "Model unlocked" : "Model locked (pending upgrade)"}
               </span>
+              <span className="footer-meta">demo local · Solana pending_wallet_signature</span>
               <span className="singulai-footer-inpi">INPI 942284933</span>
             </div>
           </div>
@@ -1050,35 +1463,89 @@ export default function SingulAIDashboard() {
         <aside className="settings-panel" aria-label="Panel settings">
           <header className="settings-panel-hdr">
             <span className="settings-panel-title">Settings</span>
-            <button className="settings-panel-close" onClick={() => setSettingsOpen(false)} aria-label="Close">
-              <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
+            <button
+              className="settings-panel-close"
+              onClick={() => setSettingsOpen(false)}
+              aria-label="Close"
+            >
+              <Icon>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </Icon>
             </button>
           </header>
           <ul className="settings-panel-list">
             {[
               {
-                id: "wallet", label: "Wallet", hint: "Balance and address",
-                svg: <><rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></>,
-                onClick: () => { setSettingsOpen(false); setSubpanel("wallet"); },
+                id: "wallet",
+                label: "Wallet",
+                hint: "Balance and address",
+                svg: (
+                  <>
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                  </>
+                ),
+                onClick: () => {
+                  setSettingsOpen(false);
+                  setSubpanel("wallet");
+                },
               },
               {
-                id: "profile", label: "Profile", hint: "Identity and avatar",
-                svg: <><circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" /></>,
-                onClick: () => { setSettingsOpen(false); setActiveNav("profile"); },
+                id: "profile",
+                label: "Profile",
+                hint: "Identity and avatar",
+                svg: (
+                  <>
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                  </>
+                ),
+                onClick: () => {
+                  setSettingsOpen(false);
+                  setActiveNav("profile");
+                },
               },
               {
-                id: "panel-settings", label: "Panel Settings", hint: "Notifications and theme",
-                svg: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></>,
-                onClick: () => { setSettingsOpen(false); setSubpanel("settings"); },
+                id: "panel-settings",
+                label: "Panel Settings",
+                hint: "Notifications and theme",
+                svg: (
+                  <>
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9c0 .67.39 1.27 1 1.51H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                  </>
+                ),
+                onClick: () => {
+                  setSettingsOpen(false);
+                  setSubpanel("settings");
+                },
               },
               {
-                id: "nav-mode", label: "Navigation Mode", hint: "Compact · Full · Focus",
-                svg: <><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></>,
+                id: "nav-mode",
+                label: "Navigation Mode",
+                hint: "Compact · Full · Focus",
+                svg: (
+                  <>
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                  </>
+                ),
                 onClick: () => setSettingsOpen(false),
               },
               {
-                id: "layouts", label: "Layouts", hint: "Visual organization",
-                svg: <><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></>,
+                id: "layouts",
+                label: "Layouts",
+                hint: "Visual organization",
+                svg: (
+                  <>
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                  </>
+                ),
                 onClick: () => setSettingsOpen(false),
               },
             ].map((item) => (
@@ -1106,16 +1573,16 @@ export default function SingulAIDashboard() {
       )}
 
       {/* ACTION RAIL — funções de IA (borda direita) */}
-      {railOpen && (
-        <div
-          className="rail-scrim"
-          onClick={() => setRailOpen(false)}
-          aria-hidden
-        />
-      )}
+      {railOpen && <div className="rail-scrim" onClick={() => setRailOpen(false)} aria-hidden />}
       <div className={`rail-shell ${railOpen ? "rail-shell-open" : ""}`} aria-hidden={!railOpen}>
         <ActionRail
-          actions={railActions.map((a) => ({ ...a, onClick: () => { setRailOpen(false); return a.onClick(); } }))}
+          actions={railActions.map((a) => ({
+            ...a,
+            onClick: () => {
+              setRailOpen(false);
+              return a.onClick();
+            },
+          }))}
           onReorder={setRailActions}
           onClose={() => setRailOpen(false)}
           omegaPct={omegaPct}
@@ -1145,7 +1612,12 @@ export default function SingulAIDashboard() {
       </button>
 
       {/* MODAL */}
-      <div className={`overlay ${modalOpen ? "open" : ""}`} onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false); }}>
+      <div
+        className={`overlay ${modalOpen ? "open" : ""}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setModalOpen(false);
+        }}
+      >
         <div className="modal-shell">
           <div className="modal-hdr">
             <div className="modal-brand">
@@ -1156,7 +1628,10 @@ export default function SingulAIDashboard() {
               <p>Send immediate or scheduled messages</p>
             </div>
             <button className="modal-x" onClick={() => setModalOpen(false)} aria-label="Close">
-              <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>
+              <Icon>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </Icon>
             </button>
           </div>
           <div className="modal-body">
@@ -1175,9 +1650,21 @@ export default function SingulAIDashboard() {
             <div>
               <label className="f-label">WhatsApp (optional)</label>
               <div className="wa-field">
-                <input type="tel" className="f-input" placeholder="+55 11 99999-9999" style={{ paddingRight: 42 }} />
+                <input
+                  type="tel"
+                  className="f-input"
+                  placeholder="+55 11 99999-9999"
+                  style={{ paddingRight: 42 }}
+                />
                 <div className="wa-indicator" aria-hidden>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.8}
+                  >
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
                 </div>
@@ -1186,18 +1673,46 @@ export default function SingulAIDashboard() {
             </div>
             <div>
               <label className="f-label">Message</label>
-              <textarea className="f-input f-textarea" placeholder="Write your message..." />
+              <textarea
+                className="f-input f-textarea"
+                placeholder="Write your message..."
+                value={capsuleContent}
+                onChange={(e) => setCapsuleContent(e.target.value)}
+              />
             </div>
             <div>
               <label className="f-label">Attachments</label>
               <div className="attach-grid">
                 {[
-                  { l: "File", svg: <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" /> },
-                  { l: "Audio", svg: <><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" /><path d="M19 10v2a7 7 0 01-14 0v-2" /></> },
-                  { l: "Video", svg: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></> },
+                  {
+                    l: "File",
+                    svg: (
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                    ),
+                  },
+                  {
+                    l: "Audio",
+                    svg: (
+                      <>
+                        <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                        <path d="M19 10v2a7 7 0 01-14 0v-2" />
+                      </>
+                    ),
+                  },
+                  {
+                    l: "Video",
+                    svg: (
+                      <>
+                        <polygon points="23 7 16 12 23 17 23 7" />
+                        <rect x="1" y="5" width="15" height="14" rx="2" />
+                      </>
+                    ),
+                  },
                 ].map((a) => (
                   <button className="attach-btn" key={a.l}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">{a.svg}</svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      {a.svg}
+                    </svg>
                     {a.l}
                   </button>
                 ))}
@@ -1206,18 +1721,30 @@ export default function SingulAIDashboard() {
             <div>
               <label className="f-label">Delivery Type</label>
               <div className="del-toggle">
-                <button className={`del-btn ${delivery === "immediate" ? "active" : ""}`} onClick={() => setDelivery("immediate")}>Immediate</button>
-                <button className={`del-btn ${delivery === "scheduled" ? "active" : ""}`} onClick={() => setDelivery("scheduled")}>Scheduled</button>
+                <button
+                  className={`del-btn ${delivery === "immediate" ? "active" : ""}`}
+                  onClick={() => setDelivery("immediate")}
+                >
+                  Immediate
+                </button>
+                <button
+                  className={`del-btn ${delivery === "scheduled" ? "active" : ""}`}
+                  onClick={() => setDelivery("scheduled")}
+                >
+                  Scheduled
+                </button>
               </div>
             </div>
             <div className="cost-row">
               <span className="cost-lbl">Cost</span>
-              <span className="cost-val">100 SGL</span>
+              <span className="cost-val">{capsuleCost} SGL</span>
             </div>
           </div>
           <div className="modal-ftr">
             <button className="btn-primary">
-              <Icon><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>
+              <Icon>
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </Icon>
               Create Capsule
             </button>
           </div>
