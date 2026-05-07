@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { getDashboardUrl } from "@/lib/deviceRouting";
 
-type DemoState = "idle" | "crossingSound" | "crossingSilent" | "ready";
+type DemoState = "idle" | "crossing";
 
 function toRoman(n: number): string {
   const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
@@ -120,8 +119,8 @@ export default function SingulAIIntroExperience() {
     };
   }, []);
 
-  /* ── inscription handlers ── */
-  const handleInscription = useCallback(
+  /* ── entry handlers ── */
+  const handleEnter = useCallback(
     (withSound: boolean) => {
       if (state !== "idle") return;
 
@@ -135,23 +134,13 @@ export default function SingulAIIntroExperience() {
       }
 
       setVeilActive(true);
-      setState(withSound ? "crossingSound" : "crossingSilent");
-
-      // veil in (1.8s) + dwell (2.4s) → show ready state
+      setState("crossing");
       setTimeout(() => {
-        setVeilActive(false);
-        setState("ready");
-      }, 4200);
+        window.location.href = `/vault?sound=${withSound ? "on" : "off"}`;
+      }, 900);
     },
     [state],
   );
-
-  const handleEnter = useCallback(() => {
-    setVeilActive(true);
-    setTimeout(() => {
-      window.location.href = getDashboardUrl("/vault");
-    }, 900);
-  }, []);
 
   const handleRestart = useCallback(() => {
     if (audioRef.current) {
@@ -162,8 +151,7 @@ export default function SingulAIIntroExperience() {
     setState("idle");
   }, []);
 
-  const isCrossing = state === "crossingSound" || state === "crossingSilent";
-  const isReady = state === "ready";
+  const isCrossing = state === "crossing";
 
   return (
     <section aria-label="SingulAI — entrada" className="rite-root">
@@ -179,10 +167,7 @@ export default function SingulAIIntroExperience() {
       </div>
 
       {/* transition veil */}
-      <div
-        className={`rite-veil${veilActive ? " rite-veil--active" : ""}`}
-        aria-hidden="true"
-      >
+      <div className={`rite-veil${veilActive ? " rite-veil--active" : ""}`} aria-hidden="true">
         {veilActive && (
           <div className="rite-clock-wrap">
             <svg
@@ -196,14 +181,64 @@ export default function SingulAIIntroExperience() {
               {/* clock face */}
               <circle cx="20" cy="20" r="15.5" stroke="rgba(240,234,216,0.12)" strokeWidth="0.75" />
               {/* cardinal ticks */}
-              <line x1="20"   y1="5.5"  x2="20"   y2="7.5"  stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
-              <line x1="34.5" y1="20"  x2="32.5" y2="20"   stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
-              <line x1="20"   y1="34.5" x2="20"  y2="32.5" stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
-              <line x1="5.5"  y1="20"  x2="7.5"  y2="20"   stroke="rgba(240,234,216,0.2)" strokeWidth="0.7" strokeLinecap="round" />
+              <line
+                x1="20"
+                y1="5.5"
+                x2="20"
+                y2="7.5"
+                stroke="rgba(240,234,216,0.2)"
+                strokeWidth="0.7"
+                strokeLinecap="round"
+              />
+              <line
+                x1="34.5"
+                y1="20"
+                x2="32.5"
+                y2="20"
+                stroke="rgba(240,234,216,0.2)"
+                strokeWidth="0.7"
+                strokeLinecap="round"
+              />
+              <line
+                x1="20"
+                y1="34.5"
+                x2="20"
+                y2="32.5"
+                stroke="rgba(240,234,216,0.2)"
+                strokeWidth="0.7"
+                strokeLinecap="round"
+              />
+              <line
+                x1="5.5"
+                y1="20"
+                x2="7.5"
+                y2="20"
+                stroke="rgba(240,234,216,0.2)"
+                strokeWidth="0.7"
+                strokeLinecap="round"
+              />
               {/* hands — rotação centrada em (0,0) do grupo */}
               <g transform="translate(20,20)">
-                <line x1="0" y1="0" x2="0" y2="-8"  stroke="rgba(240,234,216,0.48)"  strokeWidth="1.5" strokeLinecap="round" className="rite-clock-hr" />
-                <line x1="0" y1="0" x2="0" y2="-12" stroke="rgba(240,234,216,0.65)" strokeWidth="1"   strokeLinecap="round" className="rite-clock-min" />
+                <line
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="-8"
+                  stroke="rgba(240,234,216,0.48)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  className="rite-clock-hr"
+                />
+                <line
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="-12"
+                  stroke="rgba(240,234,216,0.65)"
+                  strokeWidth="1"
+                  strokeLinecap="round"
+                  className="rite-clock-min"
+                />
                 <circle cx="0" cy="0" r="1.2" fill="rgba(240,234,216,0.45)" />
               </g>
             </svg>
@@ -235,73 +270,72 @@ export default function SingulAIIntroExperience() {
         <div className="rite-body">
           {/* main text */}
           <main className="rite-main">
-            <p className="rite-folio-label">I · OPEN TRACK · SOLANA DEVNET</p>
+            <div className="rite-solana-badge">
+              <span className="rite-badge-pulse" />
+              <svg width="13" height="11" viewBox="0 0 646 526" fill="none" aria-hidden="true">
+                <path d="M108.63 395.77l53.08-54.19h472l-53.08 54.19H108.63z" fill="currentColor" />
+                <path d="M108.63 184.42l53.08-54.19h472l-53.08 54.19H108.63z" fill="currentColor" />
+                <path d="M580.56 290.1l-53.08 54.19H55.5l53.08-54.19h472z" fill="currentColor" />
+              </svg>
+              Solana Devnet
+            </div>
 
-            <p className="rite-phrase">
-              <span className="rite-word rite-word--large">AvatarPro</span>
-              <span className="rite-word rite-word--mid">Vault</span>
-              <span className="rite-word rite-word--end">
-                Executable Identity<span className="rite-accent">.</span>
-              </span>
-            </p>
+            <h1 className="rite-headline">SingulAI AvatarPro Vault</h1>
+            <p className="rite-tagline">Verifiable Identity. Evolving Memory. Executable Legacy.</p>
 
             <p className="rite-nota">
-              Professional expertise. Verifiable. On-chain.
-              <br />Create an AvatarPro, register snapshots, program TimeCapsules and generate execution proofs on Solana Devnet.
+              Authorized AI avatars for professional continuity.
+              <br />
+              No clones. No substitutes. Just verifiable memory.
             </p>
 
-            <div className="rite-passage">
-              <p className="rite-passage-label">
-                II · AVATARPRO · TIMECAPSULE · PAS SCORE · SOLANA PROOF
-              </p>
-
-              <div className="rite-inscriptions">
-                {/* Inscription I */}
-                <button
-                  className="rite-inscription"
-                  onClick={() => handleInscription(true)}
-                  disabled={state !== "idle"}
-                  aria-label="Enter with audio"
+            <div className="rite-cta-row">
+              <button
+                className="rite-cta-btn rite-cta-btn--sound"
+                onClick={() => handleEnter(true)}
+                disabled={state !== "idle"}
+                aria-label="Enter with sound"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  width={15}
+                  height={15}
+                  aria-hidden="true"
                 >
-                  <span className="rite-ins-roman">I</span>
-                  <span className="rite-ins-name">with audio</span>
-                  <span className="rite-ins-sub">→ enter experience</span>
-                </button>
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 010 7.07" />
+                  <path d="M19.07 4.93a10 10 0 010 14.14" />
+                </svg>
+                Enter with Sound
+              </button>
 
-                {/* Inscription II */}
-                <button
-                  className="rite-inscription"
-                  onClick={() => handleInscription(false)}
-                  disabled={state !== "idle"}
-                  aria-label="Enter silently"
+              <button
+                className="rite-cta-btn rite-cta-btn--silent"
+                onClick={() => handleEnter(false)}
+                disabled={state !== "idle"}
+                aria-label="Enter in silence"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  width={15}
+                  height={15}
+                  aria-hidden="true"
                 >
-                  <span className="rite-ins-roman">II</span>
-                  <span className="rite-ins-name">silent mode</span>
-                  <span className="rite-ins-sub">→ enter without audio</span>
-                </button>
-
-                {/* Inscription III — appears only when ready */}
-                {isReady && (
-                  <button
-                    className="rite-inscription rite-inscription--ready"
-                    onClick={handleEnter}
-                    aria-label="Open vault"
-                  >
-                    <span className="rite-ins-roman">III</span>
-                    <span className="rite-ins-name">open vault</span>
-                    <span className="rite-ins-sub">→ enter demo</span>
-                  </button>
-                )}
-              </div>
-
-              {isReady && (
-                <p className="rite-restart">
-                  <button className="rite-restart-btn" onClick={handleRestart}>
-                    restart
-                  </button>
-                </p>
-              )}
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+                Enter in Silence
+              </button>
             </div>
+
+            <p className="rite-hackathon-label">Built for Solana Frontier Hackathon 2026</p>
           </main>
 
           {/* coordinates aside */}
@@ -329,12 +363,7 @@ export default function SingulAIIntroExperience() {
               {liveUtc}
             </div>
             <div className="rite-coord-sep" />
-            <img
-              src="/singulai_logo.svg"
-              alt=""
-              className="rite-logo-mark"
-              aria-hidden="true"
-            />
+            <img src="/singulai_logo.svg" alt="" className="rite-logo-mark" aria-hidden="true" />
           </aside>
         </div>
 
@@ -345,6 +374,8 @@ export default function SingulAIIntroExperience() {
           <div className="rite-footer-inner">
             <div className="rite-colophon-left">
               <span className="rite-alpha">α&nbsp;·</span>custody
+              <br />
+              <span className="rite-footer-inpi">INPI 942284933</span>
             </div>
             <div className="rite-colophon-right">
               <a href="https://singulai.live" target="_blank" rel="noopener noreferrer">

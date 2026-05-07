@@ -2966,6 +2966,131 @@
   color: rgba(240,234,216,.5);
 }
 
+/* ── solana badge ── */
+.rite-solana-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(20, 241, 149, 0.07);
+  border: 1px solid rgba(20, 241, 149, 0.2);
+  border-radius: 99px;
+  font-family: var(--font-mono);
+  font-size: clamp(.36rem, .6vw, .48rem);
+  letter-spacing: .14em;
+  color: rgba(20, 241, 149, 0.8);
+  text-transform: uppercase;
+  margin-bottom: clamp(.4rem, 1vh, .9rem);
+}
+
+.rite-badge-pulse {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #14f195;
+  flex-shrink: 0;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── headline + tagline ── */
+.rite-headline {
+  font-family: "Syne", system-ui, sans-serif;
+  font-size: clamp(1.8rem, 4.5vw, 3.8rem);
+  font-weight: 800;
+  color: rgba(240, 234, 216, 0.95);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.rite-tagline {
+  font-family: "Syne", system-ui, sans-serif;
+  font-size: clamp(.82rem, 1.3vw, 1.05rem);
+  font-weight: 400;
+  color: rgba(240, 234, 216, 0.48);
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  margin: .35rem 0 0;
+}
+
+/* ── CTA buttons ── */
+.rite-cta-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-top: clamp(.8rem, 2vh, 1.4rem);
+}
+
+.rite-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-family: "Syne", system-ui, sans-serif;
+  font-size: clamp(.7rem, 1vw, .86rem);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: opacity .18s ease, transform .14s ease, background .18s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.rite-cta-btn:disabled {
+  opacity: .4;
+  cursor: default;
+  pointer-events: none;
+}
+
+.rite-cta-btn--sound {
+  background: linear-gradient(135deg, #14f195 0%, #09c56e 100%);
+  color: #030a06;
+}
+
+.rite-cta-btn--sound:hover {
+  opacity: .88;
+  transform: translateY(-1px);
+}
+
+.rite-cta-btn--silent {
+  background: transparent;
+  color: rgba(240, 234, 216, 0.72);
+  border-color: rgba(240, 234, 216, 0.18);
+}
+
+.rite-cta-btn--silent:hover {
+  background: rgba(240, 234, 216, 0.05);
+  border-color: rgba(240, 234, 216, 0.3);
+  color: rgba(240, 234, 216, 0.9);
+  transform: translateY(-1px);
+}
+
+/* ── hackathon label ── */
+.rite-hackathon-label {
+  font-family: var(--font-mono);
+  font-size: clamp(.3rem, .5vw, .4rem);
+  letter-spacing: .18em;
+  color: rgba(240, 234, 216, 0.18);
+  text-transform: uppercase;
+  margin: clamp(.5rem, 1.2vh, 1rem) 0 0;
+}
+
+/* ── footer INPI (landing) ── */
+.rite-footer-inpi {
+  font-family: var(--font-mono);
+  font-size: .32rem;
+  letter-spacing: .14em;
+  color: rgba(240, 234, 216, .18);
+  text-transform: uppercase;
+}
+
 /* ── coords aside ── */
 .rite-coords {
   border-left: 1px solid var(--bone-ghost);
