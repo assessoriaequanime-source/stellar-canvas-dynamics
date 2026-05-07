@@ -40,6 +40,26 @@ export function getWalletStatus() {
   return requestJson<Record<string, unknown>>("/avatarpro/wallet");
 }
 
+export function provisionWallet(payload: { walletAddress: string; email?: string }) {
+  if (isExplicitAvatarProDemoMode()) {
+    return Promise.resolve({
+      walletAddress: payload.walletAddress || DEMO_WALLET_ADDRESS,
+      sglMintAddress: "DEMO-MINT",
+      tokenAccount: "DEMO-TOKEN-ACCOUNT",
+      sglBalance: 10000,
+      initialCreditAmount: 10000,
+      initialCreditTxSignature: "DEMO-TX-MINT-001",
+      proofTxSignature: "DEMO-TX-PROOF-001",
+      explorerUrl: "https://explorer.solana.com/tx/DEMO-TX-PROOF-001?cluster=devnet",
+    });
+  }
+
+  return requestJson<Record<string, unknown>>("/wallets/provision", {
+    method: "POST",
+    body: payload,
+  });
+}
+
 export function getAvatarProStatus() {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve({
