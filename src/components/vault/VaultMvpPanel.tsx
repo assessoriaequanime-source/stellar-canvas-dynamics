@@ -1,7 +1,10 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { executePaidService, getPublicAuditSummary, loadAuditRecords, type AuditRecord } from "@/lib/sgl/execution";
 import { INITIAL_SGL_BALANCE, SERVICE_CATALOG, SERVICE_TYPES, type ServiceType } from "@/lib/sgl/services";
-import { MockSolanaAdapter } from "@/lib/solana/mockSolanaAdapter";
+import { RealSolanaAdapter } from "@/lib/solana/realSolanaAdapter";
+import { DEMO_WALLET_ADDRESS } from "@/lib/avatarpro/demoMode";
+
+const AVATAR_ID_KEY = "singulai_vault_avatar_id";
 
 function randomId(size: number): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";
@@ -14,12 +17,37 @@ function randomId(size: number): string {
   return out;
 }
 
-function createWalletAddress(): string {
-  return `Demo${randomId(36)}`;
+/** Lê o endereço de carteira da sessão do login (localStorage). */
+function getSessionWalletAddress(): string {
+  try {
+    const raw = localStorage.getItem("singulai_wallet");
+    if (raw) {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof parsed.address === "string" && parsed.address.length > 0) {
+        return parsed.address;
+      }
+    }
+  } catch {
+    // fallthrough
+  }
+  return DEMO_WALLET_ADDRESS;
 }
 
-function createAvatarId(): string {
-  return `avatar-${randomId(10)}`;
+/** Retorna o avatarId persistido na sessão ou cria um novo. */
+function getOrCreateAvatarId(): string {
+  try {
+    const stored = localStorage.getItem(AVATAR_ID_KEY);
+    if (stored && stored.length > 0) return stored;
+  } catch {
+    // fallthrough
+  }
+  const id = `avatar-${randomId(10)}`;
+  try {
+    localStorage.setItem(AVATAR_ID_KEY, id);
+  } catch {
+    // fallthrough
+  }
+  return id;
 }
 
 const CARD: CSSProperties = {
@@ -39,10 +67,10 @@ const BUTTON: CSSProperties = {
 };
 
 export default function VaultMvpPanel() {
-  const mockAdapter = useMemo(() => new MockSolanaAdapter(), []);
+  const adapter = useMemo(() => new RealSolanaAdapter(), []);
   const [records, setRecords] = useState<AuditRecord[]>(() => loadAuditRecords());
-  const [walletAddress] = useState<string>(() => createWalletAddress());
-  const [avatarId] = useState<string>(() => createAvatarId());
+  const [walletAddress] = useState<string>(getSessionWalletAddress);
+  const [avatarId] = useState<string>(getOrCreateAvatarId);
   const [isRunning, setIsRunning] = useState(false);
   const [message, setMessage] = useState("Ready to execute paid services.");
 
@@ -58,7 +86,7 @@ export default function VaultMvpPanel() {
         serviceType,
         currentBalance: summary.balance,
         totalSpent: summary.totalSpent,
-        adapter: mockAdapter,
+        adapter: adapter,
       });
 
       setRecords((current) => [result.record, ...current]);
