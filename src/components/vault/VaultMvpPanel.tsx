@@ -82,6 +82,7 @@ export default function VaultMvpPanel() {
   const latest = records[0];
 
   return (
+    <div style={{ height: "100dvh", overflowY: "auto", background: "#0b0b0b" }}>
     <main style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px", color: "#f7f5ef" }}>
       <h1 style={{ fontSize: 32, marginBottom: 8 }}>SingulAI AvatarPro Vault</h1>
       <p style={{ opacity: 0.9, marginBottom: 20 }}>Operational MVP for paid execution services with Solana demo audit proofs.</p>
@@ -161,5 +162,6 @@ export default function VaultMvpPanel() {
       <p style={{ marginTop: 16, opacity: 0.9 }}>{message}</p>
       <p style={{ marginTop: 6, opacity: 0.8 }}>Initial SGL balance for this MVP is fixed at {INITIAL_SGL_BALANCE.toLocaleString()}.</p>
     </main>
+    </div>
   );
 }
