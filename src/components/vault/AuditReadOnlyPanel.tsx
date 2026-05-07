@@ -242,6 +242,17 @@ function JudgeGate({ onUnlock }: { onUnlock: () => void }) {
 
 // ── Painel principal ───────────────────────────────────────────────────────
 export default function AuditReadOnlyPanel() {
+  // Sobrescreve o overflow:hidden global para permitir scroll nesta página standalone
+  useEffect(() => {
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "auto";
+    document.body.style.overflow = "auto";
+    return () => {
+      document.documentElement.style.overflow = prev;
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   const [unlocked, setUnlocked] = useState(() => {
     // Persiste o acesso na sessão para não pedir senha a cada navegação
     return sessionStorage.getItem("singulai_judge_unlocked") === "1";
@@ -249,6 +260,7 @@ export default function AuditReadOnlyPanel() {
   const [records, setRecords] = useState<AuditRecord[]>([]);
   const [walletAddress, setWalletAddress] = useState("");
   const [balance, setBalance] = useState<number>(INITIAL_SGL_BALANCE);
+  const [mintAddress, setMintAddress] = useState<string>("");
   const [message, setMessage] = useState("Carregando auditoria…");
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -275,6 +287,8 @@ export default function AuditReadOnlyPanel() {
         ]);
         setRecords(Array.isArray(events) ? events : []);
         setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+        const bd1 = balanceData as Record<string, unknown>;
+        if (bd1.sglMintAddress) setMintAddress(String(bd1.sglMintAddress));
         setMessage(
           Array.isArray(events) && events.length > 0
             ? `${events.length} evento(s) verificado(s) na Solana Devnet.`
@@ -313,6 +327,8 @@ export default function AuditReadOnlyPanel() {
       ]);
       setRecords(Array.isArray(events) ? events : []);
       setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+      const bd2 = balanceData as Record<string, unknown>;
+      if (bd2.sglMintAddress) setMintAddress(String(bd2.sglMintAddress));
       setMessage(`${Array.isArray(events) ? events.length : 0} evento(s) atualizados.`);
     } catch {
       setMessage("Erro ao recarregar.");
@@ -476,7 +492,7 @@ export default function AuditReadOnlyPanel() {
           ))}
         </section>
 
-        {/* Nota legal */}
+        {/* Nota legal + links do token */}
         <section
           style={{
             ...CARD,
@@ -492,6 +508,68 @@ export default function AuditReadOnlyPanel() {
             Solana Devnet. Conteúdo privado nunca é armazenado on-chain — apenas hashes, provas e
             estados de execução são públicos e verificáveis no explorer abaixo.
           </p>
+
+          {mintAddress && (
+            <div
+              style={{
+                marginTop: 16,
+                padding: "12px 14px",
+                borderRadius: 10,
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(143,211,255,0.12)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 10,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.35)",
+                }}
+              >
+                SGL Token — Solana Devnet
+              </p>
+              <code
+                style={{ fontSize: 11, wordBreak: "break-all", color: "rgba(255,255,255,0.7)" }}
+              >
+                {mintAddress}
+              </code>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
+                <a
+                  href={`https://solscan.io/token/${mintAddress}?cluster=devnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...BADGE,
+                    background: "rgba(143,211,255,0.10)",
+                    border: "1px solid rgba(143,211,255,0.28)",
+                    color: accentBlue,
+                    textDecoration: "none",
+                  }}
+                >
+                  Ver no Solscan →
+                </a>
+                <a
+                  href={`https://explorer.solana.com/address/${mintAddress}?cluster=devnet`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    ...BADGE,
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    color: "rgba(255,255,255,0.6)",
+                    textDecoration: "none",
+                  }}
+                >
+                  Ver no Explorer →
+                </a>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Registros de auditoria */}
@@ -573,6 +651,22 @@ export default function AuditReadOnlyPanel() {
                           }}
                         >
                           Ver no Explorer →
+                        </a>
+                      )}
+                      {!isMock && txSig && (
+                        <a
+                          href={`https://solscan.io/tx/${txSig}?cluster=devnet`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            ...BADGE,
+                            background: "rgba(80,255,160,0.07)",
+                            border: "1px solid rgba(80,255,160,0.22)",
+                            color: "rgba(80,255,160,0.9)",
+                            textDecoration: "none",
+                          }}
+                        >
+                          Ver no Solscan →
                         </a>
                       )}
                     </div>

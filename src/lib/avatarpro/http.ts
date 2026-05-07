@@ -1,4 +1,9 @@
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "/api/v1").replace(/\/$/, "");
+// Em produção (singulai.live), o backend real está em https://singulai.live/alt-api/v1
+// VITE_API_BASE_URL sobrescreve se definido explicitamente
+const API_BASE = (
+  import.meta.env.VITE_API_BASE_URL ||
+  (import.meta.env.VITE_ALT_API_BASE ? `${import.meta.env.VITE_ALT_API_BASE}/v1` : "/api/v1")
+).replace(/\/$/, "");
 
 export class AvatarProApiError extends Error {
   status?: number;

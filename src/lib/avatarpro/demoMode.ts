@@ -6,11 +6,10 @@ function envFlagEnabled(value: string | undefined): boolean {
 
 export function isExplicitAvatarProDemoMode(): boolean {
   const hostname = typeof window !== "undefined" ? window.location.hostname : "";
-  const isSingulaiLive = hostname === "singulai.live" || hostname.endsWith(".singulai.live");
+  // singulai.live é produção — nunca usar dados demo em produção
   const isCodespace = hostname.endsWith(".app.github.dev") || hostname.endsWith(".githubpreview.dev");
   const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1";
   return (
-    isSingulaiLive ||
     isCodespace ||
     isLocalhost ||
     envFlagEnabled(import.meta.env.VITE_ENABLE_MOCK_VAULT) ||

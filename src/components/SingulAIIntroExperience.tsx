@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import * as musicPlayer from "@/lib/musicPlayer";
 
 type DemoState = "idle" | "crossing";
 
@@ -17,7 +18,6 @@ function toRoman(n: number): string {
 
 export default function SingulAIIntroExperience() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const frameRef = useRef<number>(0);
   const [state, setState] = useState<DemoState>("idle");
   const [veilActive, setVeilActive] = useState(false);
@@ -114,8 +114,7 @@ export default function SingulAIIntroExperience() {
   /* ── audio cleanup ── */
   useEffect(() => {
     return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
+      // Não pausamos o áudio no unmount — o musicPlayer persiste na navegação
     };
   }, []);
 
@@ -125,12 +124,9 @@ export default function SingulAIIntroExperience() {
       if (state !== "idle") return;
 
       if (withSound) {
-        const audio = new Audio("/audio/singulai-intro.mp3");
-        audio.volume = 0.5;
-        audioRef.current = audio;
-        audio.play().catch(() => {
-          /* browser may block or file may be missing — continue silently */
-        });
+        musicPlayer.play();
+      } else {
+        musicPlayer.pause();
       }
 
       setVeilActive(true);
@@ -143,10 +139,7 @@ export default function SingulAIIntroExperience() {
   );
 
   const handleRestart = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
+    musicPlayer.pause();
     setVeilActive(false);
     setState("idle");
   }, []);

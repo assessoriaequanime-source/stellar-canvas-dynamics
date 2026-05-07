@@ -3,6 +3,8 @@ import { useEffect, useState, useRef } from "react";
 
 import appCss from "../styles.css?url";
 import WalletOnboarding from "@/components/WalletOnboarding";
+import MusicToggle from "@/components/MusicToggle";
+import { init as initMusic } from "@/lib/musicPlayer";
 
 const LOCAL_SESSION_KEY = "singulai_session";
 const LOCAL_USER_KEY = "singulai_user";
@@ -148,6 +150,9 @@ function RootComponent() {
   const [authState, setAuthState] = useState<"loading" | "onboarding" | "ready">("loading");
   const triedAuth = useRef(false);
 
+  // Retoma música se estava ativa antes de uma navegação full-reload
+  useEffect(() => { initMusic(); }, []);
+
   const handleOnboardingSuccess = () => setAuthState("ready");
 
   useEffect(() => {
@@ -190,5 +195,10 @@ function RootComponent() {
     return <WalletOnboarding onSuccess={handleOnboardingSuccess} />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <MusicToggle />
+    </>
+  );
 }
