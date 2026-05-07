@@ -775,6 +775,47 @@ export class AvatarEngine {
     }
   }
 
+  /**
+   * Temporarily tints all non-absorbed particles to a reaction color,
+   * then fades back to their base color. Call after an avatar chat response.
+   * r, g, b in [0, 1] linear range.
+   */
+  flashReactionColor(r: number, g: number, b: number, dur = 1.6): void {
+    if (!this.geo || this.disposed) return;
+    const colors = this.geo.attributes.color.array as Float32Array;
+    const baseCol = this.baseColor;
+    const t = { p: 0 };
+    gsap.timeline()
+      .to(t, {
+        p: 1,
+        duration: dur * 0.35,
+        ease: "power2.out",
+        onUpdate: () => {
+          for (let i = 0; i < this.N; i++) {
+            if (this.absorbed[i]) continue;
+            const ci = i * 3;
+            colors[ci]     = baseCol[ci]     + (r - baseCol[ci])     * t.p;
+            colors[ci + 1] = baseCol[ci + 1] + (g - baseCol[ci + 1]) * t.p;
+            colors[ci + 2] = baseCol[ci + 2] + (b - baseCol[ci + 2]) * t.p;
+          }
+        },
+      })
+      .to(t, {
+        p: 0,
+        duration: dur * 0.65,
+        ease: "power1.in",
+        onUpdate: () => {
+          for (let i = 0; i < this.N; i++) {
+            if (this.absorbed[i]) continue;
+            const ci = i * 3;
+            colors[ci]     = baseCol[ci]     + (r - baseCol[ci])     * t.p;
+            colors[ci + 1] = baseCol[ci + 1] + (g - baseCol[ci + 1]) * t.p;
+            colors[ci + 2] = baseCol[ci + 2] + (b - baseCol[ci + 2]) * t.p;
+          }
+        },
+      });
+  }
+
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.rafId);
