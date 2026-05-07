@@ -1,6 +1,7 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { getPublicAuditSummary, loadAuditRecords, type AuditRecord } from "@/lib/sgl/execution";
+import { getAuditEventsByWallet } from "@/lib/avatarpro/auditApiClient";
 import { INITIAL_SGL_BALANCE } from "@/lib/sgl/services";
+import { getSglBalance } from "@/lib/avatarpro/sglApiClient";
 
 const CARD: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.16)",
@@ -18,28 +19,62 @@ const BUTTON: CSSProperties = {
   cursor: "pointer",
 };
 
+type AuditRecord = Record<string, unknown>;
+
 function copyableFields(record: AuditRecord) {
   return [
-    { label: "walletAddress", value: record.walletAddress },
-    { label: "avatarId", value: record.avatarId },
-    { label: "serviceType", value: record.serviceType },
-    { label: "cost", value: String(record.cost) },
-    { label: "previousBalance", value: String(record.previousBalance) },
-    { label: "newBalance", value: String(record.newBalance) },
-    { label: "payloadHash", value: record.payloadHash },
-    { label: "snapshotHash", value: record.snapshotHash },
-    { label: "timestamp", value: record.timestamp },
-    { label: "status", value: record.status },
-    { label: "txSignature", value: record.txSignature },
-    { label: "explorerUrl", value: record.explorerUrl },
+    { label: "walletAddress", value: (record.walletAddress || "").toString() },
+    { label: "avatarId", value: (record.avatarId || "").toString() },
+    { label: "eventType", value: (record.eventType || "").toString() },
+    { label: "serviceType", value: (record.serviceType || "").toString() },
+    { label: "cost", value: String(record.cost || "") },
+    { label: "payloadHash", value: (record.payloadHash || "").toString() },
+    { label: "createdAt", value: (record.createdAt || "").toString() },
+    { label: "network", value: (record.network || "").toString() },
+    { label: "debitStatus", value: (record.debitStatus || "").toString() },
+    { label: "txSignature", value: (record.txSignature || "").toString() },
+    { label: "explorerUrl", value: (record.explorerUrl || "").toString() },
   ];
 }
 
 export default function AuditReadOnlyPanel() {
-  const [records] = useState<AuditRecord[]>(() => loadAuditRecords());
+  const [records, setRecords] = useState<AuditRecord[]>([]);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [balance, setBalance] = useState<number>(INITIAL_SGL_BALANCE);
   const [message, setMessage] = useState("Read-only mode loaded.");
-  const summary = useMemo(() => getPublicAuditSummary(records), [records]);
+  const summary = useMemo(() => {
+    const totalSpent = records.reduce((sum, item) => sum + Number(item.cost || 0), 0);
+    return {
+      balance,
+      totalSpent,
+      totalActions: records.length,
+    };
+  }, [records, balance]);
   const latest = records[0];
+
+  async function connectWallet() {
+    try {
+      const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
+      if (!provider) {
+        throw new Error("Phantom/Solflare wallet not found in browser.");
+      }
+
+      const response = await provider.connect();
+      const address = response.publicKey.toString();
+      setWalletAddress(address);
+
+      const [events, balanceData] = await Promise.all([
+        getAuditEventsByWallet(address),
+        getSglBalance(address),
+      ]);
+
+      setRecords(Array.isArray(events) ? events : []);
+      setBalance(Number(balanceData.sglBalance || balanceData.balance || 0));
+      setMessage("Audit trail loaded from Solana Devnet proof events.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Failed to load audit trail.");
+    }
+  }
 
   async function copyValue(label: string, value: string) {
     try {
@@ -55,6 +90,10 @@ export default function AuditReadOnlyPanel() {
       <h1 style={{ fontSize: 32, marginBottom: 8 }}>Audit Read-Only Panel</h1>
       <p style={{ opacity: 0.9, marginBottom: 20 }}>This panel is read-only and never executes services or changes SGL state.</p>
 
+      <section style={{ marginBottom: 16 }}>
+        <button style={BUTTON} onClick={connectWallet}>Connect Solana Wallet</button>
+      </section>
+
       <section style={{ ...CARD, marginBottom: 16 }}>
         <p>SOL pays Solana network fees.</p>
         <p>SGL is a SingulAI demo execution credit.</p>
@@ -66,7 +105,7 @@ export default function AuditReadOnlyPanel() {
         <div style={CARD}><h3 style={{ marginTop: 0 }}>SGL balance</h3><p>{summary.balance.toLocaleString()} SGL</p></div>
         <div style={CARD}><h3 style={{ marginTop: 0 }}>Total spent</h3><p>{summary.totalSpent.toLocaleString()} SGL</p></div>
         <div style={CARD}><h3 style={{ marginTop: 0 }}>Total actions</h3><p>{summary.totalActions}</p></div>
-        <div style={CARD}><h3 style={{ marginTop: 0 }}>Wallet</h3><p style={{ wordBreak: "break-all" }}>{latest?.walletAddress ?? "No wallet found"}</p></div>
+        <div style={CARD}><h3 style={{ marginTop: 0 }}>Wallet</h3><p style={{ wordBreak: "break-all" }}>{walletAddress || (latest?.walletAddress || "No wallet found").toString()}</p></div>
       </section>
 
       <section style={CARD}>
@@ -74,7 +113,8 @@ export default function AuditReadOnlyPanel() {
         {records.length === 0 ? <p>No audit records found. Expected initial balance: {INITIAL_SGL_BALANCE.toLocaleString()} SGL.</p> : null}
         <div style={{ display: "grid", gap: 10 }}>
           {records.map((record, idx) => {
-            const mockProof = record.txSignature.startsWith("MOCK-");
+            const txSignature = (record.txSignature || "").toString();
+            const mockProof = txSignature.startsWith("MOCK-");
             const devnetTx = !mockProof;
 
             return (
