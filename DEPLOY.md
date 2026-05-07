@@ -1,5 +1,7 @@
 # SingulAI — Guia de Deploy
 
+> **Regra operacional crítica:** Este projeto é `singulai.live`. Nunca executar comandos que afetem `singulai.site`. São ambientes separados e independentes.
+
 ## Estrutura do ambiente
 
 | Item | Valor |
@@ -10,12 +12,70 @@
 | Repositório | `https://github.com/assessoriaequanime-source/stellar-canvas-dynamics` |
 | Branch principal | `main` |
 
+> **Por que rebuild é obrigatório a cada deploy:** variáveis `VITE_*` são substituídas em tempo de build pelo Vite. Apenas reiniciar PM2 com `--update-env` não atualiza o frontend. O rebuild é sempre necessário.
+
 ---
 
-## 1. Atualizar e publicar na VPS (uso diário)
+## 1. Deploy padrão — singulai.live (script blindado)
+
+Execute integralmente na VPS. O `set -euo pipefail` aborta em qualquer erro.
 
 ```bash
-cd /projects/active/stellar-canvas-dynamics && git pull origin main && VITE_ALT_API_BASE=https://singulai.live/alt-api VITE_SIMPLE_TEST_AUTH=0 npm run build && PORT=8080 pm2 restart singulai-live-dashboard --update-env && pm2 save
+set -euo pipefail
+
+echo "=== DEPLOY SINGULAI.LIVE ONLY ==="
+cd /projects/active/stellar-canvas-dynamics
+
+echo "=== Confirmar repo/branch ==="
+pwd
+git remote -v
+git status --short --branch
+git log --oneline -3
+
+echo "=== Atualizar main ==="
+git pull --ff-only origin main
+git log --oneline -3
+
+echo "=== Build com backend real ==="
+VITE_ALT_API_BASE=https://singulai.live/alt-api \
+VITE_SIMPLE_TEST_AUTH=0 \
+npm run build
+
+echo "=== Restart dashboard com env atualizado ==="
+VITE_ALT_API_BASE=https://singulai.live/alt-api \
+VITE_SIMPLE_TEST_AUTH=0 \
+PORT=8080 \
+pm2 restart singulai-live-dashboard --update-env
+
+sleep 5
+
+echo "=== Confirmar backend real ==="
+pm2 list
+curl -sI http://127.0.0.1:9200/health | head -5 || true
+curl -s http://127.0.0.1:9200/health || true
+
+echo "=== Confirmar rotas públicas ==="
+curl -s -o /dev/null -w "live_root=%{http_code}\n" https://singulai.live/
+curl -s -o /dev/null -w "live_demo=%{http_code}\n" https://singulai.live/demo
+curl -s -o /dev/null -w "live_dashboard=%{http_code}\n" https://singulai.live/dashboard
+curl -s -o /dev/null -w "live_vault=%{http_code}\n" https://singulai.live/vault
+curl -s -o /dev/null -w "live_audit=%{http_code}\n" https://singulai.live/audit
+
+echo "=== Confirmar alt-api ==="
+curl -sI https://singulai.live/alt-api/v1/audit/events | head -8 || true
+
+echo "=== Checar ausência de dados fake no HTML inicial ==="
+curl -s -H "Accept-Encoding: identity" https://singulai.live/audit > /tmp/singulai-live-audit.html
+grep -aRni "Autenticacao oficial obrigatoria\|Entrar via singulai.site\|singulai.site\|demo data\|fake" /tmp/singulai-live-audit.html && {
+  echo "ERRO: conteúdo legado/demo encontrado"
+  exit 1
+} || echo "OK: sem gate legado/fake no HTML inicial"
+
+echo "=== NÃO tocou singulai.site ==="
+curl -sI https://singulai.site | head -3 || true
+
+echo "=== Tudo OK — salvar PM2 ==="
+pm2 save
 ```
 
 ---
@@ -39,6 +99,8 @@ pm2 logs singulai-live-dashboard --lines 50
 
 ## 4. Reiniciar apenas o processo (sem rebuild)
 
+> Atenção: não aplica mudanças de frontend. Use apenas para reiniciar após crash sem code change.
+
 ```bash
 pm2 restart singulai-live-dashboard && pm2 save
 ```
@@ -48,7 +110,7 @@ pm2 restart singulai-live-dashboard && pm2 save
 ## 5. Rebuild completo + dependências (após mudanças em package.json)
 
 ```bash
-cd /projects/active/stellar-canvas-dynamics && git pull origin main && npm install && VITE_ALT_API_BASE=https://singulai.live/alt-api VITE_SIMPLE_TEST_AUTH=0 npm run build && PORT=8080 pm2 restart singulai-live-dashboard --update-env && pm2 save
+cd /projects/active/stellar-canvas-dynamics && git pull --ff-only origin main && npm install && VITE_ALT_API_BASE=https://singulai.live/alt-api VITE_SIMPLE_TEST_AUTH=0 npm run build && PORT=8080 pm2 restart singulai-live-dashboard --update-env && pm2 save
 ```
 
 ---

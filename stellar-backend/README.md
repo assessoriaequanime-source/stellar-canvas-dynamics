@@ -1,6 +1,6 @@
-# Stellar Backend
+# SingulAI AvatarPro Vault — Backend
 
-Enterprise-grade backend for Stellar Canvas Dynamics - a Web3 avatar platform with GDPR compliance, blockchain integration, and AI orchestration.
+Enterprise-grade backend for SingulAI AvatarPro Vault — professional continuity infrastructure on Solana, with audit trail, TimeCapsule execution engine, and AI orchestration.
 
 ## 🏗️ Architecture
 
@@ -8,7 +8,7 @@ Enterprise-grade backend for Stellar Canvas Dynamics - a Web3 avatar platform wi
 stellar-backend (Node.js + Express + TypeScript)
     ├── PostgreSQL 15 (stellar_db)
     ├── Redis 7 (caching + sessions)
-    └── Blockchain readers (ethers.js v6, Sepolia testnet)
+    └── Blockchain integration (Solana — on-chain proofs, capsule registry, audit events)
 ```
 
 ## 📋 Requirements
@@ -42,7 +42,7 @@ Key variables to set:
 - `DB_PASSWORD`: PostgreSQL password
 - `REDIS_PASSWORD`: Redis password
 - `JWT_SECRET`: JWT signing secret (min 32 chars)
-- `BLOCKCHAIN_RPC_URL`: Sepolia RPC endpoint
+- `BLOCKCHAIN_RPC_URL`: Solana RPC endpoint (mainnet-beta or devnet)
 
 ### 3. Start Development Server
 
@@ -120,9 +120,9 @@ See `.env.example` for all available options.
 **Critical variables**:
 
 - `NODE_ENV`: Set to `development` or `production`
-- `UDP_PASSWORD`: Secure password for database
+- `DB_PASSWORD`: Secure password for database
 - `JWT_SECRET`: Secret for JWT signing
-- `BLOCKCHAIN_RPC_URL`: Sepolia RPC for blockchain reads
+- `BLOCKCHAIN_RPC_URL`: Solana RPC for on-chain proof reads
 
 ## 📖 Project Structure
 
@@ -270,7 +270,7 @@ GitHub Actions workflow: `.github/workflows/ci.yml` (coming Week 2)
 
 **Issues**: Report via GitHub Issues  
 **Questions**: Review `docs/` folder  
-**Development Lead**: Run (Chefe Desenvolviment)
+**Development Lead**: Run (Chefe Desenvolvimento)
 
 ## 📄 License
 
