@@ -83,6 +83,21 @@ const AI_REPLIES: Record<Profile, string[]> = {
 type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 type ChatAuditEntry = { id: string; action: string; cost: number; status: string; ts: string };
 
+type BrowserSpeechRecognition = {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  continuous: boolean;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: Event) => void) | null;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript?: string }>> }) => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type BrowserSpeechRecognitionCtor = new () => BrowserSpeechRecognition;
+
 const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
 
 function isExplicitDevMockEnabled(): boolean {
@@ -215,6 +230,10 @@ export default function SingulAIDashboard() {
   const [capsuleContent, setCapsuleContent] = useState("");
   const [capsuleCost, setCapsuleCost] = useState(100);
   const [lastProvisionExplorer, setLastProvisionExplorer] = useState("");
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false);
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
+  const [mobileKeyboardOffset, setMobileKeyboardOffset] = useState(0);
+  const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const lastAiResponseRef = useRef<{ id: number; text: string } | null>(null);
 
   const quickHash = useCallback((value: string) => {
@@ -912,8 +931,8 @@ export default function SingulAIDashboard() {
   };
 
   // Send chat — tries real backend, falls back to AI_REPLIES on error
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (prefillText?: string) => {
+    const text = (prefillText ?? input).trim();
     if (!text) return;
     setInput("");
     const userId = ++msgIdRef.current;
@@ -998,6 +1017,107 @@ export default function SingulAIDashboard() {
         setChatAuditLog((log) => [entry, ...log].slice(0, 20));
       });
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const speechApi = window as Window & {
+      SpeechRecognition?: BrowserSpeechRecognitionCtor;
+      webkitSpeechRecognition?: BrowserSpeechRecognitionCtor;
+    };
+
+    const RecognitionCtor = speechApi.SpeechRecognition ?? speechApi.webkitSpeechRecognition;
+    if (!RecognitionCtor) {
+      setIsVoiceSupported(false);
+      speechRecognitionRef.current = null;
+      return;
+    }
+
+    const recognition = new RecognitionCtor();
+    recognition.lang = "pt-BR";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      setIsVoiceListening(true);
+      setStatusMessage("Escutando voz... fale agora");
+    };
+
+    recognition.onend = () => {
+      setIsVoiceListening(false);
+    };
+
+    recognition.onerror = () => {
+      setIsVoiceListening(false);
+      setStatusMessage("Falha ao capturar audio");
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim() ?? "";
+      if (!transcript) {
+        setStatusMessage("Nenhuma fala detectada");
+        return;
+      }
+      setInput(transcript);
+      void sendMessage(transcript);
+    };
+
+    setIsVoiceSupported(true);
+    speechRecognitionRef.current = recognition;
+
+    return () => {
+      speechRecognitionRef.current?.stop();
+      speechRecognitionRef.current = null;
+      setIsVoiceListening(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile || typeof window === "undefined" || !window.visualViewport) {
+      setMobileKeyboardOffset(0);
+      document.body.classList.remove("mobile-keyboard-open");
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    const syncKeyboardState = () => {
+      const rawOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      const nextOffset = rawOffset > 44 ? Math.min(rawOffset, 280) : 0;
+      setMobileKeyboardOffset(nextOffset);
+      document.body.classList.toggle("mobile-keyboard-open", nextOffset > 0);
+    };
+
+    syncKeyboardState();
+    viewport.addEventListener("resize", syncKeyboardState);
+    viewport.addEventListener("scroll", syncKeyboardState);
+    window.addEventListener("orientationchange", syncKeyboardState);
+
+    return () => {
+      viewport.removeEventListener("resize", syncKeyboardState);
+      viewport.removeEventListener("scroll", syncKeyboardState);
+      window.removeEventListener("orientationchange", syncKeyboardState);
+      document.body.classList.remove("mobile-keyboard-open");
+    };
+  }, [isMobile]);
+
+  const toggleVoiceCapture = useCallback(() => {
+    if (!isVoiceSupported || !speechRecognitionRef.current) {
+      setStatusMessage("Entrada por voz nao suportada neste navegador");
+      return;
+    }
+
+    if (isVoiceListening) {
+      speechRecognitionRef.current.stop();
+      setStatusMessage("Captura de voz interrompida");
+      return;
+    }
+
+    try {
+      speechRecognitionRef.current.start();
+    } catch {
+      setStatusMessage("Captura de voz ocupada. Tente novamente");
+    }
+  }, [isVoiceListening, isVoiceSupported]);
 
   const connectSolanaWallet = async () => {
     // Primeiro tenta usar a wallet da sessão (localStorage)
@@ -1472,7 +1592,16 @@ export default function SingulAIDashboard() {
           )}
 
           {/* CHAT */}
-          <div id="chat-area">
+          <div
+            id="chat-area"
+            style={
+              mobileKeyboardOffset > 0
+                ? {
+                    paddingBottom: `calc(env(safe-area-inset-bottom, 12px) + ${10 + mobileKeyboardOffset}px)`,
+                  }
+                : undefined
+            }
+          >
             <ChatStream
               messages={messages}
               profile={profile}
@@ -1481,7 +1610,14 @@ export default function SingulAIDashboard() {
               onSaveToCapsule={handleSaveToCapsule}
             />
             <div id="chat-bar">
-              <button className="cb" title="Microphone" aria-label="Microphone">
+              <button
+                className={`cb ${isVoiceListening ? "cb--active" : ""}`}
+                title={isVoiceListening ? "Stop voice capture" : "Start voice capture"}
+                aria-label={isVoiceListening ? "Stop voice capture" : "Start voice capture"}
+                aria-pressed={isVoiceListening}
+                disabled={!isVoiceSupported}
+                onClick={toggleVoiceCapture}
+              >
                 <Icon>
                   <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
                   <path d="M19 10v2a7 7 0 01-14 0v-2" />
