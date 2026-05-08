@@ -3,9 +3,91 @@ import { Link } from "@tanstack/react-router";
 import { getAuditEventsByWallet } from "@/lib/avatarpro/auditApiClient";
 import { INITIAL_SGL_BALANCE } from "@/lib/sgl/services";
 import { getSglBalance } from "@/lib/avatarpro/sglApiClient";
+import { Keypair } from "@solana/web3.js";
 
 // Senha de acesso para juízes/avaliadores — simples, não sensível, apenas barreira de UI
 const JUDGE_PASSWORD = "judge2026";
+
+// ── Wallet ephemeral de sessão para juízes ─────────────────────────────────
+const JUDGE_SESSION_KEY = "singulai_judge_keypair";
+
+function getOrCreateJudgeKeypair(): string {
+  try {
+    const stored = sessionStorage.getItem(JUDGE_SESSION_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as { publicKey: string };
+      if (parsed.publicKey) return parsed.publicKey;
+    }
+  } catch {
+    /* SSR */
+  }
+  try {
+    const kp = Keypair.generate();
+    const pub = kp.publicKey.toBase58();
+    sessionStorage.setItem(
+      JUDGE_SESSION_KEY,
+      JSON.stringify({ publicKey: pub, secretKey: Array.from(kp.secretKey) }),
+    );
+    return pub;
+  } catch {
+    return `judge-ephemeral-${Math.random().toString(36).slice(2, 12)}`;
+  }
+}
+
+// ── Cápsulas de demonstração para juízes sem wallet real ───────────────────
+const JUDGE_DEMO_CAPSULES: AuditRecord[] = [
+  {
+    capsuleId: "CAPS-pedro-1746700001",
+    walletAddress: "—",
+    avatarId: "pedro",
+    eventType: "CONTRACT_ANALYSIS",
+    serviceType: "Análise de Contrato — Pedro AvatarPro",
+    cost: 50,
+    payloadHash: "a3f1e9b2c7d8f04512ab98cd001244e3a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
+    createdAt: "2026-05-08T10:00:00.000Z",
+    network: "Solana Devnet",
+    debitStatus: "SEALED",
+    txSignature: "DEMO-CAPS-PEDRO-001",
+    explorerUrl:
+      "https://explorer.solana.com/address/MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr?cluster=devnet",
+    _demoLabel: "Pedro · Contratos e Risco",
+    _avatarEmoji: "⚖️",
+  },
+  {
+    capsuleId: "CAPS-laura-1746700002",
+    walletAddress: "—",
+    avatarId: "laura",
+    eventType: "PLANNING_CREATION",
+    serviceType: "Planejamento e Criação — Laura AvatarPro",
+    cost: 35,
+    payloadHash: "7b2e4f9d1a8c6035e9fbe5234ab0cd12345678901abcdef1234567890abcdef12",
+    createdAt: "2026-05-08T11:30:00.000Z",
+    network: "Solana Devnet",
+    debitStatus: "SEALED",
+    txSignature: "DEMO-CAPS-LAURA-002",
+    explorerUrl:
+      "https://explorer.solana.com/address/MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr?cluster=devnet",
+    _demoLabel: "Laura · Planejamento e Criação",
+    _avatarEmoji: "🎯",
+  },
+  {
+    capsuleId: "CAPS-leticia-1746700003",
+    walletAddress: "—",
+    avatarId: "leticia",
+    eventType: "FOCUSED_EXECUTION",
+    serviceType: "Execução Focada — Letícia AvatarPro",
+    cost: 25,
+    payloadHash: "c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9",
+    createdAt: "2026-05-08T14:15:00.000Z",
+    network: "Solana Devnet",
+    debitStatus: "SEALED",
+    txSignature: "DEMO-CAPS-LETICIA-003",
+    explorerUrl:
+      "https://explorer.solana.com/address/MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr?cluster=devnet",
+    _demoLabel: "Letícia · Execução Focada",
+    _avatarEmoji: "⚡",
+  },
+];
 
 const CARD: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.12)",
@@ -47,20 +129,15 @@ const BTN_PRIMARY: CSSProperties = {
 
 type AuditRecord = Record<string, unknown>;
 
-function copyableFields(record: AuditRecord) {
+function hashOnlyFields(record: AuditRecord) {
   return [
-    { label: "walletAddress", value: (record.walletAddress || "").toString() },
-    { label: "avatarId", value: (record.avatarId || "").toString() },
-    { label: "eventType", value: (record.eventType || "").toString() },
-    { label: "serviceType", value: (record.serviceType || "").toString() },
-    { label: "cost (SGL)", value: String(record.cost || "0") },
     { label: "payloadHash", value: (record.payloadHash || "").toString() },
-    { label: "createdAt", value: (record.createdAt || "").toString() },
-    { label: "network", value: (record.network || "").toString() },
-    { label: "debitStatus", value: (record.debitStatus || "").toString() },
     { label: "txSignature", value: (record.txSignature || "").toString() },
-    { label: "explorerUrl", value: (record.explorerUrl || "").toString() },
   ];
+}
+
+function getSolscanTxUrl(txSignature: string): string {
+  return `https://solscan.io/tx/${txSignature}?cluster=devnet`;
 }
 
 // ── Gate de senha para juízes ──────────────────────────────────────────────
@@ -261,10 +338,14 @@ export default function AuditReadOnlyPanel() {
   const [walletAddress, setWalletAddress] = useState("");
   const [balance, setBalance] = useState<number>(INITIAL_SGL_BALANCE);
   const [mintAddress, setMintAddress] = useState<string>("");
+  const [isJudgeDemo, setIsJudgeDemo] = useState(false);
+  const [judgeWalletAddress, setJudgeWalletAddress] = useState("");
   const [message, setMessage] = useState("Carregando auditoria…");
   const [copied, setCopied] = useState<string | null>(null);
 
   function handleUnlock() {
+    const judgeWallet = getOrCreateJudgeKeypair();
+    setJudgeWalletAddress(judgeWallet);
     sessionStorage.setItem("singulai_judge_unlocked", "1");
     setUnlocked(true);
   }
@@ -275,26 +356,39 @@ export default function AuditReadOnlyPanel() {
     async function autoLoad() {
       try {
         const stored = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
-        const addr = stored?.address || stored?.walletAddress || "";
-        if (!addr) {
-          setMessage("Nenhuma wallet encontrada. Acesse via ?access=judge ou faça login.");
-          return;
-        }
+        const addr = stored?.address || stored?.walletAddress || getOrCreateJudgeKeypair();
+        setJudgeWalletAddress(addr);
         setWalletAddress(addr);
         const [events, balanceData] = await Promise.all([
           getAuditEventsByWallet(addr),
           getSglBalance(addr),
         ]);
-        setRecords(Array.isArray(events) ? events : []);
-        setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+        const hasEvents = Array.isArray(events) && events.length > 0;
+        if (!hasEvents) {
+          setIsJudgeDemo(true);
+          setRecords(JUDGE_DEMO_CAPSULES);
+          setBalance(
+            INITIAL_SGL_BALANCE -
+              JUDGE_DEMO_CAPSULES.reduce((sum, e) => sum + Number(e.cost || 0), 0),
+          );
+          setMessage(
+            "Modo Judge Demo ativado: cápsulas de auditoria carregadas para validação do fluxo.",
+          );
+        } else {
+          setIsJudgeDemo(false);
+          setRecords(events);
+          setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+          setMessage(`${events.length} evento(s) verificado(s) na Solana Devnet.`);
+        }
         const bd1 = balanceData as Record<string, unknown>;
         if (bd1.sglMintAddress) setMintAddress(String(bd1.sglMintAddress));
-        setMessage(
-          Array.isArray(events) && events.length > 0
-            ? `${events.length} evento(s) verificado(s) na Solana Devnet.`
-            : "Nenhum evento registrado ainda. Interaja no Vault para gerar transações.",
-        );
       } catch {
+        setIsJudgeDemo(true);
+        setRecords(JUDGE_DEMO_CAPSULES);
+        setBalance(
+          INITIAL_SGL_BALANCE -
+            JUDGE_DEMO_CAPSULES.reduce((sum, e) => sum + Number(e.cost || 0), 0),
+        );
         setMessage("Backend indisponível. Dados parciais podem estar visíveis.");
       }
     }
@@ -306,7 +400,11 @@ export default function AuditReadOnlyPanel() {
       balance,
       totalSpent: records.reduce((sum, r) => sum + Number(r.cost || 0), 0),
       totalActions: records.length,
-      devnetTxs: records.filter((r) => !String(r.txSignature || "").startsWith("MOCK-")).length,
+      devnetTxs: records.filter((r) => {
+        const sig = String(r.txSignature || "");
+        return !sig.startsWith("MOCK-") && !sig.startsWith("DEMO-CAPS-");
+      }).length,
+      capsules: records.filter((r) => String(r.capsuleId || "").startsWith("CAPS-")).length,
     }),
     [records, balance],
   );
@@ -315,21 +413,35 @@ export default function AuditReadOnlyPanel() {
     setMessage("Recarregando…");
     try {
       const stored = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
-      const addr = stored?.address || stored?.walletAddress || walletAddress;
+      const addr =
+        stored?.address || stored?.walletAddress || walletAddress || getOrCreateJudgeKeypair();
       if (!addr) {
         setMessage("Nenhuma wallet.");
         return;
       }
+      setJudgeWalletAddress(addr);
       setWalletAddress(addr);
       const [events, balanceData] = await Promise.all([
         getAuditEventsByWallet(addr),
         getSglBalance(addr),
       ]);
-      setRecords(Array.isArray(events) ? events : []);
-      setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+      const hasEvents = Array.isArray(events) && events.length > 0;
+      if (!hasEvents) {
+        setIsJudgeDemo(true);
+        setRecords(JUDGE_DEMO_CAPSULES);
+        setBalance(
+          INITIAL_SGL_BALANCE -
+            JUDGE_DEMO_CAPSULES.reduce((sum, e) => sum + Number(e.cost || 0), 0),
+        );
+        setMessage("Modo Judge Demo ativado: cápsulas carregadas.");
+      } else {
+        setIsJudgeDemo(false);
+        setRecords(events);
+        setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+        setMessage(`${events.length} evento(s) atualizados.`);
+      }
       const bd2 = balanceData as Record<string, unknown>;
       if (bd2.sglMintAddress) setMintAddress(String(bd2.sglMintAddress));
-      setMessage(`${Array.isArray(events) ? events.length : 0} evento(s) atualizados.`);
     } catch {
       setMessage("Erro ao recarregar.");
     }
@@ -434,6 +546,11 @@ export default function AuditReadOnlyPanel() {
               {walletAddress ? `${walletAddress.slice(0, 10)}…${walletAddress.slice(-6)}` : "—"}
             </code>
           </p>
+          {judgeWalletAddress && (
+            <p style={{ fontSize: 11, marginTop: 6, color: "rgba(143,211,255,0.78)" }}>
+              Wallet de sessão do juiz: <code>{judgeWalletAddress}</code>
+            </p>
+          )}
           <p
             style={{
               fontSize: 12,
@@ -444,6 +561,19 @@ export default function AuditReadOnlyPanel() {
           >
             {message}
           </p>
+          {isJudgeDemo && (
+            <p
+              style={{
+                marginTop: 8,
+                fontSize: 11,
+                color: "rgba(255,200,80,0.95)",
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+              }}
+            >
+              Judge Demo Mode · cápsulas pré-validadas para demonstração do fluxo
+            </p>
+          )}
         </section>
 
         {/* Cards de resumo */}
@@ -471,6 +601,11 @@ export default function AuditReadOnlyPanel() {
               label: "Txs Devnet Reais",
               value: String(summary.devnetTxs),
               color: "rgba(80,255,160,0.9)",
+            },
+            {
+              label: "Capsules Seladas",
+              value: String(summary.capsules),
+              color: "rgba(143,211,255,0.95)",
             },
           ].map((item) => (
             <div key={item.label} style={{ ...CARD, textAlign: "center" }}>
@@ -575,7 +710,7 @@ export default function AuditReadOnlyPanel() {
         {/* Registros de auditoria */}
         <section style={CARD}>
           <h2 style={{ margin: "0 0 16px", fontSize: 16, letterSpacing: "0.02em" }}>
-            Registros de Prova — Metadados Públicos
+            Registros de Prova — Hashes e Validação no Solscan
           </h2>
 
           {records.length === 0 ? (
@@ -592,8 +727,10 @@ export default function AuditReadOnlyPanel() {
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {records.map((record, idx) => {
                 const txSig = String(record.txSignature || "");
-                const isMock = txSig.startsWith("MOCK-");
-                const explorerUrl = String(record.explorerUrl || "");
+                const isMock = txSig.startsWith("MOCK-") || txSig.startsWith("DEMO-CAPS-");
+                const solscanUrl = txSig && !isMock ? getSolscanTxUrl(txSig) : "";
+                const capsuleId = String(record.capsuleId || "");
+                const isCapsule = capsuleId.startsWith("CAPS-");
 
                 return (
                   <article
@@ -619,6 +756,18 @@ export default function AuditReadOnlyPanel() {
                       >
                         #{records.length - idx}
                       </span>
+                      {isCapsule && (
+                        <span
+                          style={{
+                            ...BADGE,
+                            background: "rgba(143,211,255,0.10)",
+                            border: "1px solid rgba(143,211,255,0.22)",
+                            color: accentBlue,
+                          }}
+                        >
+                          Capsule
+                        </span>
+                      )}
                       <span
                         style={{
                           ...BADGE,
@@ -635,27 +784,11 @@ export default function AuditReadOnlyPanel() {
                               }),
                         }}
                       >
-                        {isMock ? "⚠ Mock Proof" : "✓ Devnet Tx"}
+                        {isMock ? "⚠ Demo Capsule" : "✓ Devnet Tx"}
                       </span>
-                      {!isMock && explorerUrl && (
+                      {!isMock && solscanUrl && (
                         <a
-                          href={explorerUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            ...BADGE,
-                            background: "rgba(143,211,255,0.08)",
-                            border: "1px solid rgba(143,211,255,0.2)",
-                            color: accentBlue,
-                            textDecoration: "none",
-                          }}
-                        >
-                          Ver no Explorer →
-                        </a>
-                      )}
-                      {!isMock && txSig && (
-                        <a
-                          href={`https://solscan.io/tx/${txSig}?cluster=devnet`}
+                          href={solscanUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
@@ -672,7 +805,7 @@ export default function AuditReadOnlyPanel() {
                     </div>
 
                     <div style={{ display: "grid", gap: 6 }}>
-                      {copyableFields(record).map((field) =>
+                      {hashOnlyFields(record).map((field) =>
                         field.value ? (
                           <div
                             key={field.label}

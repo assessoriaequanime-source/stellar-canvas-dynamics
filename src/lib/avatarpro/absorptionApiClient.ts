@@ -6,6 +6,8 @@ export function submitAbsorptionFeedback(payload: {
   profile: string;
   intensity?: number;
   source?: string;
+  targetMessageId?: number;
+  targetResponseHash?: string;
 }) {
   if (isExplicitAvatarProDemoMode()) {
     const feedbackDirection = payload.direction === "right" ? "drag_right" : "drag_left";

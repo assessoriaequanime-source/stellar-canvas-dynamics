@@ -215,6 +215,16 @@ export default function SingulAIDashboard() {
   const [capsuleContent, setCapsuleContent] = useState("");
   const [capsuleCost, setCapsuleCost] = useState(100);
   const [lastProvisionExplorer, setLastProvisionExplorer] = useState("");
+  const lastAiResponseRef = useRef<{ id: number; text: string } | null>(null);
+
+  const quickHash = useCallback((value: string) => {
+    let hash = 0;
+    for (let i = 0; i < value.length; i += 1) {
+      hash = (hash << 5) - hash + value.charCodeAt(i);
+      hash |= 0;
+    }
+    return `h-${Math.abs(hash).toString(16).padStart(8, "0")}`;
+  }, []);
 
   const toPercentScale = useCallback((value: unknown, fallback: number) => {
     const num = Number(value);
@@ -791,11 +801,22 @@ export default function SingulAIDashboard() {
       const dir: "left" | "right" | "cancel" = dx > 55 ? "right" : dx < -55 ? "left" : "cancel";
       engineRef.current?.releaseGathered(dir);
       if (dir === "left" || dir === "right") {
+        const target = lastAiResponseRef.current;
+        if (!target) {
+          setStatusMessage("No AI response available for absorption feedback yet");
+          gs.phase = "idle";
+          gs.fraction = 0;
+          gs.holdElapsed = 0;
+          return;
+        }
+
         void submitAbsorptionFeedback({
           direction: dir,
           profile: profileRef.current,
           intensity: Math.round(gs.fraction * 100),
           source: "gather-zone",
+          targetMessageId: target.id,
+          targetResponseHash: quickHash(target.text),
         })
           .then((result) => {
             const nextScore = toPercentScale(result.newScore, absorption);
@@ -826,7 +847,18 @@ export default function SingulAIDashboard() {
 
   // Bubble swipe → feeds back to the particle engine with a mini gather burst
   const handleBubbleFeedback = (msgId: number, dir: "positive" | "negative") => {
-    void msgId;
+    const target = lastAiResponseRef.current;
+    if (!target) {
+      setStatusMessage("No AI response available for absorption feedback yet");
+      return;
+    }
+
+    // Swiping older bubbles should not overwrite the intended last-response evaluation.
+    if (msgId !== target.id) {
+      setStatusMessage("Feedback applies to the latest AI response only");
+      return;
+    }
+
     const eng = engineRef.current;
     if (!eng) return;
     const cx = window.innerWidth / 2;
@@ -841,6 +873,8 @@ export default function SingulAIDashboard() {
       profile: profileRef.current,
       intensity: 30,
       source: "chat-bubble",
+      targetMessageId: target.id,
+      targetResponseHash: quickHash(target.text),
     })
       .then((result) => {
         const nextScore = toPercentScale(result.newScore, absorption);
@@ -919,6 +953,7 @@ export default function SingulAIDashboard() {
     }
 
     const aiId = ++msgIdRef.current;
+    lastAiResponseRef.current = { id: aiId, text: reply };
     setMessages((m) =>
       m
         .filter((x) => x.id !== typingId)
