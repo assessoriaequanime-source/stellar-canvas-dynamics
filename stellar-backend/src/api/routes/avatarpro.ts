@@ -235,4 +235,37 @@ router.get("/absorption-events", requireAuth, async (req: Request, res: Response
   }
 });
 
+router.post("/message", async (req: Request, res: Response) => {
+  try {
+    const { avatar, message } = req.body as { avatar?: string; message?: string };
+
+    const replies: Record<string, { default: string; [key: string]: string }> = {
+      pedro: {
+        default:
+          "Pedro aqui. Analisei os riscos e conformidades. Sugiro registrar essa decisão em uma Time Capsule para auditoria futura. Quer que eu prepare o snapshot?",
+      },
+      laura: {
+        default:
+          "Laura falando. Estrategicamente, isso se conecta ao seu roadmap de legado digital. Podemos estruturar isso em /vault. Quer que eu te guie?",
+      },
+      leticia: {
+        default:
+          "Letícia na execução. O próximo passo é criar uma cápsula com esse bloqueio. Posso gerar o hash on-chain agora mesmo. Vamos?",
+      },
+    };
+
+    const avatarReplies = replies[avatar || ""] || replies.pedro;
+    const reply = avatarReplies[message || ""] || avatarReplies.default;
+
+    res.json({
+      response_to_user: reply,
+      avatar_id: avatar || "pedro",
+      confidence: 0.85,
+      needs_human_escalation: false,
+    });
+  } catch {
+    res.status(500).json({ error: "Erro ao processar mensagem" });
+  }
+});
+
 export default router;
