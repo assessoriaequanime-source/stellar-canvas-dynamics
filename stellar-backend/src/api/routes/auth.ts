@@ -4,15 +4,15 @@ import {
   logout,
   refreshAccessToken,
   verifyChallengeAndIssueTokens,
-} from "../../services/auth";
-import { requireAuth } from "../middlewares/auth";
-import { parseOrThrow } from "../../lib/validation";
+} from "../../services/auth.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { parseOrThrow } from "../../lib/validation.js";
 import {
   authChallengeSchema,
   authLogoutSchema,
   authRefreshSchema,
   authVerifySchema,
-} from "../validators/auth";
+} from "../validators/auth.js";
 
 const router = Router();
 

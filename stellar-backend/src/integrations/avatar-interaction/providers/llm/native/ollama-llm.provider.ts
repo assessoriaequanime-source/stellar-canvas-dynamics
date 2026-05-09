@@ -1,6 +1,6 @@
 import axios from "axios";
-import type { LlmProvider } from "../llm-provider";
-import type { LlmRequest, LlmResponse } from "../../../contracts/interaction-types";
+import type { LlmProvider } from "../llm-provider.js";
+import type { LlmRequest, LlmResponse } from "../../../contracts/interaction-types.js";
 
 export type OllamaProviderConfig = {
   endpoint?: string;

@@ -1,15 +1,15 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { PublicKey } from "@solana/web3.js";
-import { appendAuditEvent } from "../../storage/auditStore";
+import { appendAuditEvent } from "../../storage/auditStore.js";
 import {
   getOrCreateUserAssociatedTokenAccount,
   getSglBalance,
   getSglMint,
   hasReceivedInitialCredit,
   mintInitialDemoCredit,
-} from "../../services/sglSolanaService";
-import { registerProofMemo } from "../../services/solanaProofService";
-import { AppError } from "../middlewares/errorHandler";
+} from "../../services/sglSolanaService.js";
+import { registerProofMemo } from "../../services/solanaProofService.js";
+import { AppError } from "../middlewares/errorHandler.js";
 
 const router = Router();
 

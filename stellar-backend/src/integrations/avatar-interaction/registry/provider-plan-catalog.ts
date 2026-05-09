@@ -2,7 +2,7 @@ import type {
   ProviderModel,
   ProviderPlan,
   TenantProviderPolicy,
-} from "../contracts/provider-plan-types";
+} from "../contracts/provider-plan-types.js";
 
 const modelCatalog = new Map<string, ProviderModel>();
 const planCatalog = new Map<string, ProviderPlan>();

@@ -1,18 +1,18 @@
 import { Router, Request, Response, NextFunction } from "express";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
-import { parseOrThrow } from "../../lib/validation";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { parseOrThrow } from "../../lib/validation.js";
 import {
   aiModelCatalogQuerySchema,
   aiModelPreferenceGetQuerySchema,
   aiModelPreferenceUpsertSchema,
-} from "../validators/ai-models";
+} from "../validators/ai-models.js";
 import {
   getProviderPlan,
   getTenantPolicy,
   getProviderModel,
   listProviderModels,
-} from "../../integrations/avatar-interaction";
+} from "../../integrations/avatar-interaction/index.js";
 
 const router = Router();
 

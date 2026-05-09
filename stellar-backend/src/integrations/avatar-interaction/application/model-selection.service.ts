@@ -1,13 +1,13 @@
 import type {
   ProviderModel,
   UserModelPreference,
-} from "../contracts/provider-plan-types";
+} from "../contracts/provider-plan-types.js";
 import {
   getProviderModel,
   getProviderPlan,
   getTenantPolicy,
   listProviderModels,
-} from "../registry/provider-plan-catalog";
+} from "../registry/provider-plan-catalog.js";
 
 export function resolveModelForUserPreference(
   input: UserModelPreference,

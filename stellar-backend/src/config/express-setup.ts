@@ -1,6 +1,6 @@
 import { Express, Request, Response, NextFunction } from "express";
 import morgan from "morgan";
-import logger from "../lib/logger";
+import logger from "../lib/logger.js";
 
 type RequestWithId = Request & { id?: string };
 

@@ -1,14 +1,14 @@
 import { Router, Request, Response, NextFunction } from "express";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
 import jwt from "jsonwebtoken";
-import { parseOrThrow } from "../../lib/validation";
-import { auditQuerySchema } from "../validators/audit";
+import { parseOrThrow } from "../../lib/validation.js";
+import { auditQuerySchema } from "../validators/audit.js";
 import { PublicKey } from "@solana/web3.js";
-import { appendAuditEvent, listAuditEvents } from "../../storage/auditStore";
-import { registerProofMemo } from "../../services/solanaProofService";
-import { getSglMint } from "../../services/sglSolanaService";
+import { appendAuditEvent, listAuditEvents } from "../../storage/auditStore.js";
+import { registerProofMemo } from "../../services/solanaProofService.js";
+import { getSglMint } from "../../services/sglSolanaService.js";
 
 const router = Router();
 

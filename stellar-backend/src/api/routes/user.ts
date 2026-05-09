@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from "express";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
-import { parseOrThrow } from "../../lib/validation";
-import { updateUserSchema } from "../validators/user";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { parseOrThrow } from "../../lib/validation.js";
+import { updateUserSchema } from "../validators/user.js";
 
 const router = Router();
 

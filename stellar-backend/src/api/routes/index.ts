@@ -1,20 +1,20 @@
 import { Express, Router } from "express";
-import logger from "../../lib/logger";
-import authRoutes from "./auth";
-import userRoutes from "./user";
-import avatarRoutes from "./avatar";
-import capsuleRoutes from "./capsule";
-import legacyRoutes from "./legacy";
-import consentRoutes from "./consent";
-import transactionRoutes from "./transaction";
-import auditRoutes from "./audit";
-import aiModelsRoutes from "./ai-models";
-import avatarProRoutes from "./avatarpro";
-import capsulesRoutes from "./capsules";
-import legacyRulesRoutes from "./legacy-rules";
-import sglRoutes from "./sgl";
-import walletsRoutes from "./wallets";
-import xaiRoutes from "./xai";
+import logger from "../../lib/logger.js";
+import authRoutes from "./auth.js";
+import userRoutes from "./user.js";
+import avatarRoutes from "./avatar.js";
+import capsuleRoutes from "./capsule.js";
+import legacyRoutes from "./legacy.js";
+import consentRoutes from "./consent.js";
+import transactionRoutes from "./transaction.js";
+import auditRoutes from "./audit.js";
+import aiModelsRoutes from "./ai-models.js";
+import avatarProRoutes from "./avatarpro.js";
+import capsulesRoutes from "./capsules.js";
+import legacyRulesRoutes from "./legacy-rules.js";
+import sglRoutes from "./sgl.js";
+import walletsRoutes from "./wallets.js";
+import xaiRoutes from "./xai.js";
 
 /**
  * Setup all API routes

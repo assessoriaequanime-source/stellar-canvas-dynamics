@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { AppError } from "./errorHandler";
-import type { JwtAccessPayload } from "../../types/auth";
+import { AppError } from "./errorHandler.js";
+import type { JwtAccessPayload } from "../../types/auth.js";
 
 type RequestWithUser = Request & {
   user?: {

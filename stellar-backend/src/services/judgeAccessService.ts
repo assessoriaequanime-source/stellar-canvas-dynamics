@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import { Keypair } from "@solana/web3.js";
-import logger from "../lib/logger";
-import { AppError } from "../api/middlewares/errorHandler";
+import logger from "../lib/logger.js";
+import { AppError } from "../api/middlewares/errorHandler.js";
 
 export type DeliveryChannel = "email" | "whatsapp" | "both";
 export type DeliveryType = "immediate" | "scheduled";

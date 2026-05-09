@@ -1,4 +1,4 @@
-import type { VoiceRequest, VoiceResponse } from "../../contracts/interaction-types";
+import type { VoiceRequest, VoiceResponse } from "../../contracts/interaction-types.js";
 
 export interface VoiceProvider {
   readonly name: string;

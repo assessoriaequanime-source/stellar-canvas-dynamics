@@ -7,8 +7,8 @@ import {
   mintTo,
 } from "@solana/spl-token";
 import { PublicKey, Transaction } from "@solana/web3.js";
-import { hasInitialCredit, markInitialCredit } from "../storage/auditStore";
-import { getSolanaConnection, loadDeployerKeypair } from "./solanaConnection";
+import { hasInitialCredit, markInitialCredit } from "../storage/auditStore.js";
+import { getSolanaConnection, loadDeployerKeypair } from "./solanaConnection.js";
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]?.trim();

@@ -4,8 +4,8 @@ import path from "path";
 // Load environment variables from .env
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
-import app from "./config/app";
-import logger from "./lib/logger";
+import app from "./config/app.js";
+import logger from "./lib/logger.js";
 
 const parsedPort = Number(process.env.PORT);
 const PORT = Number.isInteger(parsedPort) ? parsedPort : 9200;

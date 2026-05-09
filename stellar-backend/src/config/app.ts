@@ -3,9 +3,9 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
-import { setupMiddlewares } from "./express-setup";
-import setupRoutes from "../api/routes";
-import errorHandler from "../api/middlewares/errorHandler";
+import { setupMiddlewares } from "./express-setup.js";
+import setupRoutes from "../api/routes/index.js";
+import errorHandler from "../api/middlewares/errorHandler.js";
 
 /**
  * Create and configure Express application

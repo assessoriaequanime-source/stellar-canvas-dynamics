@@ -1,10 +1,10 @@
 import { createHash } from "crypto";
 import { Router, Request, Response, NextFunction } from "express";
 import { PublicKey } from "@solana/web3.js";
-import { appendAuditEvent } from "../../storage/auditStore";
-import { registerProofMemo } from "../../services/solanaProofService";
-import { debitSglForService, getSglBalance, getSglMint } from "../../services/sglSolanaService";
-import { AppError } from "../middlewares/errorHandler";
+import { appendAuditEvent } from "../../storage/auditStore.js";
+import { registerProofMemo } from "../../services/solanaProofService.js";
+import { debitSglForService, getSglBalance, getSglMint } from "../../services/sglSolanaService.js";
+import { AppError } from "../middlewares/errorHandler.js";
 
 const router = Router();
 

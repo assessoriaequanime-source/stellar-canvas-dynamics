@@ -1,4 +1,4 @@
-import type { AvatarProviderKind } from "./interaction-types";
+import type { AvatarProviderKind } from "./interaction-types.js";
 
 export type ProviderCapability = "llm" | "voice" | "multimodal";
 

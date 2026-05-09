@@ -1,14 +1,14 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import prisma from "../lib/prisma";
-import { verifyWalletSignature } from "../lib/web3";
-import { AppError } from "../api/middlewares/errorHandler";
+import prisma from "../lib/prisma.js";
+import { verifyWalletSignature } from "../lib/web3.js";
+import { AppError } from "../api/middlewares/errorHandler.js";
 import type {
   ChallengeResponse,
   JwtAccessPayload,
   JwtRefreshPayload,
   VerifyResponse,
-} from "../types/auth";
+} from "../types/auth.js";
 
 type ChallengeEntry = {
   message: string;

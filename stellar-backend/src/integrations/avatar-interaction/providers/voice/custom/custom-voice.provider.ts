@@ -1,6 +1,6 @@
 import axios from "axios";
-import type { VoiceProvider } from "../voice-provider";
-import type { VoiceRequest, VoiceResponse } from "../../../contracts/interaction-types";
+import type { VoiceProvider } from "../voice-provider.js";
+import type { VoiceRequest, VoiceResponse } from "../../../contracts/interaction-types.js";
 
 export type CustomVoiceProviderConfig = {
   endpoint: string;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppError } from "../api/middlewares/errorHandler";
+import { AppError } from "../api/middlewares/errorHandler.js";
 
 export function parseOrThrow<T extends z.ZodTypeAny>(schema: T, payload: unknown): z.infer<T> {
   const result = schema.safeParse(payload);

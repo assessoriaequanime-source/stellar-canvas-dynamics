@@ -1,5 +1,5 @@
 import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { getExplorerTxUrl, getSolanaConnection, loadDeployerKeypair } from "./solanaConnection";
+import { getExplorerTxUrl, getSolanaConnection, loadDeployerKeypair } from "./solanaConnection.js";
 
 const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 

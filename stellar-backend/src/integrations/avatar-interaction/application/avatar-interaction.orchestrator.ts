@@ -2,8 +2,8 @@ import type {
   AvatarInteractionResult,
   LlmRequest,
   VoiceRequest,
-} from "../contracts/interaction-types";
-import { getAvatarProviders } from "../registry/provider-registry";
+} from "../contracts/interaction-types.js";
+import { getAvatarProviders } from "../registry/provider-registry.js";
 
 export async function executeAvatarInteraction(
   llmRequest: LlmRequest,

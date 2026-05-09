@@ -1,8 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { Prisma } from "@prisma/client";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
 
 const router = Router();
 

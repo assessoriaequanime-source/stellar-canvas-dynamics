@@ -1,10 +1,10 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { Prisma } from "@prisma/client";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
-import { parseOrThrow } from "../../lib/validation";
-import { createCapsuleSchema, updateCapsuleSchema } from "../validators/capsule";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { parseOrThrow } from "../../lib/validation.js";
+import { createCapsuleSchema, updateCapsuleSchema } from "../validators/capsule.js";
 
 const router = Router();
 

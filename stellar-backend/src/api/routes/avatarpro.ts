@@ -1,9 +1,9 @@
 import { Router, Request, Response, NextFunction } from "express";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
 import { PublicKey } from "@solana/web3.js";
-import { getSglBalance } from "../../services/sglSolanaService";
+import { getSglBalance } from "../../services/sglSolanaService.js";
 
 const router = Router();
 

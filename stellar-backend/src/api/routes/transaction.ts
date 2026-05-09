@@ -1,14 +1,14 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { AuditAction, Prisma } from "@prisma/client";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
-import { parseOrThrow } from "../../lib/validation";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { parseOrThrow } from "../../lib/validation.js";
 import {
   createTransactionSchema,
   updateTransactionStatusSchema,
-} from "../validators/transaction";
-import { createAuditLog } from "../../lib/audit";
+} from "../validators/transaction.js";
+import { createAuditLog } from "../../lib/audit.js";
 
 const router = Router();
 

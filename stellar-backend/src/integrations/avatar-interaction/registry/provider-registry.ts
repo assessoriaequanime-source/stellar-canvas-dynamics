@@ -1,5 +1,5 @@
-import type { LlmProvider } from "../providers/llm/llm-provider";
-import type { VoiceProvider } from "../providers/voice/voice-provider";
+import type { LlmProvider } from "../providers/llm/llm-provider.js";
+import type { VoiceProvider } from "../providers/voice/voice-provider.js";
 
 export type AvatarProviderRegistry = {
   llm?: LlmProvider;

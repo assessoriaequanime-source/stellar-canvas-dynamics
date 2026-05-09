@@ -1,11 +1,11 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { AuditAction, ConsentType } from "@prisma/client";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
-import { parseOrThrow } from "../../lib/validation";
-import { consentTypeParamSchema, upsertConsentSchema } from "../validators/consent";
-import { createAuditLog } from "../../lib/audit";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { parseOrThrow } from "../../lib/validation.js";
+import { consentTypeParamSchema, upsertConsentSchema } from "../validators/consent.js";
+import { createAuditLog } from "../../lib/audit.js";
 
 const router = Router();
 

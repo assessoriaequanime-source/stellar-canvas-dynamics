@@ -1,21 +1,21 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { Prisma } from "@prisma/client";
 import jwt from "jsonwebtoken";
-import prisma from "../../lib/prisma";
-import { requireAuth } from "../middlewares/auth";
-import { AppError } from "../middlewares/errorHandler";
-import { parseOrThrow } from "../../lib/validation";
+import prisma from "../../lib/prisma.js";
+import { requireAuth } from "../middlewares/auth.js";
+import { AppError } from "../middlewares/errorHandler.js";
+import { parseOrThrow } from "../../lib/validation.js";
 import {
   consumeJudgeAccessCapsuleSchema,
   createJudgeAccessCapsuleSchema,
-} from "../validators/capsule";
+} from "../validators/capsule.js";
 import {
   buildJudgeAccessMetadata,
   createJudgeAccessEnvelope,
   dispatchJudgeAccess,
   verifyAccessCode,
   verifyInviteToken,
-} from "../../services/judgeAccessService";
+} from "../../services/judgeAccessService.js";
 
 const router = Router();
 
