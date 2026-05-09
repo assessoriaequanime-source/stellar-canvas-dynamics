@@ -62,17 +62,31 @@ function ensureUserId(req: Request): string {
   return userId;
 }
 
-async function resolveCapsuleUserId(req: Request): Promise<string> {
+async function resolveCapsuleUserIdForWrite(req: Request): Promise<string> {
   const sessionUserId = (req as RequestWithUser).user?.userId;
   if (sessionUserId) {
     return sessionUserId;
   }
 
-  // Demo fallback: ensure a valid User row exists to satisfy Prisma FK on TimeCapsule.userId.
-  const demoUser = await prisma.user.upsert({
+  // Demo fallback: prefer existing user rows before creating anything.
+  const existingDemoUser = await prisma.user.findUnique({
     where: { walletAddress: "demo-wallet-address" },
-    update: {},
-    create: {
+    select: { id: true },
+  });
+  if (existingDemoUser) {
+    return existingDemoUser.id;
+  }
+
+  const firstUser = await prisma.user.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (firstUser) {
+    return firstUser.id;
+  }
+
+  const createdDemoUser = await prisma.user.create({
+    data: {
       walletAddress: "demo-wallet-address",
       nickname: "Demo User",
       email: "demo@singulai.local",
@@ -80,7 +94,7 @@ async function resolveCapsuleUserId(req: Request): Promise<string> {
     select: { id: true },
   });
 
-  return demoUser.id;
+  return createdDemoUser.id;
 }
 
 function getJwtSecret(): string {
@@ -133,7 +147,14 @@ function signJudgeAccessToken(payload: {
 // router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = await resolveCapsuleUserId(req);
+    const sessionUserId = (req as RequestWithUser).user?.userId;
+    if (!sessionUserId) {
+      // Public demo access: keep endpoint open and deterministic without requiring session/DB writes.
+      res.status(200).json([]);
+      return;
+    }
+
+    const userId = sessionUserId;
     const capsules = await prisma.timeCapsule.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
     res.status(200).json(capsules);
   } catch (error) {
@@ -144,7 +165,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 // router.post("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = await resolveCapsuleUserId(req);
+    const userId = await resolveCapsuleUserIdForWrite(req);
     const body = req.body as { name?: string; content?: string; unlockDate?: string };
 
     if (!body.name || !body.content || !body.unlockDate) {
