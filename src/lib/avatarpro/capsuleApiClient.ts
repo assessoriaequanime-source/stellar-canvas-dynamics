@@ -31,6 +31,37 @@ export function createCapsule(payload: Record<string, unknown>) {
   });
 }
 
+export function createJudgeAccessCapsule(payload: {
+  name: string;
+  content: string;
+  deliveryType: "immediate" | "scheduled";
+  channel: "email" | "whatsapp" | "both";
+  unlockDate?: string;
+  recipientName: string;
+  recipientEmail?: string;
+  recipientWhatsapp?: string;
+}) {
+  if (isExplicitAvatarProDemoMode()) {
+    return Promise.resolve({
+      id: "judge-capsule-demo-001",
+      name: payload.name,
+      deliveryType: payload.deliveryType,
+      channel: payload.channel,
+      dispatchStatus: "sent",
+      judgeAccess: {
+        inviteLink: "https://singulai.live/audit?cid=judge-capsule-demo-001&jt=demo-judge-token",
+        accessCode: "DEMO2026",
+        temporaryWalletAddress: "JudgeDemoWallet11111111111111111111111111111",
+      },
+    });
+  }
+
+  return requestJson<Record<string, unknown>>("/capsules/judge-access", {
+    method: "POST",
+    body: payload,
+  });
+}
+
 export function simulateCapsuleTrigger(capsuleId: string) {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve({

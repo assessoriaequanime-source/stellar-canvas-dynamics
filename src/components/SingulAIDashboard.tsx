@@ -18,7 +18,7 @@ import {
   getPasMetrics,
   submitAbsorptionFeedback,
 } from "@/lib/avatarpro/absorptionApiClient";
-import { listCapsules } from "@/lib/avatarpro/capsuleApiClient";
+import { createJudgeAccessCapsule, listCapsules } from "@/lib/avatarpro/capsuleApiClient";
 import { listLegacyRules } from "@/lib/avatarpro/legacyApiClient";
 import { getAuditHistory } from "@/lib/avatarpro/auditApiClient";
 import { getSglBalance, debitSglForService } from "@/lib/avatarpro/sglApiClient";
@@ -229,6 +229,12 @@ export default function SingulAIDashboard() {
   const [chatAuditLog, setChatAuditLog] = useState<ChatAuditEntry[]>([]);
   const [capsuleContent, setCapsuleContent] = useState("");
   const [capsuleCost, setCapsuleCost] = useState(100);
+  const [capsuleTitle, setCapsuleTitle] = useState("Audit Judge Access Capsule");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [recipientWhatsapp, setRecipientWhatsapp] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [capsuleSubmitting, setCapsuleSubmitting] = useState(false);
   const [lastProvisionExplorer, setLastProvisionExplorer] = useState("");
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isVoiceListening, setIsVoiceListening] = useState(false);

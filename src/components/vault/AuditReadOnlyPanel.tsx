@@ -1,93 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
-import { getAuditEventsByWallet } from "@/lib/avatarpro/auditApiClient";
+import {
+  consumeJudgeAccessInvitation,
+  getAuditEventsByWallet,
+  getJudgeAuditEvents,
+} from "@/lib/avatarpro/auditApiClient";
 import { INITIAL_SGL_BALANCE } from "@/lib/sgl/services";
 import { getSglBalance } from "@/lib/avatarpro/sglApiClient";
-import { Keypair } from "@solana/web3.js";
-
-// Senha de acesso para juízes/avaliadores — simples, não sensível, apenas barreira de UI
-const JUDGE_PASSWORD = "judge2026";
-
-// ── Wallet ephemeral de sessão para juízes ─────────────────────────────────
-const JUDGE_SESSION_KEY = "singulai_judge_keypair";
-
-function getOrCreateJudgeKeypair(): string {
-  try {
-    const stored = sessionStorage.getItem(JUDGE_SESSION_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as { publicKey: string };
-      if (parsed.publicKey) return parsed.publicKey;
-    }
-  } catch {
-    /* SSR */
-  }
-  try {
-    const kp = Keypair.generate();
-    const pub = kp.publicKey.toBase58();
-    sessionStorage.setItem(
-      JUDGE_SESSION_KEY,
-      JSON.stringify({ publicKey: pub, secretKey: Array.from(kp.secretKey) }),
-    );
-    return pub;
-  } catch {
-    return `judge-ephemeral-${Math.random().toString(36).slice(2, 12)}`;
-  }
-}
-
-// ── Cápsulas de demonstração para juízes sem wallet real ───────────────────
-const JUDGE_DEMO_CAPSULES: AuditRecord[] = [
-  {
-    capsuleId: "CAPS-pedro-1746700001",
-    walletAddress: "—",
-    avatarId: "pedro",
-    eventType: "CONTRACT_ANALYSIS",
-    serviceType: "Análise de Contrato — Pedro AvatarPro",
-    cost: 50,
-    payloadHash: "a3f1e9b2c7d8f04512ab98cd001244e3a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0",
-    createdAt: "2026-05-08T10:00:00.000Z",
-    network: "Solana Devnet",
-    debitStatus: "SEALED",
-    txSignature: "DEMO-CAPS-PEDRO-001",
-    explorerUrl:
-      "https://explorer.solana.com/address/MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr?cluster=devnet",
-    _demoLabel: "Pedro · Contratos e Risco",
-    _avatarEmoji: "⚖️",
-  },
-  {
-    capsuleId: "CAPS-laura-1746700002",
-    walletAddress: "—",
-    avatarId: "laura",
-    eventType: "PLANNING_CREATION",
-    serviceType: "Planejamento e Criação — Laura AvatarPro",
-    cost: 35,
-    payloadHash: "7b2e4f9d1a8c6035e9fbe5234ab0cd12345678901abcdef1234567890abcdef12",
-    createdAt: "2026-05-08T11:30:00.000Z",
-    network: "Solana Devnet",
-    debitStatus: "SEALED",
-    txSignature: "DEMO-CAPS-LAURA-002",
-    explorerUrl:
-      "https://explorer.solana.com/address/MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr?cluster=devnet",
-    _demoLabel: "Laura · Planejamento e Criação",
-    _avatarEmoji: "🎯",
-  },
-  {
-    capsuleId: "CAPS-leticia-1746700003",
-    walletAddress: "—",
-    avatarId: "leticia",
-    eventType: "FOCUSED_EXECUTION",
-    serviceType: "Execução Focada — Letícia AvatarPro",
-    cost: 25,
-    payloadHash: "c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9",
-    createdAt: "2026-05-08T14:15:00.000Z",
-    network: "Solana Devnet",
-    debitStatus: "SEALED",
-    txSignature: "DEMO-CAPS-LETICIA-003",
-    explorerUrl:
-      "https://explorer.solana.com/address/MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr?cluster=devnet",
-    _demoLabel: "Letícia · Execução Focada",
-    _avatarEmoji: "⚡",
-  },
-];
+const JUDGE_ACCESS_TOKEN_KEY = "singulai_judge_access_token";
 
 const CARD: CSSProperties = {
   border: "1px solid rgba(255,255,255,0.12)",
@@ -141,9 +61,18 @@ function getSolscanTxUrl(txSignature: string): string {
 }
 
 // ── Gate de senha para juízes ──────────────────────────────────────────────
-function JudgeGate({ onUnlock }: { onUnlock: () => void }) {
-  const [pwd, setPwd] = useState("");
+function JudgeGate({
+  capsuleId,
+  inviteToken,
+  onUnlock,
+}: {
+  capsuleId: string;
+  inviteToken: string;
+  onUnlock: (payload: { judgeAccessToken: string; temporaryWalletAddress: string }) => void;
+}) {
+  const [accessCode, setAccessCode] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -152,11 +81,33 @@ function JudgeGate({ onUnlock }: { onUnlock: () => void }) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (pwd === JUDGE_PASSWORD) {
-      onUnlock();
-    } else {
+    if (!accessCode.trim()) {
       setError(true);
-      setPwd("");
+      setTimeout(() => setError(false), 1800);
+      return;
+    }
+
+    setLoading(true);
+    void consumeJudgeAccessInvitation({
+      capsuleId,
+      inviteToken,
+      accessCode: accessCode.trim().toUpperCase(),
+    })
+      .then((result) => {
+        onUnlock({
+          judgeAccessToken: result.judgeAccessToken,
+          temporaryWalletAddress: result.temporaryWalletAddress,
+        });
+      })
+      .catch(() => {
+        setError(true);
+        setAccessCode("");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+
+    if (error) {
       setTimeout(() => setError(false), 1800);
     }
   }
@@ -263,10 +214,10 @@ function JudgeGate({ onUnlock }: { onUnlock: () => void }) {
           </label>
           <input
             ref={inputRef}
-            type="password"
-            value={pwd}
-            onChange={(e) => setPwd(e.target.value)}
-            placeholder="Digite a senha dos juízes"
+            type="text"
+            value={accessCode}
+            onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+            placeholder="Digite o código recebido"
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -289,11 +240,12 @@ function JudgeGate({ onUnlock }: { onUnlock: () => void }) {
                 textAlign: "center",
               }}
             >
-              Senha incorreta. Tente novamente.
+              Código inválido, convite expirado ou já utilizado.
             </p>
           )}
           <button
             type="submit"
+            disabled={loading}
             style={{
               ...BTN_PRIMARY,
               padding: "12px 20px",
@@ -301,9 +253,10 @@ function JudgeGate({ onUnlock }: { onUnlock: () => void }) {
               fontSize: 13,
               fontWeight: 700,
               textAlign: "center",
+              opacity: loading ? 0.7 : 1,
             }}
           >
-            Acessar Painel de Auditoria →
+            {loading ? "Validando convite..." : "Acessar Painel de Auditoria →"}
           </button>
         </form>
 
@@ -331,69 +284,75 @@ export default function AuditReadOnlyPanel() {
   }, []);
 
   const [unlocked, setUnlocked] = useState(() => {
-    // Persiste o acesso na sessão para não pedir senha a cada navegação
-    return sessionStorage.getItem("singulai_judge_unlocked") === "1";
+    return Boolean(sessionStorage.getItem(JUDGE_ACCESS_TOKEN_KEY));
   });
   const [records, setRecords] = useState<AuditRecord[]>([]);
   const [walletAddress, setWalletAddress] = useState("");
   const [balance, setBalance] = useState<number>(INITIAL_SGL_BALANCE);
   const [mintAddress, setMintAddress] = useState<string>("");
-  const [isJudgeDemo, setIsJudgeDemo] = useState(false);
   const [judgeWalletAddress, setJudgeWalletAddress] = useState("");
   const [message, setMessage] = useState("Carregando auditoria…");
   const [copied, setCopied] = useState<string | null>(null);
+  const [judgeAccessToken, setJudgeAccessToken] = useState(() => {
+    return sessionStorage.getItem(JUDGE_ACCESS_TOKEN_KEY) || "";
+  });
+  const [inviteParams] = useState(() => {
+    if (typeof window === "undefined") {
+      return { capsuleId: "", inviteToken: "" };
+    }
 
-  function handleUnlock() {
-    const judgeWallet = getOrCreateJudgeKeypair();
-    setJudgeWalletAddress(judgeWallet);
-    sessionStorage.setItem("singulai_judge_unlocked", "1");
+    const params = new URLSearchParams(window.location.search);
+    return {
+      capsuleId: params.get("cid") || "",
+      inviteToken: params.get("jt") || "",
+    };
+  });
+
+  function handleUnlock(payload: { judgeAccessToken: string; temporaryWalletAddress: string }) {
+    sessionStorage.setItem(JUDGE_ACCESS_TOKEN_KEY, payload.judgeAccessToken);
+    setJudgeAccessToken(payload.judgeAccessToken);
+    setJudgeWalletAddress(payload.temporaryWalletAddress);
+    setWalletAddress(payload.temporaryWalletAddress);
+
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("jt");
+      window.history.replaceState({}, "", url.toString());
+    }
+
     setUnlocked(true);
   }
 
   // Auto-carrega ao desbloquear
   useEffect(() => {
-    if (!unlocked) return;
+    if (!unlocked || !judgeAccessToken) return;
+
     async function autoLoad() {
       try {
-        const stored = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
-        const addr = stored?.address || stored?.walletAddress || getOrCreateJudgeKeypair();
-        setJudgeWalletAddress(addr);
-        setWalletAddress(addr);
-        const [events, balanceData] = await Promise.all([
-          getAuditEventsByWallet(addr),
-          getSglBalance(addr),
-        ]);
-        const hasEvents = Array.isArray(events) && events.length > 0;
-        if (!hasEvents) {
-          setIsJudgeDemo(true);
-          setRecords(JUDGE_DEMO_CAPSULES);
-          setBalance(
-            INITIAL_SGL_BALANCE -
-              JUDGE_DEMO_CAPSULES.reduce((sum, e) => sum + Number(e.cost || 0), 0),
-          );
-          setMessage(
-            "Modo Judge Demo ativado: cápsulas de auditoria carregadas para validação do fluxo.",
-          );
-        } else {
-          setIsJudgeDemo(false);
-          setRecords(events);
+        const judgePayload = await getJudgeAuditEvents(judgeAccessToken);
+        const judgeInfo = judgePayload.judge || {};
+        const events = Array.isArray(judgePayload.events) ? judgePayload.events : [];
+        const judgeWallet = String(judgeInfo.temporaryWalletAddress || "");
+
+        setJudgeWalletAddress(judgeWallet);
+        setWalletAddress(judgeWallet);
+        setRecords(events);
+
+        if (judgeWallet) {
+          const balanceData = await getSglBalance(judgeWallet);
           setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
-          setMessage(`${events.length} evento(s) verificado(s) na Solana Devnet.`);
+          const bd1 = balanceData as Record<string, unknown>;
+          if (bd1.sglMintAddress) setMintAddress(String(bd1.sglMintAddress));
         }
-        const bd1 = balanceData as Record<string, unknown>;
-        if (bd1.sglMintAddress) setMintAddress(String(bd1.sglMintAddress));
+
+        setMessage(`${events.length} evento(s) verificado(s) na Solana Devnet.`);
       } catch {
-        setIsJudgeDemo(true);
-        setRecords(JUDGE_DEMO_CAPSULES);
-        setBalance(
-          INITIAL_SGL_BALANCE -
-            JUDGE_DEMO_CAPSULES.reduce((sum, e) => sum + Number(e.cost || 0), 0),
-        );
-        setMessage("Backend indisponível. Dados parciais podem estar visíveis.");
+        setMessage("Convite inválido, expirado ou sem permissão de auditor.");
       }
     }
+
     void autoLoad();
-  }, [unlocked]);
+  }, [unlocked, judgeAccessToken]);
 
   const summary = useMemo(
     () => ({
@@ -411,35 +370,30 @@ export default function AuditReadOnlyPanel() {
 
   async function reload() {
     setMessage("Recarregando…");
+    if (!judgeAccessToken) {
+      setMessage("Sessão de juiz ausente.");
+      return;
+    }
+
     try {
-      const stored = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
-      const addr =
-        stored?.address || stored?.walletAddress || walletAddress || getOrCreateJudgeKeypair();
+      const judgePayload = await getJudgeAuditEvents(judgeAccessToken);
+      const judgeInfo = judgePayload.judge || {};
+      const addr = String(judgeInfo.temporaryWalletAddress || walletAddress || "");
+
       if (!addr) {
         setMessage("Nenhuma wallet.");
         return;
       }
+
       setJudgeWalletAddress(addr);
       setWalletAddress(addr);
       const [events, balanceData] = await Promise.all([
         getAuditEventsByWallet(addr),
         getSglBalance(addr),
       ]);
-      const hasEvents = Array.isArray(events) && events.length > 0;
-      if (!hasEvents) {
-        setIsJudgeDemo(true);
-        setRecords(JUDGE_DEMO_CAPSULES);
-        setBalance(
-          INITIAL_SGL_BALANCE -
-            JUDGE_DEMO_CAPSULES.reduce((sum, e) => sum + Number(e.cost || 0), 0),
-        );
-        setMessage("Modo Judge Demo ativado: cápsulas carregadas.");
-      } else {
-        setIsJudgeDemo(false);
-        setRecords(events);
-        setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
-        setMessage(`${events.length} evento(s) atualizados.`);
-      }
+      setRecords(events);
+      setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
+      setMessage(`${events.length} evento(s) atualizados.`);
       const bd2 = balanceData as Record<string, unknown>;
       if (bd2.sglMintAddress) setMintAddress(String(bd2.sglMintAddress));
     } catch {
@@ -457,7 +411,40 @@ export default function AuditReadOnlyPanel() {
     }
   }
 
-  if (!unlocked) return <JudgeGate onUnlock={handleUnlock} />;
+  if (!unlocked) {
+    if (!inviteParams.capsuleId || !inviteParams.inviteToken) {
+      return (
+        <div
+          style={{
+            minHeight: "100dvh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "linear-gradient(135deg, #06060a 0%, #0c0c18 100%)",
+            color: "#f7f5ef",
+            padding: 24,
+            textAlign: "center",
+          }}
+        >
+          <div style={{ ...CARD, maxWidth: 520 }}>
+            <h1 style={{ margin: "0 0 10px", fontSize: 22 }}>Acesso Reservado para Juízes</h1>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.6 }}>
+              Este painel só pode ser aberto com convite de cápsula de auditoria. Solicite ao
+              organizador o link de acesso e o código único.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <JudgeGate
+        capsuleId={inviteParams.capsuleId}
+        inviteToken={inviteParams.inviteToken}
+        onUnlock={handleUnlock}
+      />
+    );
+  }
 
   const accentBlue = "rgba(143,211,255,0.9)";
 
@@ -561,19 +548,6 @@ export default function AuditReadOnlyPanel() {
           >
             {message}
           </p>
-          {isJudgeDemo && (
-            <p
-              style={{
-                marginTop: 8,
-                fontSize: 11,
-                color: "rgba(255,200,80,0.95)",
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-              }}
-            >
-              Judge Demo Mode · cápsulas pré-validadas para demonstração do fluxo
-            </p>
-          )}
         </section>
 
         {/* Cards de resumo */}

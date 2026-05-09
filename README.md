@@ -10,16 +10,16 @@ The MVP combines AI, privacy and Solana to make professional knowledge scalable,
 
 ## Solana Frontier Hackathon — Project Summary
 
-| Field | Value |
-| --- | --- |
-| **Track** | Open Track |
-| **Network** | Solana Devnet |
-| **Language** | TypeScript (frontend + orchestration logic) |
-| **Product Name** | SingulAI AvatarPro Vault |
-| **Core Concept** | AvatarPro: professional expertise as a verifiable, executable on-chain identity |
+| Field              | Value                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| **Track**          | Open Track                                                                         |
+| **Network**        | Solana Devnet                                                                      |
+| **Language**       | TypeScript (frontend + orchestration logic)                                        |
+| **Product Name**   | SingulAI AvatarPro Vault                                                           |
+| **Core Concept**   | AvatarPro: professional expertise as a verifiable, executable on-chain identity    |
 | **Key Innovation** | Particle Absorption Score (PAS) — adaptive maturity model for autonomous execution |
-| **Token** | SGL — Execution Credit (Devnet SPL) |
-| **Category** | AI / Infrastructure |
+| **Token**          | SGL — Execution Credit (Devnet SPL)                                                |
+| **Category**       | AI / Infrastructure                                                                |
 
 ---
 
@@ -58,12 +58,12 @@ SingulAI AvatarPro Vault inverts this: professionals create a verifiable AvatarP
 
 ### Solana Program Architecture
 
-| Program | Role |
-| --- | --- |
-| `Avatar Identity Program` | Stores expertise profile and maturity state |
-| `TimeCapsule Program` | Manages creation, arming, and delivery of capsules |
-| `Legacy Vault Program` | Execution reserves and multi-party release logic |
-| `Avatar Permission Account` | Scoped authority per domain and context |
+| Program                     | Role                                               |
+| --------------------------- | -------------------------------------------------- |
+| `Avatar Identity Program`   | Stores expertise profile and maturity state        |
+| `TimeCapsule Program`       | Manages creation, arming, and delivery of capsules |
+| `Legacy Vault Program`      | Execution reserves and multi-party release logic   |
+| `Avatar Permission Account` | Scoped authority per domain and context            |
 
 ### Avatar Maturity States
 
@@ -86,11 +86,11 @@ PAS = (interactionFactor × 0.25)
     + (escalationPenalty: +0.05 few / -0.10 many)
 ```
 
-| State Transition | PAS Threshold |
-| --- | --- |
-| Draft → Assisted | ≥ 0.75 |
+| State Transition   | PAS Threshold                  |
+| ------------------ | ------------------------------ |
+| Draft → Assisted   | ≥ 0.75                         |
 | Assisted → Trusted | ≥ 0.80 (+ low escalation rate) |
-| Any → Demotion | < 0.45 (domain-specific) |
+| Any → Demotion     | < 0.45 (domain-specific)       |
 
 ---
 
@@ -124,6 +124,14 @@ Each step produces a `ProofEvent` with a unique signature and Solana slot refere
 - Node.js 20+
 - npm 10+
 
+### Recommended Development Environment
+
+- Solana CLI: 1.18.0
+- Anchor CLI: 0.30.1
+- Node.js: 18.x or 20.x
+
+Note: lock these versions in the demo environment to guarantee reproducibility for judges.
+
 ### Install
 
 ```bash
@@ -139,6 +147,10 @@ npm run dev
 ### Run Tests
 
 ```bash
+## Competition Validation Pack
+
+- Final checklist with pass/fail evidence columns: docs/HACKATHON_SUBMISSION_CHECKLIST.md
+- 2-minute live script for judges: docs/DEMO_SCRIPT.md
 npx vitest run src/lib/hackathon/__tests__/mvp.test.ts
 ```
 
@@ -176,13 +188,13 @@ docs/
 
 Every execution step records a `ProofEvent`:
 
-| Event Type | Meaning |
-| --- | --- |
-| `SnapshotAnchored` | Avatar identity committed to a Solana slot |
-| `CapsuleCreated` | TimeCapsule registered with trigger conditions |
-| `TriggerSimulated` | Trigger condition verified and recorded |
-| `DeliveryRecorded` | Delivery completed with signature proof |
-| `ParticleAbsorptionUpdated` | PAS recalculated and maturity state updated |
+| Event Type                  | Meaning                                        |
+| --------------------------- | ---------------------------------------------- |
+| `SnapshotAnchored`          | Avatar identity committed to a Solana slot     |
+| `CapsuleCreated`            | TimeCapsule registered with trigger conditions |
+| `TriggerSimulated`          | Trigger condition verified and recorded        |
+| `DeliveryRecorded`          | Delivery completed with signature proof        |
+| `ParticleAbsorptionUpdated` | PAS recalculated and maturity state updated    |
 
 ---
 
@@ -190,11 +202,11 @@ Every execution step records a `ProofEvent`:
 
 Three canonical domain policies are pre-configured:
 
-| Domain | Promotion Threshold | Demotion Threshold | Max Escalation Rate |
-| --- | --- | --- | --- |
-| `professional-method` | 0.75 | 0.45 | 0.20 |
-| `time-capsule-delivery` | 0.80 | 0.50 | 0.15 |
-| `legacy-execution` | 0.85 | 0.55 | 0.10 |
+| Domain                  | Promotion Threshold | Demotion Threshold | Max Escalation Rate |
+| ----------------------- | ------------------- | ------------------ | ------------------- |
+| `professional-method`   | 0.75                | 0.45               | 0.20                |
+| `time-capsule-delivery` | 0.80                | 0.50               | 0.15                |
+| `legacy-execution`      | 0.85                | 0.55               | 0.10                |
 
 ---
 

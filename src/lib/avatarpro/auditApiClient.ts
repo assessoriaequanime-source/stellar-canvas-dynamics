@@ -30,6 +30,35 @@ export function getAuditEventsByWallet(walletAddress: string) {
   return requestJson<Array<Record<string, unknown>>>(`/audit/events?walletAddress=${encodeURIComponent(walletAddress)}`);
 }
 
+export function consumeJudgeAccessInvitation(payload: {
+  capsuleId: string;
+  inviteToken: string;
+  accessCode: string;
+}) {
+  return requestJson<{
+    judgeAccessToken: string;
+    temporaryWalletAddress: string;
+    recipientName: string;
+    capsuleId: string;
+    auditDashboardUrl: string;
+  }>(`/capsules/judge-access/${encodeURIComponent(payload.capsuleId)}/consume`, {
+    method: "POST",
+    body: {
+      inviteToken: payload.inviteToken,
+      accessCode: payload.accessCode,
+    },
+  });
+}
+
+export function getJudgeAuditEvents(judgeAccessToken: string) {
+  return requestJson<{
+    judge: Record<string, unknown>;
+    events: Array<Record<string, unknown>>;
+  }>("/audit/judge/events", {
+    token: judgeAccessToken,
+  });
+}
+
 export function createAuditProof(payload: {
   walletAddress: string;
   avatarId?: string;

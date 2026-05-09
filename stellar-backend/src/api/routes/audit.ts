@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from "express";
 import prisma from "../../lib/prisma";
 import { requireAuth } from "../middlewares/auth";
 import { AppError } from "../middlewares/errorHandler";
+import jwt from "jsonwebtoken";
 import { parseOrThrow } from "../../lib/validation";
 import { auditQuerySchema } from "../validators/audit";
 import { PublicKey } from "@solana/web3.js";
@@ -16,6 +17,18 @@ type RequestWithUser = Request & {
     userId: string;
     walletAddress: string;
   };
+  judgeAccess?: {
+    capsuleId: string;
+    temporaryWalletAddress: string;
+    recipientName: string;
+  };
+};
+
+type JudgeAccessTokenPayload = {
+  type?: string;
+  capsuleId?: string;
+  temporaryWalletAddress?: string;
+  recipientName?: string;
 };
 
 function ensureUserId(req: Request): string {
@@ -24,6 +37,45 @@ function ensureUserId(req: Request): string {
     throw new AppError(401, "Unauthorized", "UNAUTHORIZED");
   }
   return userId;
+}
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new AppError(500, "JWT secret not configured", "JWT_SECRET_MISSING");
+  }
+  return secret;
+}
+
+function requireJudgeAccess(req: Request, _res: Response, next: NextFunction): void {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new AppError(401, "Missing judge authorization", "JUDGE_AUTH_MISSING");
+    }
+
+    const token = authHeader.replace("Bearer ", "").trim();
+    const payload = jwt.verify(token, getJwtSecret()) as JudgeAccessTokenPayload;
+
+    if (
+      payload.type !== "judge_access" ||
+      !payload.capsuleId ||
+      !payload.temporaryWalletAddress ||
+      !payload.recipientName
+    ) {
+      throw new AppError(401, "Invalid judge token", "INVALID_JUDGE_TOKEN");
+    }
+
+    (req as RequestWithUser).judgeAccess = {
+      capsuleId: payload.capsuleId,
+      temporaryWalletAddress: payload.temporaryWalletAddress,
+      recipientName: payload.recipientName,
+    };
+
+    next();
+  } catch (_error) {
+    next(new AppError(401, "Unauthorized judge access", "UNAUTHORIZED_JUDGE_ACCESS"));
+  }
 }
 
 router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
@@ -67,6 +119,28 @@ router.get("/events", async (req: Request, res: Response, next: NextFunction) =>
     });
 
     res.status(200).json(logs);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/judge/events", requireJudgeAccess, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const judgeAccess = (req as RequestWithUser).judgeAccess;
+    if (!judgeAccess) {
+      throw new AppError(401, "Unauthorized judge access", "UNAUTHORIZED_JUDGE_ACCESS");
+    }
+
+    const events = listAuditEvents({ walletAddress: judgeAccess.temporaryWalletAddress });
+
+    res.status(200).json({
+      judge: {
+        recipientName: judgeAccess.recipientName,
+        capsuleId: judgeAccess.capsuleId,
+        temporaryWalletAddress: judgeAccess.temporaryWalletAddress,
+      },
+      events,
+    });
   } catch (error) {
     next(error);
   }
