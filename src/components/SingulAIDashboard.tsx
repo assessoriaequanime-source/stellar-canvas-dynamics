@@ -5,6 +5,7 @@ import BrandLogo from "@/components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
+import { VoiceAgentCard } from "@/components/VoiceAgentCard";
 import { sendAvatarMessage } from "@/lib/altApi";
 import {
   getAvatarProStatus,
@@ -239,6 +240,7 @@ export default function SingulAIDashboard() {
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [mobileKeyboardOffset, setMobileKeyboardOffset] = useState(0);
+  const [capsuleModalTab, setCapsuleModalTab] = useState<"form" | "voice">("form");
   const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const lastAiResponseRef = useRef<{ id: number; text: string } | null>(null);
 
@@ -1856,7 +1858,48 @@ export default function SingulAIDashboard() {
               </Icon>
             </button>
           </div>
-          <div className="modal-body">
+
+          {/* Modal Tabs */}
+          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)' }}>
+            <button
+              onClick={() => setCapsuleModalTab('form')}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                textAlign: 'center',
+                fontSize: '13px',
+                fontWeight: capsuleModalTab === 'form' ? '600' : '400',
+                color: capsuleModalTab === 'form' ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                borderBottom: capsuleModalTab === 'form' ? '2px solid #26B0E2' : 'none',
+                transition: 'all 200ms ease',
+              }}
+            >
+              ✏️ Form
+            </button>
+            <button
+              onClick={() => setCapsuleModalTab('voice')}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                textAlign: 'center',
+                fontSize: '13px',
+                fontWeight: capsuleModalTab === 'voice' ? '600' : '400',
+                color: capsuleModalTab === 'voice' ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                borderBottom: capsuleModalTab === 'voice' ? '2px solid #26B0E2' : 'none',
+                transition: 'all 200ms ease',
+              }}
+            >
+              🎙️ Voice Agent
+            </button>
+          </div>
+
+          <div className="modal-body" style={{ display: capsuleModalTab === 'form' ? 'block' : 'none' }}>
             <div>
               <label className="f-label">Capsule Title</label>
               <input type="text" className="f-input" placeholder="Example: Important message" />
@@ -1962,6 +2005,31 @@ export default function SingulAIDashboard() {
               <span className="cost-val">{capsuleCost} SGL</span>
             </div>
           </div>
+
+          {/* Voice Agent Tab */}
+          <div
+            style={{
+              display: capsuleModalTab === 'voice' ? 'flex' : 'none',
+              flexDirection: 'column',
+              height: '500px',
+              padding: 0,
+              overflow: 'hidden',
+            }}
+          >
+            <VoiceAgentCard
+              isOpen={modalOpen && capsuleModalTab === 'voice'}
+              onTranscript={(text) => {
+                // Auto-fill title from first few words of transcript
+                if (!capsuleTitle || capsuleTitle === 'Audit Judge Access Capsule') {
+                  setCapsuleTitle(text.substring(0, 50));
+                }
+                // Append to message if not empty
+                setCapsuleContent((prev) => prev ? `${prev}\n${text}` : text);
+              }}
+              className="flex-1"
+            />
+          </div>
+
           <div className="modal-ftr">
             <button className="btn-primary">
               <Icon>
