@@ -189,7 +189,7 @@ Backend (Express)
 ### Created (10 files, 1,200+ lines)
 
 | File | Lines | Purpose |
-|------|-------|---------|
+| --- | --- | --- |
 | stellar-backend/src/api/routes/xai.ts | 66 | Token endpoint |
 | stellar-backend/src/lib/xai-tools.ts | 80 | Tool handlers |
 | src/lib/xai-utils.ts | 280 | Utilities + session management |
@@ -201,7 +201,7 @@ Backend (Express)
 ### Modified (2 files)
 
 | File | Changes | Purpose |
-|------|---------|---------|
+| --- | --- | --- |
 | stellar-backend/src/api/routes/index.ts | +2 lines | Register xAI route |
 | src/components/SingulAIDashboard.tsx | +80 lines | Integrate VoiceAgentCard in modal |
 
@@ -378,7 +378,7 @@ curl -X POST https://singulai.live/api/v1/xai/token \
 ## Performance Metrics
 
 | Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
+| --- | --- | --- | --- |
 | Token response | <100ms | ~50ms | ✅ |
 | WebSocket connect | <2s | ~1s | ✅ |
 | Speech detection (VAD) | <200ms | ~150ms | ✅ |
