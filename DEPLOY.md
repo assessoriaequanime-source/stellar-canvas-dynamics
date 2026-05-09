@@ -3,6 +3,7 @@
 > **Regra operacional crítica:** Este projeto é `singulai.live`. Nunca executar comandos que afetem `singulai.site`. São ambientes separados e independentes.
 
 ## Estrutura do ambiente
+
 Ótimo. Aplicou os três ajustes e as builds passaram. Agora, antes do deploy final, execute este script rápido de validação para confirmar se o backend está respondendo ao endpoint de token do xAI (que é o que será usado na demo):
 
 ```bash
@@ -24,6 +25,7 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:5173 2>/dev/null || echo
 echo ""
 echo "=== FIM ==="
 ```
+
 | Item | Valor |
 | --- | --- |
 | VPS IP | `72.60.147.56` |
