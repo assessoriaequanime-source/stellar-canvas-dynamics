@@ -5,7 +5,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { submitAbsorptionFeedback } from '@/lib/avatarpro/absorptionApiClient';
-import { DEMO_WALLET_ADDRESS } from '@/lib/avatarpro/demoMode';
 import { RealSolanaAdapter } from '@/lib/solana/realSolanaAdapter';
 import {
   SessionTokenManager,
@@ -51,7 +50,7 @@ type VoiceAbsorptionPayload = {
   };
 };
 
-function getSessionWalletAddress(): string {
+function getSessionWalletAddress(): string | null {
   try {
     const raw = localStorage.getItem('singulai_wallet');
     if (raw) {
@@ -61,9 +60,9 @@ function getSessionWalletAddress(): string {
       }
     }
   } catch {
-    // fallback to demo wallet
+    return null;
   }
-  return DEMO_WALLET_ADDRESS;
+  return null;
 }
 
 async function sha256Hex(input: string): Promise<string> {
@@ -367,6 +366,9 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
     const delta = Number(absorption.delta ?? pasNew - pasPrevious);
 
     const walletAddress = getSessionWalletAddress();
+    if (!walletAddress) {
+      throw new Error('Wallet de sessão não encontrada para persistência PAS');
+    }
     const timestamp = new Date().toISOString();
 
     const onChainPayload = {

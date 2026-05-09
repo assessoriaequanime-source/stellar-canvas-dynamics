@@ -62,27 +62,9 @@ const PROFILES: Record<
   },
 };
 
-const AI_REPLIES: Record<Profile, string[]> = {
-  pedro: [
-    "Analyzing through my neural atlas... semantic patterns identified.",
-    "Based on absorbed memory, I can map relevant connections for your query.",
-    "My Omega index is calibrated. What should we explore next?",
-    "Input integrated into the cohesion model. Particles reorganized for this inference.",
-  ],
-  laura: [
-    "Checking privacy protocols... zero-knowledge encryption active.",
-    "Your keys remain under your custody. This session is protected by design.",
-    "Security patterns identified. Processing with maximum confidentiality.",
-  ],
-  leticia: [
-    "Applying professional expertise. Contract framework active.",
-    "With long-term legacy context, I can draft a detailed strategy.",
-    "Compliance validation in progress. Processing with notarial rigor.",
-  ],
-};
-
 type Msg = { role: "user" | "ai" | "typing"; text?: string; id: number };
 type ChatAuditEntry = { id: string; action: string; cost: number; status: string; ts: string };
+type DashboardNotification = { id: string; title: string; detail: string; ts: string };
 
 type BrowserSpeechRecognition = {
   lang: string;
@@ -241,6 +223,8 @@ export default function SingulAIDashboard() {
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [mobileKeyboardOffset, setMobileKeyboardOffset] = useState(0);
   const [capsuleModalTab, setCapsuleModalTab] = useState<"form" | "voice">("form");
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
   const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
   const lastAiResponseRef = useRef<{ id: number; text: string } | null>(null);
 
@@ -938,7 +922,7 @@ export default function SingulAIDashboard() {
     animateOmega(prof.omega, omegaLiveRef.current, 1200);
   };
 
-  // Send chat — tries real backend, falls back to AI_REPLIES on error
+  // Send chat — uses backend real only
   const sendMessage = async (prefillText?: string) => {
     const text = (prefillText ?? input).trim();
     if (!text) return;
@@ -958,25 +942,23 @@ export default function SingulAIDashboard() {
     const sessionToken = localStorage.getItem("singulai_session");
     let reply: string;
     try {
-      if (sessionToken) {
-        const data = await sendAvatarMessage(sessionToken, text, MODEL_IDS[profileRef.current]);
-        const raw = (data.message || data.reply || data.text || "").trim();
-        reply =
-          raw ||
-          AI_REPLIES[profileRef.current][
-            Math.floor(Math.random() * AI_REPLIES[profileRef.current].length)
-          ];
-        if (data.sglBalance !== undefined) setSglBalance(data.sglBalance);
-        else if (data.balance !== undefined) setSglBalance(data.balance);
-      } else {
-        await new Promise((r) => setTimeout(r, 1100 + Math.random() * 900));
-        const pool = AI_REPLIES[profileRef.current];
-        reply = pool[Math.floor(Math.random() * pool.length)];
+      if (!sessionToken) {
+        throw new Error("Sessão ausente. Faça login para usar o chat real.");
       }
+
+      const data = await sendAvatarMessage(sessionToken, text, MODEL_IDS[profileRef.current]);
+      const raw = (data.message || data.reply || data.text || "").trim();
+      if (!raw) {
+        throw new Error("Resposta vazia do backend");
+      }
+
+      reply = raw;
+      if (data.sglBalance !== undefined) setSglBalance(data.sglBalance);
+      else if (data.balance !== undefined) setSglBalance(data.balance);
     } catch {
-      await new Promise((r) => setTimeout(r, 900 + Math.random() * 600));
-      const pool = AI_REPLIES[profileRef.current];
-      reply = pool[Math.floor(Math.random() * pool.length)];
+      setBackendStatus("unavailable");
+      setStatusMessage("Chat real indisponível");
+      reply = "Não foi possível obter resposta do backend real agora. Verifique sessão e API.";
     }
 
     const aiId = ++msgIdRef.current;
@@ -1079,6 +1061,87 @@ export default function SingulAIDashboard() {
       setIsVoiceListening(false);
     };
   }, []);
+
+  const addNotification = useCallback((title: string, detail: string) => {
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        title,
+        detail,
+        ts: new Date().toISOString(),
+      },
+      ...prev,
+    ].slice(0, 10));
+  }, []);
+
+  const handleCreateCapsule = useCallback(async () => {
+    if (!capsuleTitle.trim() || !capsuleContent.trim()) {
+      setStatusMessage("Título e mensagem são obrigatórios");
+      return;
+    }
+
+    const hasEmail = recipientEmail.trim().length > 0;
+    const hasWhatsapp = recipientWhatsapp.trim().length > 0;
+    if (!hasEmail && !hasWhatsapp) {
+      setStatusMessage("Informe e-mail ou WhatsApp do destinatário");
+      return;
+    }
+
+    const channel: "email" | "whatsapp" | "both" =
+      hasEmail && hasWhatsapp ? "both" : hasWhatsapp ? "whatsapp" : "email";
+
+    setCapsuleSubmitting(true);
+    try {
+      const result = await createJudgeAccessCapsule({
+        name: capsuleTitle.trim(),
+        content: capsuleContent.trim(),
+        deliveryType: delivery,
+        channel,
+        unlockDate: delivery === "scheduled" && scheduledAt ? scheduledAt : undefined,
+        recipientName: recipientName.trim() || "Reviewer",
+        recipientEmail: hasEmail ? recipientEmail.trim() : undefined,
+        recipientWhatsapp: hasWhatsapp ? recipientWhatsapp.trim() : undefined,
+      });
+
+      setStatusMessage("Capsule criada com sucesso");
+      addNotification(
+        "Cápsula criada",
+        `ID ${(result.id || "capsule").toString()} · canal ${channel}`,
+      );
+
+      const items = await listCapsules();
+      setCapsuleCount(Array.isArray(items) ? items.length : 0);
+      setCapsulePreview(
+        Array.isArray(items)
+          ? items
+              .slice(0, 3)
+              .map((item) => (item.title || item.name || item.id || "Capsule item").toString())
+          : [],
+      );
+
+      setModalOpen(false);
+      setCapsuleContent("");
+      setRecipientEmail("");
+      setRecipientName("");
+      setRecipientWhatsapp("");
+      setScheduledAt("");
+    } catch {
+      setBackendStatus("unavailable");
+      setStatusMessage("Falha ao criar cápsula");
+      addNotification("Falha na cápsula", "Não foi possível criar a cápsula agora");
+    } finally {
+      setCapsuleSubmitting(false);
+    }
+  }, [
+    addNotification,
+    capsuleContent,
+    capsuleTitle,
+    delivery,
+    recipientEmail,
+    recipientName,
+    recipientWhatsapp,
+    scheduledAt,
+  ]);
 
   useEffect(() => {
     if (!isMobile || typeof window === "undefined" || !window.visualViewport) {
@@ -1228,6 +1291,7 @@ export default function SingulAIDashboard() {
                 className="tb-btn topbar-notif-btn"
                 title="Notifications"
                 aria-label="Notifications"
+                onClick={() => setNotificationsOpen((v) => !v)}
               >
                 <Icon>
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -1235,6 +1299,47 @@ export default function SingulAIDashboard() {
                 </Icon>
               </button>
               <span className="topbar-notif-badge" aria-hidden="true" />
+              {notificationsOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 38,
+                    right: 0,
+                    width: 320,
+                    maxHeight: 280,
+                    overflowY: "auto",
+                    borderRadius: 12,
+                    background: "rgba(11,13,18,0.98)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    boxShadow: "0 16px 42px rgba(0,0,0,0.48)",
+                    padding: 10,
+                    zIndex: 40,
+                  }}
+                >
+                  {(notifications.length ? notifications : [
+                    {
+                      id: "seed-notif",
+                      title: "Sistema pronto",
+                      detail: "Sem notificações pendentes",
+                      ts: new Date().toISOString(),
+                    },
+                  ]).map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: "8px 10px",
+                        borderRadius: 8,
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "rgba(255,255,255,0.03)",
+                        marginBottom: 8,
+                      }}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 600 }}>{item.title}</div>
+                      <div style={{ fontSize: 11, opacity: 0.72 }}>{item.detail}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <Link to="/demo" className="tb-btn" title="Back to Intro" aria-label="Back to Intro">
               <Icon>
@@ -1902,15 +2007,33 @@ export default function SingulAIDashboard() {
           <div className="modal-body" style={{ display: capsuleModalTab === 'form' ? 'block' : 'none' }}>
             <div>
               <label className="f-label">Capsule Title</label>
-              <input type="text" className="f-input" placeholder="Example: Important message" />
+              <input
+                type="text"
+                className="f-input"
+                placeholder="Example: Important message"
+                value={capsuleTitle}
+                onChange={(e) => setCapsuleTitle(e.target.value)}
+              />
             </div>
             <div>
               <label className="f-label">Recipient Email</label>
-              <input type="email" className="f-input" placeholder="reviewer@singulai.live" />
+              <input
+                type="email"
+                className="f-input"
+                placeholder="reviewer@singulai.live"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+              />
             </div>
             <div>
               <label className="f-label">Recipient Name</label>
-              <input type="text" className="f-input" placeholder="Name (optional)" />
+              <input
+                type="text"
+                className="f-input"
+                placeholder="Name (optional)"
+                value={recipientName}
+                onChange={(e) => setRecipientName(e.target.value)}
+              />
             </div>
             <div>
               <label className="f-label">WhatsApp (optional)</label>
@@ -1920,6 +2043,8 @@ export default function SingulAIDashboard() {
                   className="f-input"
                   placeholder="+55 11 99999-9999"
                   style={{ paddingRight: 42 }}
+                  value={recipientWhatsapp}
+                  onChange={(e) => setRecipientWhatsapp(e.target.value)}
                 />
                 <div className="wa-indicator" aria-hidden>
                   <svg
@@ -2000,6 +2125,17 @@ export default function SingulAIDashboard() {
                 </button>
               </div>
             </div>
+            {delivery === "scheduled" && (
+              <div>
+                <label className="f-label">Schedule Date</label>
+                <input
+                  type="datetime-local"
+                  className="f-input"
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                />
+              </div>
+            )}
             <div className="cost-row">
               <span className="cost-lbl">Cost</span>
               <span className="cost-val">{capsuleCost} SGL</span>
@@ -2031,11 +2167,11 @@ export default function SingulAIDashboard() {
           </div>
 
           <div className="modal-ftr">
-            <button className="btn-primary">
+            <button className="btn-primary" onClick={() => void handleCreateCapsule()} disabled={capsuleSubmitting}>
               <Icon>
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </Icon>
-              Create Capsule
+              {capsuleSubmitting ? "Creating..." : "Create Capsule"}
             </button>
           </div>
         </div>
