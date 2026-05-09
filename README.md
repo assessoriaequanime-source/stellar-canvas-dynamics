@@ -260,6 +260,40 @@ Environment:
 
 ---
 
+## Contribution and Branch Strategy
+
+To keep delivery safe and collaborative, this repository follows a `main` + `dev` flow.
+
+Branch rules:
+
+1. `main`: stable branch, protected, merge only via reviewed Pull Request.
+2. `dev`: integration branch for daily development and feature aggregation.
+3. Feature branches: `feature/<short-description>`.
+4. Bug fix branches: `bugfix/<short-description>`.
+5. Hotfix branches: `hotfix/<short-description>`.
+
+Team workflow:
+
+1. Always branch from `dev`.
+2. Open Pull Requests targeting `dev`.
+3. Validate build/lint/tests before requesting review.
+4. Promote `dev` to `main` only through approved Pull Request.
+
+Suggested examples:
+
+- `feature/voice-agent-token-refresh`
+- `bugfix/capsules-public-get`
+- `hotfix/xai-token-timeout`
+
+Maintainer action required in GitHub settings:
+
+1. Enable branch protection for `main`.
+2. Require Pull Request before merge.
+3. Require at least 1 approval.
+4. Require status checks (build/lint) when available.
+
+---
+
 ## CEO / Project Lead
 
 **Rodrigo Alves** — [rodrigo.run](https://rodrigo.run)
