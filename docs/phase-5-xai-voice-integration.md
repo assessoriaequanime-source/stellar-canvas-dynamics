@@ -23,12 +23,14 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 **Auth:** Server-side using `XAI_API_KEY` environment variable (never exposed to browser)
 
 **Files created:**
+
 - [stellar-backend/src/api/routes/xai.ts](stellar-backend/src/api/routes/xai.ts) — 66 lines
   - `POST /api/v1/xai/token` → returns `{ token, expiresAt, expiresIn }`
   - Rate limited via global limiter (10 req/s per IP)
   - Error handling: 503 if key not configured, 500 on fetch errors
 
 **Files modified:**
+
 - [stellar-backend/src/api/routes/index.ts](stellar-backend/src/api/routes/index.ts)
   - Added import: `import xaiRoutes from "./xai"`
   - Registered route: `apiV1Router.use("/xai", xaiRoutes)`
@@ -36,6 +38,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 #### 2. Tool Handlers
 
 **Files created:**
+
 - [stellar-backend/src/lib/xai-tools.ts](stellar-backend/src/lib/xai-tools.ts) — 80 lines
   - `check_availability(args)` — Mock provider availability lookup (ready for DB integration)
   - `handleXaiToolCall(toolName, argsJson)` — Router to tool implementations
@@ -50,6 +53,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 #### 1. Utilities & Session Management
 
 **Files created:**
+
 - [src/lib/xai-utils.ts](src/lib/xai-utils.ts) — 280 lines
   - `SessionTokenManager` — Auto-refresh ephemeral tokens 30s before expiry
   - `audioToBase64()` — Safe chunked base64 encoding (prevent stack overflow on large buffers)
@@ -60,6 +64,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 #### 2. React Hook
 
 **Files created:**
+
 - [src/hooks/useVoiceAgent.ts](src/hooks/useVoiceAgent.ts) — 450 lines
   - Full state management: `idle | connecting | connected | active | error`
   - Microphone capture + AudioWorklet PCM processing
@@ -70,6 +75,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
   - Text input fallback
 
 **Key Features:**
+
 - Mic capture starts **in parallel** with WebSocket connection (no sequential wait)
 - Audio buffered until session ready (preserves first 100-300ms of speech)
 - Automatic interruption on `input_audio_buffer.speech_started`
@@ -77,6 +83,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 - Full message history with role/transcript/timestamp
 
 **Returns:**
+
 ```typescript
 {
   status: ConnectionStatus,
@@ -93,6 +100,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 #### 3. UI Component
 
 **Files created:**
+
 - [src/components/VoiceAgentCard.tsx](src/components/VoiceAgentCard.tsx) — 180 lines
   - Mic button (toggles listening state, pulse animation when active)
   - Real-time transcript area (user messages right-aligned blue, assistant left-aligned gray)
@@ -105,6 +113,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 #### 4. AudioWorklet Processor
 
 **Files created:**
+
 - [public/pcm-processor-worklet.js](public/pcm-processor-worklet.js) — 30 lines
   - Runs on AudioWorklet thread (not main thread)
   - Converts float32 audio to int16 PCM
@@ -114,6 +123,7 @@ Enable users to interact with the SingulAI Dashboard via **voice through the xAI
 #### 5. Dashboard Integration
 
 **Files modified:**
+
 - [src/components/SingulAIDashboard.tsx](src/components/SingulAIDashboard.tsx)
   - Added import: `import { VoiceAgentCard } from "@/components/VoiceAgentCard"`
   - Added state: `capsuleModalTab` ("form" | "voice")
@@ -326,7 +336,7 @@ curl -X POST https://singulai.live/api/v1/xai/token \
 
 ### 3. Test Live Voice Agent
 
-1. Open https://singulai.live/dashboard
+1. Open <https://singulai.live/dashboard>
 2. Click "Create Capsule" → modal
 3. Click "🎙️ Voice Agent" tab
 4. Mic button (requires HTTPS + browser mic permissions)
@@ -338,23 +348,27 @@ curl -X POST https://singulai.live/api/v1/xai/token \
 ## Security Considerations
 
 ✅ **API Key Protection:**
+
 - `XAI_API_KEY` stored only in backend `.env`
 - Never exposed to browser
 - Token endpoint mints 5-minute ephemeral tokens
 - Browser connects via token subprotocol, not API key
 
 ✅ **Rate Limiting:**
+
 - Global rate limiter: 10 req/s per IP
 - Token endpoint included in limiter
 - `/health` endpoint excluded to prevent issues
 
 ✅ **Audio Privacy:**
+
 - Audio captured locally in browser
 - Sent only to xAI (no local storage, no logging)
 - User can stop/disconnect at any time
 - Mic permissions required per browser policy
 
 ✅ **Tool Execution:**
+
 - Backend validates tool name and args before execution
 - `check_availability` is mock (ready for DB query)
 - Error handling prevents information leakage
@@ -381,6 +395,7 @@ curl -X POST https://singulai.live/api/v1/xai/token \
 ### Issue: "Microphone access denied"
 
 **Solution:** Check browser permissions  
+
 ```
 Settings → Privacy & Security → Microphone → Allow localhost (dev) or singulai.live (prod)
 ```
@@ -394,6 +409,7 @@ Settings → Privacy & Security → Microphone → Allow localhost (dev) or sing
 
 **Reason:** `public/pcm-processor-worklet.js` not deployed  
 **Solution:** Verify file exists in Vite dist/ output  
+
 ```bash
 ls dist/client/  # Check structure
 ```
@@ -402,6 +418,7 @@ ls dist/client/  # Check structure
 
 **Reason:** Backend `.env` missing `XAI_API_KEY`  
 **Solution:**
+
 ```bash
 # On VPS
 echo 'XAI_API_KEY=xai-xxxx...' >> /var/www/singulai-live/stellar-backend/.env
@@ -451,7 +468,7 @@ pm2 restart singulai-live-dashboard
 
 ## References
 
-- **xAI Docs:** https://docs.x.ai/developers/model-capabilities/audio/voice-agent
+- **xAI Docs:** <https://docs.x.ai/developers/model-capabilities/audio/voice-agent>
 - **Session Config:** Full instructions at [src/lib/xai-utils.ts](src/lib/xai-utils.ts#L85-L160)
 - **Tool Spec:** Available parameters documented at [stellar-backend/src/lib/xai-tools.ts](stellar-backend/src/lib/xai-tools.ts#L5-L25)
 - **WebSocket Protocol:** Event types and messages at [src/hooks/useVoiceAgent.ts](src/hooks/useVoiceAgent.ts#L200-L280)
