@@ -112,7 +112,8 @@ function signJudgeAccessToken(payload: {
 // router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = ensureUserId(req);
+    // DEMO MODE: Remove ensureUserId check to allow unauthenticated access
+    const userId = (req as RequestWithUser).user?.userId || "demo-user";
     const capsules = await prisma.timeCapsule.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
     res.status(200).json(capsules);
   } catch (error) {
@@ -123,7 +124,8 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 // router.post("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = ensureUserId(req);
+    // DEMO MODE: Remove ensureUserId check to allow unauthenticated access
+    const userId = (req as RequestWithUser).user?.userId || "demo-user";
     const body = req.body as { name?: string; content?: string; unlockDate?: string };
 
     if (!body.name || !body.content || !body.unlockDate) {
