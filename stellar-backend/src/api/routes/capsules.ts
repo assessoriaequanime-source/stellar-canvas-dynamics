@@ -62,6 +62,27 @@ function ensureUserId(req: Request): string {
   return userId;
 }
 
+async function resolveCapsuleUserId(req: Request): Promise<string> {
+  const sessionUserId = (req as RequestWithUser).user?.userId;
+  if (sessionUserId) {
+    return sessionUserId;
+  }
+
+  // Demo fallback: ensure a valid User row exists to satisfy Prisma FK on TimeCapsule.userId.
+  const demoUser = await prisma.user.upsert({
+    where: { walletAddress: "demo-wallet-address" },
+    update: {},
+    create: {
+      walletAddress: "demo-wallet-address",
+      nickname: "Demo User",
+      email: "demo@singulai.local",
+    },
+    select: { id: true },
+  });
+
+  return demoUser.id;
+}
+
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -112,8 +133,7 @@ function signJudgeAccessToken(payload: {
 // router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // DEMO MODE: Remove ensureUserId check to allow unauthenticated access
-    const userId = (req as RequestWithUser).user?.userId || "demo-user";
+    const userId = await resolveCapsuleUserId(req);
     const capsules = await prisma.timeCapsule.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
     res.status(200).json(capsules);
   } catch (error) {
@@ -124,8 +144,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
 // router.post("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // DEMO MODE: Remove ensureUserId check to allow unauthenticated access
-    const userId = (req as RequestWithUser).user?.userId || "demo-user";
+    const userId = await resolveCapsuleUserId(req);
     const body = req.body as { name?: string; content?: string; unlockDate?: string };
 
     if (!body.name || !body.content || !body.unlockDate) {
