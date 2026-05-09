@@ -4,6 +4,9 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { submitAbsorptionFeedback } from '@/lib/avatarpro/absorptionApiClient';
+import { DEMO_WALLET_ADDRESS } from '@/lib/avatarpro/demoMode';
+import { RealSolanaAdapter } from '@/lib/solana/realSolanaAdapter';
 import {
   SessionTokenManager,
   audioToBase64,
@@ -33,6 +36,73 @@ export interface UseVoiceAgentOptions {
 
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'active' | 'error';
 
+type AbsorptionGesture = 'right' | 'left' | 'none';
+
+type VoiceAbsorptionPayload = {
+  response_to_user?: string;
+  avatar_id?: 'pedro' | 'laura' | 'leticia';
+  absorption_update?: {
+    target?: string;
+    gesture_feedback?: AbsorptionGesture;
+    pas_previous?: number;
+    pas_new?: number;
+    delta?: number;
+    learning_outcome?: 'reinforced' | 'corrected' | 'unchanged';
+  };
+};
+
+function getSessionWalletAddress(): string {
+  try {
+    const raw = localStorage.getItem('singulai_wallet');
+    if (raw) {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof parsed.address === 'string' && parsed.address.length > 0) {
+        return parsed.address;
+      }
+    }
+  } catch {
+    // fallback to demo wallet
+  }
+  return DEMO_WALLET_ADDRESS;
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    let hash = 0;
+    for (let i = 0; i < input.length; i += 1) {
+      hash = (hash << 5) - hash + input.charCodeAt(i);
+      hash |= 0;
+    }
+    return `fallback-${Math.abs(hash).toString(16).padStart(8, '0')}`;
+  }
+
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  return Array.from(new Uint8Array(digest))
+    .map((value) => value.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function extractFirstJsonObject(text: string): string | null {
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1 || end <= start) return null;
+  return text.slice(start, end + 1);
+}
+
+function parseAssistantPayload(text: string): VoiceAbsorptionPayload | null {
+  try {
+    return JSON.parse(text) as VoiceAbsorptionPayload;
+  } catch {
+    const candidate = extractFirstJsonObject(text);
+    if (!candidate) return null;
+    try {
+      return JSON.parse(candidate) as VoiceAbsorptionPayload;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
   const { sessionConfig, autoConnect = false, onMessage, onStatusChange, onError } = options;
 
@@ -50,9 +120,11 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
   const micBufferRef = useRef<Int16Array[]>([]);
   const sessionReadyRef = useRef(false);
   const currentResponseIdRef = useRef<string | null>(null);
+  const assistantTranscriptRef = useRef('');
   const nextPlayTimeRef = useRef(0);
   const queuedSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const messageIdCounterRef = useRef(0);
+  const solanaAdapterRef = useRef(new RealSolanaAdapter());
 
   // ─── Status Management ────────────────────────────────────────────────
   const updateStatus = useCallback((newStatus: ConnectionStatus) => {
@@ -277,9 +349,64 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
     stopMicCapture();
     interruptPlayback();
     sessionReadyRef.current = false;
+    assistantTranscriptRef.current = '';
     micBufferRef.current = [];
     updateStatus('idle');
   }, [stopMicCapture, interruptPlayback, updateStatus]);
+
+  const persistAbsorptionUpdate = useCallback(async (assistantText: string) => {
+    const payload = parseAssistantPayload(assistantText);
+    if (!payload?.absorption_update || !payload.avatar_id) {
+      return;
+    }
+
+    const absorption = payload.absorption_update;
+    const gesture = absorption.gesture_feedback ?? 'none';
+    const pasPrevious = Number(absorption.pas_previous ?? 0.5);
+    const pasNew = Number(absorption.pas_new ?? 0.5);
+    const delta = Number(absorption.delta ?? pasNew - pasPrevious);
+
+    const walletAddress = getSessionWalletAddress();
+    const timestamp = new Date().toISOString();
+
+    const onChainPayload = {
+      avatar_id: payload.avatar_id,
+      gesture_feedback: gesture,
+      pas_previous: pasPrevious,
+      pas_new: pasNew,
+      delta,
+      learning_outcome: absorption.learning_outcome ?? 'unchanged',
+      target: absorption.target ?? 'last_ai_response',
+      ts: timestamp,
+    };
+
+    const payloadHash = await sha256Hex(JSON.stringify(onChainPayload));
+
+    const tx = await solanaAdapterRef.current.submitTransaction({
+      walletAddress,
+      serviceType: 'update_particle_score',
+      payloadHash,
+    });
+
+    if (gesture === 'left' || gesture === 'right') {
+      await submitAbsorptionFeedback({
+        direction: gesture,
+        profile: payload.avatar_id,
+        intensity: Math.min(100, Math.round(Math.abs(delta) * 100)),
+        source: 'xai-voice-agent',
+        targetResponseHash: payloadHash,
+      });
+    }
+
+    console.info('[xAI] PAS persisted', {
+      avatar: payload.avatar_id,
+      gesture,
+      pasPrevious,
+      pasNew,
+      txSignature: tx.txSignature,
+      explorerUrl: tx.explorerUrl,
+    });
+  }, []);
 
   // ─── Message Handler ──────────────────────────────────────────────────
   const handleXaiMessage = useCallback(
@@ -318,9 +445,19 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
 
         case 'response.created':
           currentResponseIdRef.current = event.response?.id || `resp-${messageIdCounter}`;
+          assistantTranscriptRef.current = '';
+          addMessage({
+            id: currentResponseIdRef.current,
+            role: 'assistant',
+            type: 'text',
+            content: '',
+            transcript: '',
+            timestamp: Date.now(),
+          });
           break;
 
         case 'response.output_audio_transcript.delta':
+          assistantTranscriptRef.current += String(event.delta || '');
           // Stream transcript text
           setMessages((prev) => {
             const lastMsg = prev[prev.length - 1];
@@ -356,6 +493,9 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
           break;
 
         case 'response.output_audio_transcript.done':
+          if (typeof event.transcript === 'string') {
+            assistantTranscriptRef.current = event.transcript;
+          }
           // Finalize assistant transcript
           if (currentResponseIdRef.current) {
             setMessages((prev) =>
@@ -370,7 +510,13 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
 
         case 'response.done':
           console.debug('[xAI] Response done, tokens:', event.usage?.total_tokens);
+          if (assistantTranscriptRef.current.trim().length > 0) {
+            void persistAbsorptionUpdate(assistantTranscriptRef.current).catch((persistError) => {
+              console.warn('[xAI] PAS persist failed:', persistError);
+            });
+          }
           currentResponseIdRef.current = null;
+          assistantTranscriptRef.current = '';
           updateStatus('connected');
           break;
 
@@ -389,7 +535,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
           console.debug('[xAI] Unhandled event:', event.type);
       }
     },
-    [addMessage, interruptPlayback, playPcmChunk, updateStatus, onError],
+    [addMessage, interruptPlayback, persistAbsorptionUpdate, playPcmChunk, updateStatus, onError],
   );
 
   // ─── Text Input ────────────────────────────────────────────────────────
