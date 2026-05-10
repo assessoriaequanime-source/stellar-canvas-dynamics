@@ -1,5 +1,13 @@
-import { requestJson } from "./http";
+import { getSessionToken, requestJson } from "./http";
 import { isExplicitAvatarProDemoMode } from "./demoMode";
+
+async function withFallback<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await promise;
+  } catch {
+    return fallback;
+  }
+}
 
 function demoAuditEvents() {
   return [
@@ -20,14 +28,21 @@ export function getAuditHistory() {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve(demoAuditEvents());
   }
-  return requestJson<Array<Record<string, unknown>>>("/audit/events");
+  if (!getSessionToken()) {
+    return Promise.resolve([]);
+  }
+
+  return withFallback(requestJson<Array<Record<string, unknown>>>("/audit/events"), []);
 }
 
 export function getAuditEventsByWallet(walletAddress: string) {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve(demoAuditEvents());
   }
-  return requestJson<Array<Record<string, unknown>>>(`/audit/events?walletAddress=${encodeURIComponent(walletAddress)}`);
+  return withFallback(
+    requestJson<Array<Record<string, unknown>>>(`/audit/events?walletAddress=${encodeURIComponent(walletAddress)}`),
+    [],
+  );
 }
 
 export function consumeJudgeAccessInvitation(payload: {
@@ -86,12 +101,12 @@ export function getSessionHistory() {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve(demoAuditEvents());
   }
-  return requestJson<Array<Record<string, unknown>>>("/transaction");
+  return withFallback(requestJson<Array<Record<string, unknown>>>("/transaction"), []);
 }
 
 export function getProofEvents() {
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve(demoAuditEvents());
   }
-  return requestJson<Array<Record<string, unknown>>>("/audit/events");
+  return withFallback(requestJson<Array<Record<string, unknown>>>("/audit/events"), []);
 }

@@ -1,5 +1,13 @@
-import { requestJson } from "./http";
+import { getSessionToken, requestJson } from "./http";
 import { isExplicitAvatarProDemoMode } from "./demoMode";
+
+async function withFallback<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await promise;
+  } catch {
+    return fallback;
+  }
+}
 
 export function listLegacyRules() {
   if (isExplicitAvatarProDemoMode()) {
@@ -12,7 +20,11 @@ export function listLegacyRules() {
       },
     ]);
   }
-  return requestJson<Array<Record<string, unknown>>>("/legacy-rules");
+  if (!getSessionToken()) {
+    return Promise.resolve([]);
+  }
+
+  return withFallback(requestJson<Array<Record<string, unknown>>>("/legacy-rules"), []);
 }
 
 export function createLegacyRule(payload: Record<string, unknown>) {

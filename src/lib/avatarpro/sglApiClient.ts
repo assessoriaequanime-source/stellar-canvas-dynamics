@@ -1,17 +1,58 @@
 import { requestJson } from "./http";
 import { DEMO_WALLET_ADDRESS, isExplicitAvatarProDemoMode } from "./demoMode";
 
-export function getSglBalance(walletAddress: string) {
+async function withFallback<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await promise;
+  } catch {
+    return fallback;
+  }
+}
+
+function resolveWalletAddress(input?: string): string {
+  if (input && input !== "undefined" && input !== "null") return input;
+  if (typeof window === "undefined") return "";
+  try {
+    const sessionWallet = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+    return (sessionWallet?.walletAddress || sessionWallet?.address || "").toString();
+  } catch {
+    return "";
+  }
+}
+
+export function getSglBalance(walletAddress?: string) {
+  const resolvedWallet = resolveWalletAddress(walletAddress);
+
   if (isExplicitAvatarProDemoMode()) {
     return Promise.resolve({
-      walletAddress: walletAddress || DEMO_WALLET_ADDRESS,
+      walletAddress: resolvedWallet || DEMO_WALLET_ADDRESS,
       network: "Solana Devnet / Demo",
       sglBalance: 10000,
       tokenAccount: "DEMO-TOKEN-ACCOUNT",
       source: "demo-mode",
     });
   }
-  return requestJson<Record<string, unknown>>(`/sgl/balance?walletAddress=${encodeURIComponent(walletAddress)}`);
+
+  if (!resolvedWallet) {
+    return Promise.resolve({
+      walletAddress: "",
+      network: "Solana Devnet",
+      sglBalance: 0,
+      tokenAccount: "",
+      source: "no-wallet",
+    });
+  }
+
+  return withFallback(
+    requestJson<Record<string, unknown>>(`/sgl/balance?walletAddress=${encodeURIComponent(resolvedWallet)}`),
+    {
+      walletAddress: resolvedWallet,
+      network: "Solana Devnet",
+      sglBalance: 0,
+      tokenAccount: "",
+      source: "fallback",
+    },
+  );
 }
 
 export function debitSglForService(payload: {
@@ -57,5 +98,8 @@ export function getSglLedger(walletAddress: string) {
       },
     ]);
   }
-  return requestJson<Array<Record<string, unknown>>>(`/sgl/ledger?walletAddress=${encodeURIComponent(walletAddress)}`);
+  return withFallback(
+    requestJson<Array<Record<string, unknown>>>(`/sgl/ledger?walletAddress=${encodeURIComponent(walletAddress)}`),
+    [],
+  );
 }

@@ -60,14 +60,27 @@ export async function sendAvatarMessage(
   message: string,
   modelId: string,
 ): Promise<AvatarMessageResponse> {
-  const res = await fetch(`${ALT_API_BASE}/avatar/message`, {
+  const payload = JSON.stringify({ message, modelId, avatar: modelId });
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${sessionToken}`,
+  };
+
+  // Prefer new production route; fall back to legacy route for compatibility.
+  const primary = await fetch(`${ALT_API_BASE}/api/v1/avatarpro/message`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${sessionToken}`,
-    },
-    body: JSON.stringify({ message, modelId }),
+    headers,
+    body: payload,
   });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+
+  if (primary.ok) return primary.json();
+  if (primary.status !== 404) throw new Error(`HTTP ${primary.status}`);
+
+  const legacy = await fetch(`${ALT_API_BASE}/avatar/message`, {
+    method: "POST",
+    headers,
+    body: payload,
+  });
+  if (!legacy.ok) throw new Error(`HTTP ${legacy.status}`);
+  return legacy.json();
 }

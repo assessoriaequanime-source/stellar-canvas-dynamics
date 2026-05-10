@@ -149,8 +149,7 @@ const HACKATHON_PROOF_POINTS = [
   },
   {
     label: "Solana",
-    value:
-      "Devnet SPL token live — audit proofs anchored via Memo Program",
+    value: "Devnet SPL token live — audit proofs anchored via Memo Program",
   },
 ] as const;
 
@@ -982,30 +981,59 @@ export default function SingulAIDashboard() {
     engineRef.current?.flashReactionColor(pr, pg, pb);
 
     // SGL debit + audit log (non-blocking)
-    void debitSglForService({ serviceType: "avatar-chat", amount: 10 })
-      .then((result) => {
-        if (result.newBalance !== undefined) setSglBalance(Number(result.newBalance));
-        const txStatus = String(result.txSignature ?? "pending_wallet_signature");
-        const entry: ChatAuditEntry = {
-          id: `chat-${Date.now()}`,
-          action: "Avatar Chat",
-          cost: 10,
-          status: txStatus,
-          ts: new Date().toISOString(),
-        };
-        setChatAuditLog((log) => [entry, ...log].slice(0, 20));
-        setStatusMessage(`SGL debited · ${txStatus.slice(0, 20)}`);
+    const txFallbackStatus = "pending_wallet_signature";
+    let currentWallet = walletAddress || "";
+    if (!currentWallet && typeof window !== "undefined") {
+      try {
+        const storedWallet = JSON.parse(localStorage.getItem("singulai_wallet") || "null");
+        currentWallet = (storedWallet?.walletAddress || storedWallet?.address || "").toString();
+      } catch {
+        currentWallet = "";
+      }
+    }
+
+    if (!currentWallet || currentWallet === "undefined") {
+      const entry: ChatAuditEntry = {
+        id: `chat-${Date.now()}`,
+        action: "Avatar Chat",
+        cost: 10,
+        status: txFallbackStatus,
+        ts: new Date().toISOString(),
+      };
+      setChatAuditLog((log) => [entry, ...log].slice(0, 20));
+    } else {
+      void debitSglForService({
+        walletAddress: currentWallet,
+        serviceType: "avatar-chat",
+        cost: 10,
+        avatarId: profileRef.current,
       })
-      .catch(() => {
-        const entry: ChatAuditEntry = {
-          id: `chat-${Date.now()}`,
-          action: "Avatar Chat",
-          cost: 10,
-          status: "pending_wallet_signature",
-          ts: new Date().toISOString(),
-        };
-        setChatAuditLog((log) => [entry, ...log].slice(0, 20));
-      });
+        .then((result) => {
+          if (result.sglBalance !== undefined) setSglBalance(Number(result.sglBalance));
+          const txStatus = String(
+            result.txSignature || result.proofTxSignature || txFallbackStatus,
+          );
+          const entry: ChatAuditEntry = {
+            id: `chat-${Date.now()}`,
+            action: "Avatar Chat",
+            cost: 10,
+            status: txStatus,
+            ts: new Date().toISOString(),
+          };
+          setChatAuditLog((log) => [entry, ...log].slice(0, 20));
+          setStatusMessage(`SGL debited · ${txStatus.slice(0, 20)}`);
+        })
+        .catch(() => {
+          const entry: ChatAuditEntry = {
+            id: `chat-${Date.now()}`,
+            action: "Avatar Chat",
+            cost: 10,
+            status: txFallbackStatus,
+            ts: new Date().toISOString(),
+          };
+          setChatAuditLog((log) => [entry, ...log].slice(0, 20));
+        });
+    }
   };
 
   useEffect(() => {
@@ -1063,15 +1091,17 @@ export default function SingulAIDashboard() {
   }, []);
 
   const addNotification = useCallback((title: string, detail: string) => {
-    setNotifications((prev) => [
-      {
-        id: `notif-${Date.now()}`,
-        title,
-        detail,
-        ts: new Date().toISOString(),
-      },
-      ...prev,
-    ].slice(0, 10));
+    setNotifications((prev) =>
+      [
+        {
+          id: `notif-${Date.now()}`,
+          title,
+          detail,
+          ts: new Date().toISOString(),
+        },
+        ...prev,
+      ].slice(0, 10),
+    );
   }, []);
 
   const handleCreateCapsule = useCallback(async () => {
@@ -1209,7 +1239,11 @@ export default function SingulAIDashboard() {
 
     // Fallback: tenta Phantom/Solflare
     try {
-      const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
+      const provider = (
+        window as Window & {
+          solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> };
+        }
+      ).solana;
       if (!provider) {
         setStatusMessage("No wallet found. Please log in again.");
         return;
@@ -1317,14 +1351,17 @@ export default function SingulAIDashboard() {
                     zIndex: 40,
                   }}
                 >
-                  {(notifications.length ? notifications : [
-                    {
-                      id: "seed-notif",
-                      title: "Sistema pronto",
-                      detail: "Sem notificações pendentes",
-                      ts: new Date().toISOString(),
-                    },
-                  ]).map((item) => (
+                  {(notifications.length
+                    ? notifications
+                    : [
+                        {
+                          id: "seed-notif",
+                          title: "Sistema pronto",
+                          detail: "Sem notificações pendentes",
+                          ts: new Date().toISOString(),
+                        },
+                      ]
+                  ).map((item) => (
                     <div
                       key={item.id}
                       style={{
@@ -1501,7 +1538,9 @@ export default function SingulAIDashboard() {
                     </div>
                     <div className="sp-row">
                       <span>Network</span>
-                      <code>{isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Solana Devnet"}</code>
+                      <code>
+                        {isExplicitDevMockEnabled() ? "Solana Devnet / Demo" : "Solana Devnet"}
+                      </code>
                     </div>
                     <div className="sp-row">
                       <span>Profile</span>
@@ -1510,20 +1549,38 @@ export default function SingulAIDashboard() {
                     {lastProvisionExplorer ? (
                       <div className="sp-row">
                         <span>Explorer</span>
-                        <code style={{ wordBreak: "break-all", fontSize: 10 }}>{lastProvisionExplorer.slice(0, 40)}…</code>
+                        <code style={{ wordBreak: "break-all", fontSize: 10 }}>
+                          {lastProvisionExplorer.slice(0, 40)}…
+                        </code>
                       </div>
                     ) : null}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
+                    <div
+                      style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}
+                    >
                       <Link
                         to="/vault"
                         style={{
-                          display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
-                          background: "rgba(143,211,255,0.08)", border: "1px solid rgba(143,211,255,0.22)",
-                          borderRadius: 8, color: "#8fd3ff", fontSize: 12, textDecoration: "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "8px 12px",
+                          background: "rgba(143,211,255,0.08)",
+                          border: "1px solid rgba(143,211,255,0.22)",
+                          borderRadius: 8,
+                          color: "#8fd3ff",
+                          fontSize: 12,
+                          textDecoration: "none",
                           letterSpacing: "0.04em",
                         }}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={1.8}
+                          width={13}
+                          height={13}
+                        >
                           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
@@ -1532,13 +1589,27 @@ export default function SingulAIDashboard() {
                       <Link
                         to="/audit"
                         style={{
-                          display: "flex", alignItems: "center", gap: 6, padding: "8px 12px",
-                          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.14)",
-                          borderRadius: 8, color: "rgba(255,255,255,0.7)", fontSize: 12, textDecoration: "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "8px 12px",
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(255,255,255,0.14)",
+                          borderRadius: 8,
+                          color: "rgba(255,255,255,0.7)",
+                          fontSize: 12,
+                          textDecoration: "none",
                           letterSpacing: "0.04em",
                         }}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={1.8}
+                          width={13}
+                          height={13}
+                        >
                           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                         </svg>
                         Auditoria Devnet — Provas on-chain
@@ -1634,7 +1705,9 @@ export default function SingulAIDashboard() {
                     </div>
                     <div className="sp-row">
                       <span>Avatar ativo</span>
-                      <code>{prof.avatarName} · {prof.modeName}</code>
+                      <code>
+                        {prof.avatarName} · {prof.modeName}
+                      </code>
                     </div>
                     <div className="sp-row">
                       <span>Status</span>
@@ -1646,7 +1719,13 @@ export default function SingulAIDashboard() {
                     </div>
                     <div className="sp-row">
                       <span>Backend</span>
-                      <code>{backendStatus === "connected" ? "Online" : backendStatus === "mock-dev" ? "Demo mode" : "Unavailable"}</code>
+                      <code>
+                        {backendStatus === "connected"
+                          ? "Online"
+                          : backendStatus === "mock-dev"
+                            ? "Demo mode"
+                            : "Unavailable"}
+                      </code>
                     </div>
                     <div className="sp-row">
                       <span>Absorção</span>
@@ -1654,7 +1733,9 @@ export default function SingulAIDashboard() {
                     </div>
                     <div className="sp-row">
                       <span>Omega Ω</span>
-                      <code>{omegaPct.toFixed(1)} · {omegaStatus}</code>
+                      <code>
+                        {omegaPct.toFixed(1)} · {omegaStatus}
+                      </code>
                     </div>
                   </div>
                 )}
@@ -1966,46 +2047,56 @@ export default function SingulAIDashboard() {
           </div>
 
           {/* Modal Tabs */}
-          <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)' }}>
+          <div
+            style={{
+              display: "flex",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(0,0,0,0.3)",
+            }}
+          >
             <button
-              onClick={() => setCapsuleModalTab('form')}
+              onClick={() => setCapsuleModalTab("form")}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                textAlign: 'center',
-                fontSize: '13px',
-                fontWeight: capsuleModalTab === 'form' ? '600' : '400',
-                color: capsuleModalTab === 'form' ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                borderBottom: capsuleModalTab === 'form' ? '2px solid #26B0E2' : 'none',
-                transition: 'all 200ms ease',
+                padding: "12px 16px",
+                textAlign: "center",
+                fontSize: "13px",
+                fontWeight: capsuleModalTab === "form" ? "600" : "400",
+                color: capsuleModalTab === "form" ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.5)",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                borderBottom: capsuleModalTab === "form" ? "2px solid #26B0E2" : "none",
+                transition: "all 200ms ease",
               }}
             >
               ✏️ Form
             </button>
             <button
-              onClick={() => setCapsuleModalTab('voice')}
+              onClick={() => setCapsuleModalTab("voice")}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                textAlign: 'center',
-                fontSize: '13px',
-                fontWeight: capsuleModalTab === 'voice' ? '600' : '400',
-                color: capsuleModalTab === 'voice' ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,0.5)',
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                borderBottom: capsuleModalTab === 'voice' ? '2px solid #26B0E2' : 'none',
-                transition: 'all 200ms ease',
+                padding: "12px 16px",
+                textAlign: "center",
+                fontSize: "13px",
+                fontWeight: capsuleModalTab === "voice" ? "600" : "400",
+                color:
+                  capsuleModalTab === "voice" ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.5)",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                borderBottom: capsuleModalTab === "voice" ? "2px solid #26B0E2" : "none",
+                transition: "all 200ms ease",
               }}
             >
               🎙️ Voice Agent
             </button>
           </div>
 
-          <div className="modal-body" style={{ display: capsuleModalTab === 'form' ? 'block' : 'none' }}>
+          <div
+            className="modal-body"
+            style={{ display: capsuleModalTab === "form" ? "block" : "none" }}
+          >
             <div>
               <label className="f-label">Capsule Title</label>
               <input
@@ -2146,29 +2237,33 @@ export default function SingulAIDashboard() {
           {/* Voice Agent Tab */}
           <div
             style={{
-              display: capsuleModalTab === 'voice' ? 'flex' : 'none',
-              flexDirection: 'column',
-              height: '500px',
+              display: capsuleModalTab === "voice" ? "flex" : "none",
+              flexDirection: "column",
+              height: "500px",
               padding: 0,
-              overflow: 'hidden',
+              overflow: "hidden",
             }}
           >
             <VoiceAgentCard
-              isOpen={modalOpen && capsuleModalTab === 'voice'}
+              isOpen={modalOpen && capsuleModalTab === "voice"}
               onTranscript={(text) => {
                 // Auto-fill title from first few words of transcript
-                if (!capsuleTitle || capsuleTitle === 'Audit Judge Access Capsule') {
+                if (!capsuleTitle || capsuleTitle === "Audit Judge Access Capsule") {
                   setCapsuleTitle(text.substring(0, 50));
                 }
                 // Append to message if not empty
-                setCapsuleContent((prev) => prev ? `${prev}\n${text}` : text);
+                setCapsuleContent((prev) => (prev ? `${prev}\n${text}` : text));
               }}
               className="flex-1"
             />
           </div>
 
           <div className="modal-ftr">
-            <button className="btn-primary" onClick={() => void handleCreateCapsule()} disabled={capsuleSubmitting}>
+            <button
+              className="btn-primary"
+              onClick={() => void handleCreateCapsule()}
+              disabled={capsuleSubmitting}
+            >
               <Icon>
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
               </Icon>
@@ -2177,9 +2272,22 @@ export default function SingulAIDashboard() {
           </div>
         </div>
       </div>
-      <footer style={{ textAlign: "center", fontSize: 11, color: "rgba(255,255,255,0.22)", padding: "16px 0 8px", lineHeight: 1.8 }}>
+      <footer
+        style={{
+          textAlign: "center",
+          fontSize: 11,
+          color: "rgba(255,255,255,0.22)",
+          padding: "16px 0 8px",
+          lineHeight: 1.8,
+        }}
+      >
         DEV -{" "}
-        <a href="https://rodrigo.run" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(143,211,255,0.5)", textDecoration: "none" }}>
+        <a
+          href="https://rodrigo.run"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "rgba(143,211,255,0.5)", textDecoration: "none" }}
+        >
           rodrigo.run
         </a>{" "}
         © 2026 SingulAI - Todos os direitos reservados

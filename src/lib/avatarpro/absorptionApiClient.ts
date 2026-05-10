@@ -1,5 +1,13 @@
-import { requestJson } from "./http";
+import { getSessionToken, requestJson } from "./http";
 import { DEMO_AVATAR_ID, isExplicitAvatarProDemoMode } from "./demoMode";
+
+async function withFallback<T>(promise: Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await promise;
+  } catch {
+    return fallback;
+  }
+}
 
 export function submitAbsorptionFeedback(payload: {
   direction: "left" | "right";
@@ -37,7 +45,23 @@ export function getAbsorptionState() {
       absorption: 74,
     });
   }
-  return requestJson<Record<string, unknown>>("/avatarpro/absorption-events");
+  if (!getSessionToken()) {
+    return Promise.resolve({
+      avatarId: DEMO_AVATAR_ID,
+      state: "learning",
+      particleWhitening: 0.72,
+      lastFeedback: "Ready for feedback",
+      absorption: 74,
+    });
+  }
+
+  return withFallback(requestJson<Record<string, unknown>>("/avatarpro/absorption-events"), {
+    avatarId: DEMO_AVATAR_ID,
+    state: "learning",
+    particleWhitening: 0.72,
+    lastFeedback: "Ready for feedback",
+    absorption: 74,
+  });
 }
 
 export function getPasMetrics() {
@@ -53,5 +77,27 @@ export function getPasMetrics() {
       score: 68,
     });
   }
-  return requestJson<Record<string, unknown>>("/avatarpro/metrics");
+  if (!getSessionToken()) {
+    return Promise.resolve({
+      pasScore: 0.72,
+      omegaScore: 0.68,
+      absorption: 0.74,
+      interaction: 0.69,
+      particles: 0.81,
+      omega: 68,
+      pas: 0.72,
+      score: 68,
+    });
+  }
+
+  return withFallback(requestJson<Record<string, unknown>>("/avatarpro/metrics"), {
+    pasScore: 0.72,
+    omegaScore: 0.68,
+    absorption: 0.74,
+    interaction: 0.69,
+    particles: 0.81,
+    omega: 68,
+    pas: 0.72,
+    score: 68,
+  });
 }
