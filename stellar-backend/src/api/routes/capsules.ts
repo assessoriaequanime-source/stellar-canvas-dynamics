@@ -144,7 +144,7 @@ function signJudgeAccessToken(payload: {
   );
 }
 
-// router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// router.get("/", // requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const sessionUserId = (req as RequestWithUser).user?.userId;
@@ -162,7 +162,7 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// router.post("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+// router.post("/", // requireAuth, async (req: Request, res: Response, next: NextFunction) => {
 router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = await resolveCapsuleUserIdForWrite(req);

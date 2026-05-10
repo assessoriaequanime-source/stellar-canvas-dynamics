@@ -1,0 +1,9 @@
+[provider]
+cluster = "devnet"
+wallet = "deploy-keypair.json"
+
+[scripts]
+test = "anchor test"
+
+[programs.devnet]
+avatar_maturity_engine = "EDukgH4YNch5fJYwvtYXsf4saV9VFnMoX5z5EzGwBqdb"
