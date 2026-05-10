@@ -1,6 +1,5 @@
 import { Router, Request, Response, NextFunction } from "express";
 import prisma from "../../lib/prisma.js";
-import { requireAuth } from "../middlewares/auth.js";
 import { AppError } from "../middlewares/errorHandler.js";
 import { PublicKey } from "@solana/web3.js";
 import { getSglBalance } from "../../services/sglSolanaService.js";
@@ -14,10 +13,16 @@ type RequestWithUser = Request & {
   };
 };
 
-function ensureUser(req: Request): { userId: string; walletAddress: string } {
+const AVATARPRO_DEMO_USER_ID = "demo-user-avatarpro";
+const AVATARPRO_DEMO_WALLET = "demo-wallet-avatarpro";
+
+function ensureUserOrDemo(req: Request): { userId: string; walletAddress: string } {
   const user = (req as RequestWithUser).user;
   if (!user?.userId) {
-    throw new AppError(401, "Unauthorized", "UNAUTHORIZED");
+    return {
+      userId: AVATARPRO_DEMO_USER_ID,
+      walletAddress: AVATARPRO_DEMO_WALLET,
+    };
   }
   return user;
 }
@@ -73,9 +78,9 @@ function computePasFromAbsorptionEvents(events: Array<{ details: unknown }>) {
   };
 }
 
-router.get("/status", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get("/status", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId, walletAddress } = ensureUser(req);
+    const { userId, walletAddress } = ensureUserOrDemo(req);
 
     const [avatarCount, capsuleCount, legacyCount, transactions] = await Promise.all([
       prisma.avatar.count({ where: { userId } }),
@@ -104,7 +109,7 @@ router.get("/status", requireAuth, async (req: Request, res: Response, next: Nex
 router.get("/wallet", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const walletFromQuery = req.query.walletAddress?.toString();
-    const walletAddress = walletFromQuery ? new PublicKey(walletFromQuery).toBase58() : ensureUser(req).walletAddress;
+    const walletAddress = walletFromQuery ? new PublicKey(walletFromQuery).toBase58() : ensureUserOrDemo(req).walletAddress;
     const balance = await getSglBalance(walletAddress);
 
     res.status(200).json({
@@ -120,9 +125,9 @@ router.get("/wallet", async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-router.get("/metrics", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get("/metrics", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = ensureUser(req);
+    const { userId } = ensureUserOrDemo(req);
 
     const [transactions, absorptionEvents] = await Promise.all([
       prisma.transaction.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100 }),
@@ -151,9 +156,9 @@ router.get("/metrics", requireAuth, async (req: Request, res: Response, next: Ne
   }
 });
 
-router.post("/absorption-feedback", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.post("/absorption-feedback", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = ensureUser(req);
+    const { userId } = ensureUserOrDemo(req);
     const body = req.body as {
       direction?: "left" | "right";
       profile?: string;
@@ -210,9 +215,9 @@ router.post("/absorption-feedback", requireAuth, async (req: Request, res: Respo
   }
 });
 
-router.get("/absorption-events", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
+router.get("/absorption-events", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = ensureUser(req);
+    const { userId } = ensureUserOrDemo(req);
 
     const events = await prisma.auditLog.findMany({
       where: { userId, resource: "absorption-feedback" },
