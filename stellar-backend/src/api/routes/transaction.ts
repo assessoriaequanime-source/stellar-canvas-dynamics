@@ -94,45 +94,49 @@ router.post("/", requireAuth, async (req: Request, res: Response, next: NextFunc
   }
 });
 
-router.patch("/:id/status", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = ensureUserId(req);
-    const payload = parseOrThrow(updateTransactionStatusSchema, req.body);
+router.patch(
+  "/:id/status",
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = ensureUserId(req);
+      const payload = parseOrThrow(updateTransactionStatusSchema, req.body);
 
-    const existingTransaction = await prisma.transaction.findFirst({
-      where: {
-        id: req.params.id,
+      const existingTransaction = await prisma.transaction.findFirst({
+        where: {
+          id: req.params.id,
+          userId,
+        },
+        select: { id: true },
+      });
+
+      if (!existingTransaction) {
+        throw new AppError(404, "Transaction not found", "TRANSACTION_NOT_FOUND");
+      }
+
+      const updatedTransaction = await prisma.transaction.update({
+        where: { id: existingTransaction.id },
+        data: {
+          status: payload.status,
+          txHash: payload.txHash,
+        },
+      });
+
+      await createAuditLog({
         userId,
-      },
-      select: { id: true },
-    });
+        action: AuditAction.TRANSACTION_STATUS_UPDATE,
+        resource: "transaction",
+        resourceId: updatedTransaction.id,
+        details: {
+          status: updatedTransaction.status,
+        },
+      });
 
-    if (!existingTransaction) {
-      throw new AppError(404, "Transaction not found", "TRANSACTION_NOT_FOUND");
+      res.status(200).json(updatedTransaction);
+    } catch (error) {
+      next(error);
     }
-
-    const updatedTransaction = await prisma.transaction.update({
-      where: { id: existingTransaction.id },
-      data: {
-        status: payload.status,
-        txHash: payload.txHash,
-      },
-    });
-
-    await createAuditLog({
-      userId,
-      action: AuditAction.TRANSACTION_STATUS_UPDATE,
-      resource: "transaction",
-      resourceId: updatedTransaction.id,
-      details: {
-        status: updatedTransaction.status,
-      },
-    });
-
-    res.status(200).json(updatedTransaction);
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 export default router;

@@ -10,6 +10,7 @@
 ## 🚀 WEEK 2 OBJECTIVE
 
 Create Express.js + TypeScript API foundation with:
+
 - Prisma ORM + PostgreSQL schema
 - JWT + Web3 authentication
 - 8 core data models
@@ -21,14 +22,17 @@ Create Express.js + TypeScript API foundation with:
 ## 📋 WEEK 2 TASKS (Ordered by Priority)
 
 ### Task 1: Express.js Bootstrap
+
 **Estimated**: 2-3 hours  
 **Files to Create**:
+
 - `src/server.ts` — Express entry point
 - `src/config/app.ts` — App factory
 - `src/config/express-setup.ts` — Middleware + routes
 - `src/api/routes/index.ts` — Route aggregation
 
 **Key Decisions**:
+
 - ✅ TypeScript strict mode
 - ✅ Morgan logging
 - ✅ CORS enabled (localhost:5173 + 3000)
@@ -36,13 +40,16 @@ Create Express.js + TypeScript API foundation with:
 - ✅ Health check endpoint (`/health`)
 
 ### Task 2: Prisma ORM Setup
+
 **Estimated**: 2-3 hours  
 **Files to Create**:
+
 - `prisma/schema.prisma` — Data models
 - `prisma/migrations/` — Migration files
 - `src/lib/prisma.ts` — Prisma client singleton
 
 **Models to Define** (8 total):
+
 ```
 1. User
    ├─ id (UUID)
@@ -114,14 +121,17 @@ Create Express.js + TypeScript API foundation with:
 ```
 
 ### Task 3: Authentication System
+
 **Estimated**: 3-4 hours  
 **Files to Create**:
+
 - `src/api/middlewares/auth.ts` — JWT middleware
 - `src/services/auth.ts` — Auth service
 - `src/lib/crypto.ts` — Web3 signature verification
 - `src/api/routes/auth.ts` — Auth endpoints
 
 **Endpoints**:
+
 ```
 POST /api/v1/auth/challenge
   ├─ Input: walletAddress
@@ -141,8 +151,10 @@ POST /api/v1/auth/logout
 ```
 
 ### Task 4: CRUD Controllers
+
 **Estimated**: 4-5 hours  
 **Controllers to Create**:
+
 - `src/api/controllers/user.ts` — User CRUD
 - `src/api/controllers/avatar.ts` — Avatar CRUD
 - `src/api/controllers/capsule.ts` — TimeCapsule CRUD
@@ -151,6 +163,7 @@ POST /api/v1/auth/logout
 - `src/api/controllers/transaction.ts` — Transaction history
 
 **Standard Routes** (for each resource):
+
 ```
 GET /api/v1/{resource}
 GET /api/v1/{resource}/:id
@@ -160,14 +173,17 @@ DELETE /api/v1/{resource}/:id
 ```
 
 ### Task 5: Error Handling + Logging
+
 **Estimated**: 2-3 hours  
 **Files to Create**:
+
 - `src/lib/logger.ts` — Winston logger
 - `src/api/middlewares/errorHandler.ts` — Global error handler
 - `src/lib/errors.ts` — Custom error classes
 - `src/lib/response.ts` — Standard response format
 
 **Error Classes**:
+
 ```
 - UnauthorizedError (401)
 - ForbiddenError (403)
@@ -212,6 +228,7 @@ npm run dev
 ## 📦 WEEK 2 DEPENDENCIES (To Install)
 
 **Already included** in package.json:
+
 - ✅ express
 - ✅ typescript
 - ✅ prisma
@@ -225,6 +242,7 @@ npm run dev
 - ✅ rate-limit
 
 **May need**:
+
 - [ ] passport (for Web3 auth, optional)
 - [ ] class-validator (for DTO validation)
 - [ ] class-transformer (for DTO serialization)
@@ -271,6 +289,7 @@ Friday: Error Handling + Docs
 ## 🧪 TESTING STRATEGY (WEEK 2)
 
 ### Manual Testing
+
 ```bash
 # Test health endpoint
 curl http://localhost:9200/health
@@ -286,6 +305,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ```
 
 ### Automated Testing (Week 3)
+
 - Jest unit tests for each service
 - Supertest integration tests for routes
 - 80% code coverage target
@@ -310,6 +330,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 ## 📝 DOCUMENTATION (Week 2)
 
 Create/update:
+
 - [ ] API_ENDPOINTS.md (all 25+ endpoints)
 - [ ] AUTHENTICATION.md (JWT + Web3 flow)
 - [ ] DATABASE_SCHEMA.md (Prisma schema)
@@ -337,6 +358,7 @@ Create/update:
 ## ✅ CHECKLIST FOR WEEK 2 START
 
 Before beginning Week 2:
+
 - [ ] Verify Docker containers running
 - [ ] npm install completed
 - [ ] .env file validated
@@ -349,6 +371,7 @@ Before beginning Week 2:
 ## 🎯 CHECKPOINT: Week 2 END
 
 **Definition of Done** (Friday EOD):
+
 ```
 Deliverables:
 ✅ Express server running (port 9200)

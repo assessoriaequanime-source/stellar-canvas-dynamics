@@ -43,13 +43,19 @@ router.post("/debit", async (req: Request, res: Response, next: NextFunction) =>
     };
 
     if (!body.walletAddress || !body.serviceType || !body.cost || body.cost <= 0) {
-      throw new AppError(400, "walletAddress, serviceType and positive cost are required", "INVALID_PAYLOAD");
+      throw new AppError(
+        400,
+        "walletAddress, serviceType and positive cost are required",
+        "INVALID_PAYLOAD",
+      );
     }
 
     const normalizedWallet = new PublicKey(body.walletAddress).toBase58();
-    const payloadHash = body.payloadHash || createHash("sha256")
-      .update(`${normalizedWallet}:${body.serviceType}:${body.cost}:${Date.now()}`)
-      .digest("hex");
+    const payloadHash =
+      body.payloadHash ||
+      createHash("sha256")
+        .update(`${normalizedWallet}:${body.serviceType}:${body.cost}:${Date.now()}`)
+        .digest("hex");
 
     const debitPlan = await debitSglForService(normalizedWallet, body.serviceType, body.cost);
 
@@ -104,14 +110,16 @@ router.get("/ledger", async (req: Request, res: Response, next: NextFunction) =>
     }
 
     const balance = await getSglBalance(new PublicKey(walletAddress).toBase58());
-    const items = [{
-      type: "balance_snapshot",
-      network: "solana-devnet",
-      sglBalance: balance.balance,
-      tokenAccount: balance.tokenAccount,
-      mintAddress: getSglMint().toBase58(),
-      createdAt: new Date().toISOString(),
-    }];
+    const items = [
+      {
+        type: "balance_snapshot",
+        network: "solana-devnet",
+        sglBalance: balance.balance,
+        tokenAccount: balance.tokenAccount,
+        mintAddress: getSglMint().toBase58(),
+        createdAt: new Date().toISOString(),
+      },
+    ];
     res.status(200).json(items);
   } catch (error) {
     next(error);

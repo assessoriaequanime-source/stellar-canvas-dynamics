@@ -61,18 +61,13 @@ export async function check_availability(
 /**
  * Route tool calls to appropriate handlers
  */
-export async function handleXaiToolCall(
-  toolName: string,
-  argsJson: string,
-): Promise<unknown> {
+export async function handleXaiToolCall(toolName: string, argsJson: string): Promise<unknown> {
   try {
     const args = JSON.parse(argsJson);
 
     switch (toolName) {
       case "check_availability":
-        return await check_availability(
-          args as CheckAvailabilityArgs,
-        );
+        return await check_availability(args as CheckAvailabilityArgs);
 
       default:
         throw new Error(`Unknown tool: ${toolName}`);

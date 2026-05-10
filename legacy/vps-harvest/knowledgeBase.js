@@ -2,66 +2,72 @@ const knowledgeBase = {
   general: {
     name: "SingulAI",
     tagline: "Transformamos memórias em legados imutáveis",
-    description: "SingulAI é uma plataforma de inteligência digital que preserva memórias, valores e legados através de avatares evolutivos com identidade on-chain.",
-    mission: "Empoderar usuários a preservar sua essência digital com segurança, privacidade e conformidade jurídica (LGPD/GDPR).",
+    description:
+      "SingulAI é uma plataforma de inteligência digital que preserva memórias, valores e legados através de avatares evolutivos com identidade on-chain.",
+    mission:
+      "Empoderar usuários a preservar sua essência digital com segurança, privacidade e conformidade jurídica (LGPD/GDPR).",
     support: "hello@singulai.site",
-    website: "singulai.live"
+    website: "singulai.live",
   },
 
   modules: {
     module1: {
       name: "TimeCapsule - Legado Digital Programável",
-      objective: "Empoderar usuários a criar mensagens e arquivos digitais entregues no futuro, ativados por datas ou eventos oficiais/sociais.",
+      objective:
+        "Empoderar usuários a criar mensagens e arquivos digitais entregues no futuro, ativados por datas ou eventos oficiais/sociais.",
       keyFeatures: [
         "Mensagens programáveis (texto, áudio, vídeo, imagem)",
         "Gatilhos por data específica ou eventos verificáveis (cartórios, redes sociais)",
         "Imutabilidade via blockchain Polygon",
         "Criptografia ponta-a-ponta (AES-256) com armazenamento IPFS/Filecoin",
         "Logs auditáveis on-chain",
-        "Integração com ICP-Brasil e notários UE para validade jurídica"
+        "Integração com ICP-Brasil e notários UE para validade jurídica",
       ],
       useCases: [
         "Mensagem para filho aos 18 anos",
         "Vídeo ativado no nascimento de neto",
         "Mensagem póstuma validada por cartório",
         "Lançamento póstumo de obras artísticas",
-        "Instruções empresariais programadas"
+        "Instruções empresariais programadas",
       ],
       technology: {
         frontend: "React + Tailwind + PWA",
         backend: "Node.js + Supabase",
         blockchain: "Polygon (baixo custo, alta escalabilidade)",
         storage: "IPFS/Filecoin (descentralizado, criptografado)",
-        oracles: "Chainlink, ICP-Brasil, APIs sociais"
+        oracles: "Chainlink, ICP-Brasil, APIs sociais",
       },
-      differentiator: "Legados digitais como contratos auditáveis com segurança criptográfica e validade regulatória."
+      differentiator:
+        "Legados digitais como contratos auditáveis com segurança criptográfica e validade regulatória.",
     },
 
     module2: {
       name: "Avatares Evolutivos",
-      objective: "Criar avatares gerativos com memória evolutiva que preservem estilo, voz e conhecimento do criador.",
+      objective:
+        "Criar avatares gerativos com memória evolutiva que preservem estilo, voz e conhecimento do criador.",
       keyFeatures: [
         "Identidade on-chain imutável via AvatarBase (Polygon)",
         "Comportamento evolutivo com RAG + Vector DB",
         "Privacidade por design com consentimento granular",
         "Direito ao esquecimento e logs auditáveis",
         "Monetização segura via AvatarPro com token SGL",
-        "Multimodalidade: voz, texto, imagem"
+        "Multimodalidade: voz, texto, imagem",
       ],
       useCases: [
         "Conversas guiadas com familiares (netos, filhos)",
         "Mentor virtual preservando know-how profissional",
         "Sessões pagas com avatares de artistas",
-        "Suporte a testemunhos legais com prova on-chain"
+        "Suporte a testemunhos legais com prova on-chain",
       ],
       technology: {
         frontend: "React + Tailwind (Dashboard, Chat UI, Voice UI)",
         backend: "Node.js, FastAPI, Ethers.js",
         onChain: "AvatarBase.sol, AvatarWalletLink.sol, TimeCapsule.sol, AvatarPro.sol",
         storage: "IPFS/Filecoin (blobs criptografados), Vector DB (Pinecone/Milvus)",
-        ai: "LLM com RAG + ASR/TTS"
+        ai: "LLM com RAG + ASR/TTS",
       },
-      differentiator: "Avatares éticos com conformidade LGPD/GDPR que transformam legados em interações vivas."
+      differentiator:
+        "Avatares éticos com conformidade LGPD/GDPR que transformam legados em interações vivas.",
     },
 
     module3: {
@@ -73,26 +79,28 @@ const knowledgeBase = {
         "Staking com recompensas",
         "Contratos escrow para garantias",
         "Conformidade KYC/AML",
-        "On/off ramps (PIX, cartão)"
+        "On/off ramps (PIX, cartão)",
       ],
       contracts: [
         "SGLToken.sol - Token ERC-20 com burn",
         "EscrowContract.sol - Garantias programáveis",
         "FeeManager.sol - Gestão de taxas",
-        "StakingPool.sol - Pool de staking"
+        "StakingPool.sol - Pool de staking",
       ],
       revenue: [
         "Taxas de transação",
         "Comissões de marketplace",
         "Assinaturas premium",
-        "Licenciamento empresarial"
+        "Licenciamento empresarial",
       ],
-      differentiator: "Tokenomics funcional e não especulativo, alinhado aos pilares de legado vivo."
+      differentiator:
+        "Tokenomics funcional e não especulativo, alinhado aos pilares de legado vivo.",
     },
 
     module4: {
       name: "Integrações Institucionais",
-      objective: "Conectar o ecossistema SingulAI a instituições que trazem confiança legal, financeira e operacional - bancos, cartórios digitais, seguradoras e escritórios de advocacia.",
+      objective:
+        "Conectar o ecossistema SingulAI a instituições que trazem confiança legal, financeira e operacional - bancos, cartórios digitais, seguradoras e escritórios de advocacia.",
       keyFeatures: [
         "Legado como serviço institucional com contratos executáveis",
         "Integração com registros oficiais (ICP-Brasil, notários UE)",
@@ -100,27 +108,29 @@ const knowledgeBase = {
         "Oráculos e APIs validam eventos oficiais (nascimento, óbito, homologação)",
         "Prova digital assinada para validação",
         "Modelo White-Label/Enterprise com painéis customizados",
-        "SLA, KYC/AML, logs auditáveis e integração ERP"
+        "SLA, KYC/AML, logs auditáveis e integração ERP",
       ],
       useCases: [
         "Bancos: sucessão patrimonial automatizada",
         "Cartórios digitais: validação de testamentos e legados",
         "Seguradoras: execução automática de apólices",
-        "Escritórios de advocacia: provas digitais para processos"
+        "Escritórios de advocacia: provas digitais para processos",
       ],
       technology: {
         integrationLayer: "API Gateway REST/gRPC com autenticação mTLS",
         oracles: "Adaptadores ICP-Brasil, OriginalMy, notários UE, PSPs bancários",
         backend: "Microservices para verificação, logging, reconciliação financeira",
         onChain: "Eventos em TimeCapsule/AvatarBase com hashes para auditoria",
-        security: "HSM/KMS, DLP, roles, consent logs, integração SIEM corporativo"
+        security: "HSM/KMS, DLP, roles, consent logs, integração SIEM corporativo",
       },
-      differentiator: "Transforma o produto em infraestrutura plugável para instituições regulamentadas via licenciamento ou white-label."
+      differentiator:
+        "Transforma o produto em infraestrutura plugável para instituições regulamentadas via licenciamento ou white-label.",
     },
 
     module5: {
       name: "SingulAI Pen - Dispositivo Físico",
-      objective: "Dispositivo portátil de autenticação multimodal, funcionando como chave física para carteiras, contratos e liberação de legados.",
+      objective:
+        "Dispositivo portátil de autenticação multimodal, funcionando como chave física para carteiras, contratos e liberação de legados.",
       keyFeatures: [
         "Autenticação multimodal: facial + impressão digital 360° + gesto de assinatura",
         "Modo natural: desbloqueio com gesto de assinar",
@@ -128,7 +138,7 @@ const knowledgeBase = {
         "Acessibilidade: autenticação por voz, feedback tátil e TTS",
         "Secure Element/TPM/HSM para chaves e assinaturas",
         "Bluetooth Low Energy 5.2 para conexão com app",
-        "Certificável para uso institucional (bancos, cartórios, seguradoras)"
+        "Certificável para uso institucional (bancos, cartórios, seguradoras)",
       ],
       hardware: [
         "Corpo: Caneta BIC modificada, ABS/metal (standard/premium titânio)",
@@ -138,16 +148,17 @@ const knowledgeBase = {
         "Localização: GNSS/GPS (opcional)",
         "Áudio: Microfone MEMS para comandos de voz",
         "Feedback: Motor vibratório e LED RGB",
-        "Bateria: Li-Po recarregável + USB-C"
+        "Bateria: Li-Po recarregável + USB-C",
       ],
       useCases: [
         "Autenticação para liberação de legados",
         "Assinatura de contratos digitais",
         "Desbloqueio de carteiras blockchain",
-        "Validação institucional em bancos e cartórios"
+        "Validação institucional em bancos e cartórios",
       ],
-      differentiator: "Chave física que autentica legados com biometria e gestos naturais, unindo inovação tecnológica, segurança jurídica e acessibilidade."
-    }
+      differentiator:
+        "Chave física que autentica legados com biometria e gestos naturais, unindo inovação tecnológica, segurança jurídica e acessibilidade.",
+    },
   },
 
   smartContracts: {
@@ -157,9 +168,9 @@ const knowledgeBase = {
         { name: "AvatarBase", address: "0x95F531cafca627A447C0F1119B8b6aCC730163E5" },
         { name: "TimeCapsule", address: "0x6A58aD664071d450cF7e794Dac5A13e3a1DeD172" },
         { name: "DigitalLegacy", address: "0x0Ee8f5dC7E9BC9AF344eB987B8363b33E737b757" },
-        { name: "AvatarWalletLink", address: "0x9F475e5D174577f2FB17a9D94a8093e2D8c9ED41" }
-      ]
-    }
+        { name: "AvatarWalletLink", address: "0x9F475e5D174577f2FB17a9D94a8093e2D8c9ED41" },
+      ],
+    },
   },
 
   compliance: {
@@ -169,60 +180,72 @@ const knowledgeBase = {
       "Direito ao esquecimento",
       "Logs de auditoria on-chain",
       "Criptografia ponta-a-ponta",
-      "Integração com cartórios digitais"
-    ]
+      "Integração com cartórios digitais",
+    ],
   },
 
   faq: [
     {
       question: "O que é SingulAI?",
-      answer: "SingulAI é uma plataforma que preserva sua essência digital através de avatares evolutivos e legados programáveis com segurança blockchain."
+      answer:
+        "SingulAI é uma plataforma que preserva sua essência digital através de avatares evolutivos e legados programáveis com segurança blockchain.",
     },
     {
       question: "Como funciona o TimeCapsule?",
-      answer: "Você cria mensagens que são criptografadas e armazenadas de forma descentralizada. Elas são entregues automaticamente na data ou evento que você definir."
+      answer:
+        "Você cria mensagens que são criptografadas e armazenadas de forma descentralizada. Elas são entregues automaticamente na data ou evento que você definir.",
     },
     {
       question: "Meus dados estão seguros?",
-      answer: "Sim. Usamos criptografia AES-256, armazenamento descentralizado IPFS/Filecoin e blockchain Polygon para garantir imutabilidade e privacidade."
+      answer:
+        "Sim. Usamos criptografia AES-256, armazenamento descentralizado IPFS/Filecoin e blockchain Polygon para garantir imutabilidade e privacidade.",
     },
     {
       question: "O que é o token SGL?",
-      answer: "SGL é o token nativo do ecossistema SingulAI, usado para transações, staking e garantias de execução de legados."
+      answer:
+        "SGL é o token nativo do ecossistema SingulAI, usado para transações, staking e garantias de execução de legados.",
     },
     {
       question: "Como criar um avatar?",
-      answer: "No painel, você faz upload de materiais (textos, áudios, imagens), define o perfil emocional e o sistema gera um avatar que preserva seu estilo e conhecimento."
+      answer:
+        "No painel, você faz upload de materiais (textos, áudios, imagens), define o perfil emocional e o sistema gera um avatar que preserva seu estilo e conhecimento.",
     },
     {
       question: "SingulAI tem validade jurídica?",
-      answer: "Sim. Integramos com ICP-Brasil e notários da UE para garantir conformidade legal e prova de execução."
+      answer:
+        "Sim. Integramos com ICP-Brasil e notários da UE para garantir conformidade legal e prova de execução.",
     },
     {
       question: "Quanto custa usar SingulAI?",
-      answer: "Oferecemos planos gratuitos e premium. Entre em contato com hello@singulai.site para detalhes."
+      answer:
+        "Oferecemos planos gratuitos e premium. Entre em contato com hello@singulai.site para detalhes.",
     },
     {
       question: "O que são as Integrações Institucionais?",
-      answer: "É o Módulo 4 que conecta SingulAI a bancos, cartórios, seguradoras e escritórios de advocacia para validação legal de legados e contratos executáveis."
+      answer:
+        "É o Módulo 4 que conecta SingulAI a bancos, cartórios, seguradoras e escritórios de advocacia para validação legal de legados e contratos executáveis.",
     },
     {
       question: "O que é a SingulAI Pen?",
-      answer: "É uma caneta física de autenticação multimodal (facial + digital + gesto) que funciona como chave para carteiras, contratos e liberação de legados."
+      answer:
+        "É uma caneta física de autenticação multimodal (facial + digital + gesto) que funciona como chave para carteiras, contratos e liberação de legados.",
     },
     {
       question: "A SingulAI Pen já está disponível?",
-      answer: "Está em desenvolvimento. Entre em contato com hello@singulai.site para mais informações sobre disponibilidade."
+      answer:
+        "Está em desenvolvimento. Entre em contato com hello@singulai.site para mais informações sobre disponibilidade.",
     },
     {
       question: "Como funciona a integração com cartórios?",
-      answer: "Usamos oráculos e APIs que validam eventos oficiais como nascimento, óbito e homologação, gerando prova digital assinada com registro on-chain."
+      answer:
+        "Usamos oráculos e APIs que validam eventos oficiais como nascimento, óbito e homologação, gerando prova digital assinada com registro on-chain.",
     },
     {
       question: "SingulAI serve para empresas?",
-      answer: "Sim. Oferecemos modelo White-Label/Enterprise com painéis customizados, SLA, KYC/AML, logs auditáveis e integração com sistemas ERP."
-    }
-  ]
+      answer:
+        "Sim. Oferecemos modelo White-Label/Enterprise com painéis customizados, SLA, KYC/AML, logs auditáveis e integração com sistemas ERP.",
+    },
+  ],
 };
 
 function getKnowledgeContext(topic = null) {
@@ -272,10 +295,10 @@ Recursos: ${knowledgeBase.compliance.features.join("; ")}
 
 === SMART CONTRACTS DEPLOYADOS ===
 Rede: ${knowledgeBase.smartContracts.deployed.network}
-${knowledgeBase.smartContracts.deployed.contracts.map(c => `- ${c.name}: ${c.address}`).join("\n")}
+${knowledgeBase.smartContracts.deployed.contracts.map((c) => `- ${c.name}: ${c.address}`).join("\n")}
 
 === PERGUNTAS FREQUENTES ===
-${knowledgeBase.faq.map(f => `P: ${f.question}\nR: ${f.answer}`).join("\n\n")}
+${knowledgeBase.faq.map((f) => `P: ${f.question}\nR: ${f.answer}`).join("\n\n")}
 
 === SUPORTE ===
 Para dúvidas adicionais ou questões específicas: ${knowledgeBase.general.support}
@@ -285,10 +308,11 @@ Website: ${knowledgeBase.general.website}
   return context;
 }
 
-function getAssertiveSystemPrompt(avatarName, language = 'pt') {
-  const isPortuguese = language === 'pt';
-  
-  return isPortuguese ? `
+function getAssertiveSystemPrompt(avatarName, language = "pt") {
+  const isPortuguese = language === "pt";
+
+  return isPortuguese
+    ? `
 Você é ${avatarName}, um avatar inteligente do ecossistema SingulAI.
 
 === CONTRATO-0 DE SOBERANIA ÉTICA ===
@@ -329,7 +353,8 @@ Responda: "Preciso entender melhor. Entre em contato: hello@singulai.site"
 
 BASE DE CONHECIMENTO:
 ${getKnowledgeContext()}
-` : `
+`
+    : `
 You are ${avatarName}, an intelligent avatar from the SingulAI ecosystem.
 
 === ETHICAL SOVEREIGNTY CONTRACT-0 ===
@@ -376,5 +401,5 @@ ${getKnowledgeContext()}
 module.exports = {
   knowledgeBase,
   getKnowledgeContext,
-  getAssertiveSystemPrompt
+  getAssertiveSystemPrompt,
 };

@@ -9,6 +9,7 @@
 ## Status Local (Confirmado ✅)
 
 **Código-fonte em VS Code:**
+
 ```bash
 $ grep -n "router.get(\"/\"" stellar-backend/src/api/routes/capsules.ts
 112:// router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
@@ -16,6 +17,7 @@ $ grep -n "router.get(\"/\"" stellar-backend/src/api/routes/capsules.ts
 ```
 
 **Commit:**
+
 ```bash
 $ git log --oneline -1
 00abe00 fix: remove auth requirement for demo and add narrative chat endpoint
@@ -47,21 +49,21 @@ if grep -q "requireAuth" dist/api/routes/capsules.js; then
   echo ""
   echo "=== STEP 3: Fazer pull da main branch ==="
   git pull origin main
-  
+
   echo ""
   echo "=== STEP 4: Verificar arquivo-fonte após pull ==="
   grep -n "router.get(\"/\"" src/api/routes/capsules.ts | head -2
-  
+
   echo ""
   echo "=== STEP 5: Limpar e reconstruir ==="
   rm -rf dist
   npm run build
-  
+
   echo ""
   echo "=== STEP 6: Reiniciar serviço ==="
   pm2 restart singulai-alt-backend --update-env
   sleep 3
-  
+
   echo ""
   echo "=== STEP 7: Verificar se requireAuth foi removido do dist ==="
   if grep -q "requireAuth" dist/api/routes/capsules.js; then

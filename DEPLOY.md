@@ -26,13 +26,13 @@ echo ""
 echo "=== FIM ==="
 ```
 
-| Item | Valor |
-| --- | --- |
-| VPS IP | `72.60.147.56` |
-| Projeto na VPS | `/projects/active/stellar-canvas-dynamics` |
-| PM2 process | `singulai-live-dashboard` (id: 60) |
-| Repositório | `https://github.com/assessoriaequanime-source/stellar-canvas-dynamics` |
-| Branch principal | `main` |
+| Item             | Valor                                                                  |
+| ---------------- | ---------------------------------------------------------------------- |
+| VPS IP           | `72.60.147.56`                                                         |
+| Projeto na VPS   | `/projects/active/stellar-canvas-dynamics`                             |
+| PM2 process      | `singulai-live-dashboard` (id: 60)                                     |
+| Repositório      | `https://github.com/assessoriaequanime-source/stellar-canvas-dynamics` |
+| Branch principal | `main`                                                                 |
 
 > **Por que rebuild é obrigatório a cada deploy:** variáveis `VITE_*` são substituídas em tempo de build pelo Vite. Apenas reiniciar PM2 com `--update-env` não atualiza o frontend. O rebuild é sempre necessário.
 
@@ -153,9 +153,9 @@ pm2 startup
 
 ## 7. Variáveis de ambiente obrigatórias no build
 
-| Variável | Valor |
-| --- | --- |
-| `VITE_ALT_API_BASE` | `https://singulai.live/alt-api` |
+| Variável                | Valor                                    |
+| ----------------------- | ---------------------------------------- |
+| `VITE_ALT_API_BASE`     | `https://singulai.live/alt-api`          |
 | `VITE_SIMPLE_TEST_AUTH` | `0` (desativa auth simplificada em prod) |
 
 ---

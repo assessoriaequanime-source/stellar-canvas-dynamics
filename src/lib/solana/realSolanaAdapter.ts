@@ -6,7 +6,11 @@ import {
   PublicKey,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
-import type { SolanaAdapter, SolanaTransactionRequest, SolanaTransactionResult } from "./solanaAdapter";
+import type {
+  SolanaAdapter,
+  SolanaTransactionRequest,
+  SolanaTransactionResult,
+} from "./solanaAdapter";
 
 const DEVNET_RPC = "https://api.devnet.solana.com";
 const MEMO_PROGRAM_ID = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
@@ -66,12 +70,9 @@ export class RealSolanaAdapter implements SolanaAdapter {
 
     const tx = new Transaction().add(instruction);
 
-    const txSignature = await sendAndConfirmTransaction(
-      this.connection,
-      tx,
-      [keypair],
-      { commitment: "confirmed" },
-    );
+    const txSignature = await sendAndConfirmTransaction(this.connection, tx, [keypair], {
+      commitment: "confirmed",
+    });
 
     return {
       txSignature,

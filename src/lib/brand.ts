@@ -47,7 +47,7 @@ export const BRAND_LOGO_USAGE = {
   },
 } as const;
 
-export type BrandLogoPreset = typeof BRAND_LOGO_USAGE[keyof typeof BRAND_LOGO_USAGE];
+export type BrandLogoPreset = (typeof BRAND_LOGO_USAGE)[keyof typeof BRAND_LOGO_USAGE];
 
 export const MODEL_VISUALS = {
   safe: {

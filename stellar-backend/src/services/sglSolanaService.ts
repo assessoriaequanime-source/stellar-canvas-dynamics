@@ -28,7 +28,10 @@ export function getSglMint(): PublicKey {
 }
 
 function getTreasuryWallet(): PublicKey {
-  return new PublicKey((process.env.SGL_TREASURY_WALLET || process.env.SGL_AUTHORITY_WALLET || "").trim() || loadDeployerKeypair().publicKey.toBase58());
+  return new PublicKey(
+    (process.env.SGL_TREASURY_WALLET || process.env.SGL_AUTHORITY_WALLET || "").trim() ||
+      loadDeployerKeypair().publicKey.toBase58(),
+  );
 }
 
 export async function getUserAssociatedTokenAccount(walletAddress: string): Promise<PublicKey> {
@@ -37,7 +40,9 @@ export async function getUserAssociatedTokenAccount(walletAddress: string): Prom
   return getAssociatedTokenAddress(mint, owner);
 }
 
-export async function getOrCreateUserAssociatedTokenAccount(walletAddress: string): Promise<{ tokenAccount: PublicKey }> {
+export async function getOrCreateUserAssociatedTokenAccount(
+  walletAddress: string,
+): Promise<{ tokenAccount: PublicKey }> {
   const connection = getSolanaConnection();
   const deployer = loadDeployerKeypair();
   const owner = new PublicKey(walletAddress);
@@ -47,7 +52,9 @@ export async function getOrCreateUserAssociatedTokenAccount(walletAddress: strin
   return { tokenAccount: tokenAccount.address };
 }
 
-export async function getSglBalance(walletAddress: string): Promise<{ balance: number; tokenAccount: string; decimals: number }> {
+export async function getSglBalance(
+  walletAddress: string,
+): Promise<{ balance: number; tokenAccount: string; decimals: number }> {
   const connection = getSolanaConnection();
   const tokenAccount = await getUserAssociatedTokenAccount(walletAddress);
   const mint = getSglMint();
@@ -102,7 +109,11 @@ export async function mintInitialDemoCredit(walletAddress: string): Promise<{
   };
 }
 
-export async function debitSglForService(walletAddress: string, serviceType: string, cost: number): Promise<{
+export async function debitSglForService(
+  walletAddress: string,
+  serviceType: string,
+  cost: number,
+): Promise<{
   debitStatus: "pending_wallet_signature";
   serviceType: string;
   cost: number;
@@ -134,7 +145,9 @@ export async function debitSglForService(walletAddress: string, serviceType: str
   const { blockhash } = await connection.getLatestBlockhash("confirmed");
   tx.recentBlockhash = blockhash;
 
-  const unsignedTxBase64 = tx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString("base64");
+  const unsignedTxBase64 = tx
+    .serialize({ requireAllSignatures: false, verifySignatures: false })
+    .toString("base64");
 
   return {
     debitStatus: "pending_wallet_signature",

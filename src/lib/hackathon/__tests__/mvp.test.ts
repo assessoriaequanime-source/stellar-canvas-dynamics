@@ -92,18 +92,13 @@ describe("TimeCapsule lifecycle", () => {
     const triggered = simulateTrigger(capsule.capsuleId);
     expect(triggered.status).toBe("Triggered");
 
-    const delivered = recordDelivery(
-      capsule.capsuleId,
-      `solscan://proof/${capsule.capsuleId}`,
-    );
+    const delivered = recordDelivery(capsule.capsuleId, `solscan://proof/${capsule.capsuleId}`);
     expect(delivered.status).toBe("Delivered");
     expect(delivered.proofRef).toContain(capsule.capsuleId);
   });
 
   it("deve lançar erro ao simular trigger de capsule inexistente", () => {
-    expect(() => simulateTrigger("capsule-inexistente-xyz")).toThrow(
-      "Capsule not found",
-    );
+    expect(() => simulateTrigger("capsule-inexistente-xyz")).toThrow("Capsule not found");
   });
 });
 
@@ -179,7 +174,7 @@ describe("Governance Engine - maturity rules", () => {
       avatarId: "avatar-gov-001",
       domain: "professional-method",
       currentState: "Draft",
-      pas: 0.80,
+      pas: 0.8,
       interactionCount: 15,
       escalationCount: 1,
       slot: 200100,
@@ -210,7 +205,7 @@ describe("Governance Engine - maturity rules", () => {
       avatarId: "avatar-gov-003",
       domain: "professional-method",
       currentState: "Assisted",
-      pas: 0.30,
+      pas: 0.3,
       interactionCount: 12,
       escalationCount: 4,
       slot: 200300,
@@ -241,7 +236,7 @@ describe("Governance Engine - maturity rules", () => {
       avatarId: "avatar-gov-005",
       domain: "professional-method",
       currentState: "Assisted",
-      pas: 0.60,
+      pas: 0.6,
       interactionCount: 8,
       escalationCount: 1,
       slot: 200500,
@@ -257,7 +252,7 @@ describe("Governance Engine - maturity rules", () => {
       avatarId: "avatar-gov-006",
       domain: "professional-method",
       currentState: "Draft",
-      pas: 0.90,
+      pas: 0.9,
       interactionCount: 3,
       escalationCount: 0,
       slot: 200600,

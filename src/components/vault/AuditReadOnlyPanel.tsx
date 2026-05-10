@@ -231,7 +231,7 @@ function JudgeGate({
               transition: "border 0.2s",
             }}
           />
-            {error && (
+          {error && (
             <p
               style={{
                 margin: 0,
@@ -240,7 +240,7 @@ function JudgeGate({
                 textAlign: "center",
               }}
             >
-                Invalid code, invite expired, or already used.
+              Invalid code, invite expired, or already used.
             </p>
           )}
           <button
@@ -428,9 +428,10 @@ export default function AuditReadOnlyPanel() {
         >
           <div style={{ ...CARD, maxWidth: 520 }}>
             <h1 style={{ margin: "0 0 10px", fontSize: 22 }}>Judge Access Only</h1>
-              <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.6 }}>
-                This panel can only be opened with an audit capsule invite. Request the access link and unique code from the organizer.
-              </p>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.6 }}>
+              This panel can only be opened with an audit capsule invite. Request the access link
+              and unique code from the organizer.
+            </p>
           </div>
         </div>
       );

@@ -3,6 +3,7 @@ Este documento define a configuração técnica dos perfis **AppArmor** para o s
 ---
 
 ### 1. Perfil AppArmor: Nginx
+
 O perfil para o Nginx foi desenhado com o princípio do privilégio mínimo. Ele garante que o binário possa ler as configurações e certificados, mas proíbe estritamente qualquer alteração no sistema de arquivos, exceto nos logs.
 
 **Arquivo:** `/etc/apparmor.d/usr.sbin.nginx`
@@ -23,7 +24,7 @@ profile nginx /usr/sbin/nginx {
   capability chown,
 
   # --- WHITELIST DE ACESSO A ARQUIVOS ---
-  
+
   # Acesso de LEITURA para configurações (Restrito)
   /etc/nginx/ r,
   /etc/nginx/** r,
@@ -66,6 +67,7 @@ profile nginx /usr/sbin/nginx {
 ---
 
 ### 2. Perfil AppArmor: PM2 (Node.js Runtime)
+
 O perfil do PM2 é crítico, pois ele gerencia a aplicação **SingulAI**. Este perfil restringe o interpretador Node.js para operar apenas dentro do diretório da aplicação e impede a exploração via utilitários de sistema.
 
 **Arquivo:** `/etc/apparmor.d/usr.bin.pm2`
@@ -82,20 +84,20 @@ profile pm2 /usr/bin/node {
   # Permissões de execução para o binário do Node através do PM2
   /usr/bin/node mr,
   /usr/local/bin/pm2 r,
-  
+
   # --- ESPECÍFICO SINGULAI ---
-  
+
   # Limita leitura/escrita ao diretório da aplicação
   /opt/singulai/** rw,
   /opt/singulai/bin/* rmix,
-  
+
   # Configurações e Logs do PM2
   owner @{HOME}/.pm2/** rw,
   owner @{HOME}/.pm2/*.log w,
   /var/log/singulai/** rw,
 
   # --- RESTRIÇÕES DE EXECUÇÃO (WHITELIST) ---
-  
+
   # Nega explicitamente a chamada de shells e ferramentas de download
   # Isso impede que vulnerabilidades no código da aplicação virem RCE funcional
   deny /bin/sh x,
@@ -103,7 +105,7 @@ profile pm2 /usr/bin/node {
   deny /usr/bin/wget x,
   deny /usr/bin/curl x,
   deny /usr/bin/apt* x,
-  
+
   # Bloqueio de escrita em áreas sensíveis de sistema
   deny /etc/** w,
   deny /boot/** rw,
@@ -117,6 +119,7 @@ profile pm2 /usr/bin/node {
 ---
 
 ### 3. Script de Implementação e Enforce
+
 Este script automatiza o carregamento dos perfis e garante que eles estejam operando no modo **Enforce** (bloqueio ativo), em vez do modo Complain (apenas alerta).
 
 ```bash
@@ -152,18 +155,20 @@ echo "[+] Perfis aplicados com sucesso em modo ENFORCE."
 ---
 
 ### 4. Protocolo de Auditoria e Monitoramento
+
 Para monitorar tentativas de violação da política de segurança (ex: o Nginx tentando executar um comando `curl`), utilize os comandos abaixo.
 
 **Resumo de Comandos de Auditoria:**
 
-| Objetivo | Comando |
-| :--- | :--- |
-| **Verificar Status** | `aa-status` |
-| **Auditoria em Tempo Real** | `tail -f /var/log/syslog | grep -i apparmor` |
-| **Verificar Negações no Kernel** | `dmesg | grep -i "apparmor=\"DENIED\""` |
-| **Listar Perfis em Enforce** | `aa-status --enforced` |
+| Objetivo                         | Comando                  |
+| :------------------------------- | :----------------------- | ------------------------------ |
+| **Verificar Status**             | `aa-status`              |
+| **Auditoria em Tempo Real**      | `tail -f /var/log/syslog | grep -i apparmor`              |
+| **Verificar Negações no Kernel** | `dmesg                   | grep -i "apparmor=\"DENIED\""` |
+| **Listar Perfis em Enforce**     | `aa-status --enforced`   |
 
 **Exemplo de comando para análise detalhada de negações:**
+
 ```bash
 # Filtra as últimas 50 negações formatando para leitura humana
 dmesg | grep -i "apparmor=\"DENIED\"" | tail -n 50 | awk '{print "Ação: " $10 " | Perfil: " $12 " | Recurso: " $13}'
@@ -172,6 +177,7 @@ dmesg | grep -i "apparmor=\"DENIED\"" | tail -n 50 | awk '{print "Ação: " $10 
 ---
 
 ### 5. Considerações Estratégicas
+
 1.  **Overhead de Recursos:** O custo computacional destes perfis é desprezível (aproximadamente **4MB a 6MB** de RAM total), respeitando o limite de 50MB estabelecido no protocolo de hardening.
 2.  **Imutabilidade:** Ao negar `exec` para `/bin/sh` e utilitários de rede, neutralizamos a fase de "Post-Exploitation" de ataques comuns, pois o atacante não conseguirá estabelecer um shell reverso ou baixar payloads adicionais.
 3.  **Certificados:** Caso o caminho do Let's Encrypt seja alterado ou o Nginx use certificados em diretórios customizados, o perfil em `/etc/apparmor.d/usr.sbin.nginx` deve ser atualizado para evitar falhas no reload do serviço.

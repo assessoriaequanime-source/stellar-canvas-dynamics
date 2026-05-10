@@ -3,8 +3,8 @@
  * No private key operations in frontend - sign operations must happen server-side
  */
 
-import { ethers } from 'ethers';
-import type { WalletData } from './types';
+import { ethers } from "ethers";
+import type { WalletData } from "./types";
 
 /**
  * Generate a new random wallet
@@ -22,8 +22,8 @@ export function generateRandomWallet(): WalletData {
       path: wallet.mnemonic?.path,
     };
   } catch (error) {
-    console.error('Failed to generate random wallet:', error);
-    throw new Error('Could not generate random wallet');
+    console.error("Failed to generate random wallet:", error);
+    throw new Error("Could not generate random wallet");
   }
 }
 
@@ -47,7 +47,7 @@ export function isValidAddress(address: string): boolean {
  */
 export function isValidPrivateKey(privateKey: string): boolean {
   try {
-    if (!privateKey.startsWith('0x') || privateKey.length !== 66) {
+    if (!privateKey.startsWith("0x") || privateKey.length !== 66) {
       return false;
     }
     // Try to create a wallet with it
@@ -67,8 +67,8 @@ export function getChecksumAddress(address: string): string {
   try {
     return ethers.getAddress(address);
   } catch (error) {
-    console.error('Failed to get checksum address:', error);
-    throw new Error('Invalid address format');
+    console.error("Failed to get checksum address:", error);
+    throw new Error("Invalid address format");
   }
 }
 
@@ -81,31 +81,31 @@ export function getChecksumAddress(address: string): string {
  */
 export async function encryptData(data: string, password: string): Promise<string> {
   if (!window.crypto?.subtle) {
-    throw new Error('SubtleCrypto not available in this browser');
+    throw new Error("SubtleCrypto not available in this browser");
   }
 
   try {
     // Derive key from password
     const encoder = new TextEncoder();
     const passwordKey = await window.crypto.subtle.importKey(
-      'raw',
+      "raw",
       encoder.encode(password),
-      'PBKDF2',
+      "PBKDF2",
       false,
-      ['deriveBits', 'deriveKey'],
+      ["deriveBits", "deriveKey"],
     );
 
     const key = await window.crypto.subtle.deriveKey(
       {
-        name: 'PBKDF2',
-        salt: encoder.encode('singulai-salt'),
+        name: "PBKDF2",
+        salt: encoder.encode("singulai-salt"),
         iterations: 100000,
-        hash: 'SHA-256',
+        hash: "SHA-256",
       },
       passwordKey,
-      { name: 'AES-GCM', length: 256 },
+      { name: "AES-GCM", length: 256 },
       false,
-      ['encrypt'],
+      ["encrypt"],
     );
 
     // Generate IV
@@ -113,7 +113,7 @@ export async function encryptData(data: string, password: string): Promise<strin
 
     // Encrypt data
     const encrypted = await window.crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
+      { name: "AES-GCM", iv },
       key,
       encoder.encode(data),
     );
@@ -125,8 +125,8 @@ export async function encryptData(data: string, password: string): Promise<strin
 
     return btoa(String.fromCharCode.apply(null, Array.from(combined)));
   } catch (error) {
-    console.error('Encryption failed:', error);
-    throw new Error('Failed to encrypt data');
+    console.error("Encryption failed:", error);
+    throw new Error("Failed to encrypt data");
   }
 }
 
@@ -139,14 +139,14 @@ export async function encryptData(data: string, password: string): Promise<strin
  */
 export async function decryptData(encryptedBase64: string, password: string): Promise<string> {
   if (!window.crypto?.subtle) {
-    throw new Error('SubtleCrypto not available in this browser');
+    throw new Error("SubtleCrypto not available in this browser");
   }
 
   try {
     // Decode from base64
     const combined = new Uint8Array(
       atob(encryptedBase64)
-        .split('')
+        .split("")
         .map((c) => c.charCodeAt(0)),
     );
 
@@ -157,37 +157,37 @@ export async function decryptData(encryptedBase64: string, password: string): Pr
     // Derive key from password
     const encoder = new TextEncoder();
     const passwordKey = await window.crypto.subtle.importKey(
-      'raw',
+      "raw",
       encoder.encode(password),
-      'PBKDF2',
+      "PBKDF2",
       false,
-      ['deriveBits', 'deriveKey'],
+      ["deriveBits", "deriveKey"],
     );
 
     const key = await window.crypto.subtle.deriveKey(
       {
-        name: 'PBKDF2',
-        salt: encoder.encode('singulai-salt'),
+        name: "PBKDF2",
+        salt: encoder.encode("singulai-salt"),
         iterations: 100000,
-        hash: 'SHA-256',
+        hash: "SHA-256",
       },
       passwordKey,
-      { name: 'AES-GCM', length: 256 },
+      { name: "AES-GCM", length: 256 },
       false,
-      ['decrypt'],
+      ["decrypt"],
     );
 
     // Decrypt data
     const decrypted = await window.crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
+      { name: "AES-GCM", iv },
       key,
       encryptedData,
     );
 
     return new TextDecoder().decode(decrypted);
   } catch (error) {
-    console.error('Decryption failed:', error);
-    throw new Error('Failed to decrypt data');
+    console.error("Decryption failed:", error);
+    throw new Error("Failed to decrypt data");
   }
 }
 
@@ -198,7 +198,7 @@ export async function decryptData(encryptedBase64: string, password: string): Pr
  */
 export function formatAddressShort(address: string): string {
   if (!isValidAddress(address)) {
-    return 'Invalid';
+    return "Invalid";
   }
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }

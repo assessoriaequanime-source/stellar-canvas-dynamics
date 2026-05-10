@@ -22,9 +22,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -33,12 +31,8 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "@openzeppelin/contracts/utils/Pausable.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "AuditLog"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["AuditLog"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/utils/Pausable.sol": {
       "lastModificationDate": 1776839314072,
@@ -61,22 +55,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Pausable"
-      ]
+      "imports": ["../utils/Context.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Pausable"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
       "lastModificationDate": 1776839312768,
@@ -99,9 +85,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -111,12 +95,8 @@
         "../utils/Context.sol",
         "../utils/introspection/ERC165.sol"
       ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "AccessControl"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["AccessControl"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/utils/Context.sol": {
       "lastModificationDate": 1776839312896,
@@ -139,20 +119,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Context"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Context"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/access/IAccessControl.sol": {
       "lastModificationDate": 1776839313613,
@@ -175,20 +149,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IAccessControl"
-      ]
+      "versionPragmas": [">=0.8.4"],
+      "artifacts": ["IAccessControl"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
       "lastModificationDate": 1776839313108,
@@ -211,22 +179,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC165"
-      ]
+      "imports": ["./IERC165.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ERC165"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
       "lastModificationDate": 1776839313731,
@@ -249,20 +209,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC165"
-      ]
+      "versionPragmas": [">=0.4.16"],
+      "artifacts": ["IERC165"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/interfaces/IERC165.sol": {
       "lastModificationDate": 1776839313724,
@@ -285,19 +239,13 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
+      "imports": ["../utils/introspection/IERC165.sol"],
+      "versionPragmas": [">=0.4.16"],
       "artifacts": []
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/interfaces/IERC1363.sol": {
@@ -321,23 +269,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./IERC20.sol",
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC1363"
-      ]
+      "imports": ["./IERC20.sol", "./IERC165.sol"],
+      "versionPragmas": [">=0.6.2"],
+      "artifacts": ["IERC1363"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/interfaces/IERC20.sol": {
       "lastModificationDate": 1776839313767,
@@ -360,19 +299,13 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../token/ERC20/IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
+      "imports": ["../token/ERC20/IERC20.sol"],
+      "versionPragmas": [">=0.4.16"],
       "artifacts": []
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
@@ -396,20 +329,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC20"
-      ]
+      "versionPragmas": [">=0.4.16"],
+      "artifacts": ["IERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": {
       "lastModificationDate": 1776839314132,
@@ -432,23 +359,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../IERC20.sol",
-        "../../../interfaces/IERC1363.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SafeERC20"
-      ]
+      "imports": ["../IERC20.sol", "../../../interfaces/IERC1363.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["SafeERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/contracts/InstitutionalEscrow.sol": {
       "lastModificationDate": 1776842839117,
@@ -471,9 +389,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -485,13 +401,8 @@
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IOracleGateway",
-        "InstitutionalEscrow"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["IOracleGateway", "InstitutionalEscrow"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
       "lastModificationDate": 1776839314080,
@@ -514,22 +425,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./StorageSlot.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ReentrancyGuard"
-      ]
+      "imports": ["./StorageSlot.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ReentrancyGuard"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
       "lastModificationDate": 1776839314201,
@@ -552,20 +455,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "StorageSlot"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["StorageSlot"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/contracts/WhiteLabelRegistry.sol": {
       "lastModificationDate": 1776839218568,
@@ -588,9 +485,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -599,12 +494,8 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "@openzeppelin/contracts/utils/Pausable.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "WhiteLabelRegistry"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["WhiteLabelRegistry"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/integracoes-institucionais/contracts/OracleGateway.sol": {
       "lastModificationDate": 1776843341882,
@@ -627,9 +518,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -638,13 +527,8 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "@openzeppelin/contracts/utils/Pausable.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IWhiteLabelRegistry",
-        "OracleGateway"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["IWhiteLabelRegistry", "OracleGateway"]
     }
   }
 }

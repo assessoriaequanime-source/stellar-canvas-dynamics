@@ -6,7 +6,9 @@ const DEFAULT_CLUSTER = "devnet";
 export function getSolanaCluster(): "devnet" {
   const configured = (process.env.SOLANA_CLUSTER || DEFAULT_CLUSTER).toLowerCase();
   if (configured !== "devnet") {
-    throw new Error(`Only Solana devnet is supported for this layer. Received SOLANA_CLUSTER=${configured}`);
+    throw new Error(
+      `Only Solana devnet is supported for this layer. Received SOLANA_CLUSTER=${configured}`,
+    );
   }
   return "devnet";
 }

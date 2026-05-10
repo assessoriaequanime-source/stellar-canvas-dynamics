@@ -1,6 +1,6 @@
 // test/AvatarBase.test.js
 const { expect } = require("chai");
-const { ethers }  = require("hardhat");
+const { ethers } = require("hardhat");
 
 describe("AvatarBase (ERC721)", function () {
   let admin, minter, user, other;
@@ -25,9 +25,7 @@ describe("AvatarBase (ERC721)", function () {
 
     it("não-MINTER deve falhar", async function () {
       const cid = "QmFail";
-      await expect(
-        avatarBase.connect(user).mintAvatar(user.address, cid)
-      ).to.be.reverted;
+      await expect(avatarBase.connect(user).mintAvatar(user.address, cid)).to.be.reverted;
     });
   });
 
@@ -45,9 +43,7 @@ describe("AvatarBase (ERC721)", function () {
 
     it("não-owner não deve atualizar snapshot", async function () {
       const newCid = "QmFail";
-      await expect(
-        avatarBase.connect(other).updateSnapshot(0, newCid)
-      ).to.be.reverted;
+      await expect(avatarBase.connect(other).updateSnapshot(0, newCid)).to.be.reverted;
     });
   });
 
@@ -65,9 +61,7 @@ describe("AvatarBase (ERC721)", function () {
     it("avatar desativado não deve aceitar novos snapshots", async function () {
       await avatarBase.connect(user).deactivateAvatar(0);
       const newCid = "QmAfterDeactivate";
-      await expect(
-        avatarBase.connect(user).updateSnapshot(0, newCid)
-      ).to.be.reverted;
+      await expect(avatarBase.connect(user).updateSnapshot(0, newCid)).to.be.reverted;
     });
   });
 });

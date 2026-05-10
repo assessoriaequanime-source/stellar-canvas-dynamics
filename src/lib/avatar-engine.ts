@@ -44,11 +44,11 @@ export class AvatarEngine {
   disposed = false;
 
   // Absorption bookkeeping
-  private absorbed!: Uint8Array;          // 0 = free, 1 = absorbed (white/center)
-  private homePos!: Float32Array;         // original "shell" position per particle
-  private baseColor!: Float32Array;       // base colored color per particle
-  private sizes!: Float32Array;           // per-particle render size
-  private alphas!: Float32Array;          // per-particle render alpha
+  private absorbed!: Uint8Array; // 0 = free, 1 = absorbed (white/center)
+  private homePos!: Float32Array; // original "shell" position per particle
+  private baseColor!: Float32Array; // base colored color per particle
+  private sizes!: Float32Array; // per-particle render size
+  private alphas!: Float32Array; // per-particle render alpha
   private projVec = new THREE.Vector3();
 
   // ── Gather-feedback state ──────────────────────────────────────────
@@ -140,7 +140,7 @@ export class AvatarEngine {
       const isShell = i % 100 < 78;
       const rad = isShell
         ? r * (0.985 + Math.random() * 0.015) // casca: ±1.5% para coesão sem rigidez
-        : r * (0.35 + Math.random() * 0.55);  // interior: protegido pela borda
+        : r * (0.35 + Math.random() * 0.55); // interior: protegido pela borda
       a[i * 3] = rad * Math.cos(theta) * Math.sin(phi);
       a[i * 3 + 1] = rad * Math.sin(theta) * Math.sin(phi);
       a[i * 3 + 2] = rad * Math.cos(phi);
@@ -172,7 +172,7 @@ export class AvatarEngine {
       const x = idx % sz;
       const y = Math.floor(idx / sz) % sz;
       const z = Math.floor(idx / (sz * sz));
-      a[i * 3]     = x * sp - off;
+      a[i * 3] = x * sp - off;
       a[i * 3 + 1] = y * sp - off;
       a[i * 3 + 2] = z * sp - off;
     }
@@ -313,7 +313,7 @@ export class AvatarEngine {
           }
           if (geoRef) geoRef.attributes.color.needsUpdate = true;
         },
-      }
+      },
     );
 
     this.profile = profile;
@@ -383,7 +383,13 @@ export class AvatarEngine {
     gsap
       .timeline()
       .to(
-        { r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[bestIdx], a: alphaRef[bestIdx] },
+        {
+          r: colors[ci],
+          g: colors[ci + 1],
+          b: colors[ci + 2],
+          s: sizeRef[bestIdx],
+          a: alphaRef[bestIdx],
+        },
         {
           r: accent.r * 1.4,
           g: accent.g * 1.4,
@@ -393,7 +399,13 @@ export class AvatarEngine {
           duration: 0.28,
           ease: "power2.out",
           onUpdate: function (this: gsap.core.Tween) {
-            const t = this.targets()[0] as { r: number; g: number; b: number; s: number; a: number };
+            const t = this.targets()[0] as {
+              r: number;
+              g: number;
+              b: number;
+              s: number;
+              a: number;
+            };
             colors[ci] = t.r;
             colors[ci + 1] = t.g;
             colors[ci + 2] = t.b;
@@ -403,7 +415,13 @@ export class AvatarEngine {
         },
       )
       .to(
-        { r: accent.r * 1.4, g: accent.g * 1.4, b: accent.b * 1.4, s: (this.isMobile ? 1.9 : 2.4) * 3.4, a: 1.0 },
+        {
+          r: accent.r * 1.4,
+          g: accent.g * 1.4,
+          b: accent.b * 1.4,
+          s: (this.isMobile ? 1.9 : 2.4) * 3.4,
+          a: 1.0,
+        },
         {
           r: 1.0,
           g: 1.0,
@@ -413,7 +431,13 @@ export class AvatarEngine {
           duration: 0.9,
           ease: "power2.inOut",
           onUpdate: function (this: gsap.core.Tween) {
-            const t = this.targets()[0] as { r: number; g: number; b: number; s: number; a: number };
+            const t = this.targets()[0] as {
+              r: number;
+              g: number;
+              b: number;
+              s: number;
+              a: number;
+            };
             colors[ci] = t.r;
             colors[ci + 1] = t.g;
             colors[ci + 2] = t.b;
@@ -439,22 +463,25 @@ export class AvatarEngine {
     this.homePos[ci + 1] = targetY;
     this.homePos[ci + 2] = targetZ;
 
-    gsap.to({ x: fromX, y: fromY, z: fromZ }, {
-      x: targetX,
-      y: targetY,
-      z: targetZ,
-      duration: 1.4,
-      ease: "expo.inOut",
-      onUpdate: function (this: gsap.core.Tween) {
-        const t = this.targets()[0] as { x: number; y: number; z: number };
-        positions[ci] = t.x;
-        positions[ci + 1] = t.y;
-        positions[ci + 2] = t.z;
+    gsap.to(
+      { x: fromX, y: fromY, z: fromZ },
+      {
+        x: targetX,
+        y: targetY,
+        z: targetZ,
+        duration: 1.4,
+        ease: "expo.inOut",
+        onUpdate: function (this: gsap.core.Tween) {
+          const t = this.targets()[0] as { x: number; y: number; z: number };
+          positions[ci] = t.x;
+          positions[ci + 1] = t.y;
+          positions[ci + 2] = t.z;
+        },
+        onComplete: () => {
+          if (this.geo) this.geo.attributes.position.needsUpdate = true;
+        },
       },
-      onComplete: () => {
-        if (this.geo) this.geo.attributes.position.needsUpdate = true;
-      },
-    });
+    );
 
     // PROMOTE: pick a free particle currently near the center and push it OUT
     // toward the empty shell slot, keeping the field organized.
@@ -483,19 +510,22 @@ export class AvatarEngine {
       this.homePos[pi + 1] = fromY;
       this.homePos[pi + 2] = fromZ;
 
-      gsap.to({ x: pFromX, y: pFromY, z: pFromZ }, {
-        x: fromX,
-        y: fromY,
-        z: fromZ,
-        duration: 1.6,
-        ease: "expo.inOut",
-        onUpdate: function (this: gsap.core.Tween) {
-          const t = this.targets()[0] as { x: number; y: number; z: number };
-          positions[pi] = t.x;
-          positions[pi + 1] = t.y;
-          positions[pi + 2] = t.z;
+      gsap.to(
+        { x: pFromX, y: pFromY, z: pFromZ },
+        {
+          x: fromX,
+          y: fromY,
+          z: fromZ,
+          duration: 1.6,
+          ease: "expo.inOut",
+          onUpdate: function (this: gsap.core.Tween) {
+            const t = this.targets()[0] as { x: number; y: number; z: number };
+            positions[pi] = t.x;
+            positions[pi + 1] = t.y;
+            positions[pi + 2] = t.z;
+          },
         },
-      });
+      );
     }
 
     return true;
@@ -602,24 +632,32 @@ export class AvatarEngine {
       this.gatherTweens.get(idx)?.kill();
 
       const obj = {
-        x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
-        r: colors[ci], g: colors[ci + 1], b: colors[ci + 2],
+        x: positions[ci],
+        y: positions[ci + 1],
+        z: positions[ci + 2],
+        r: colors[ci],
+        g: colors[ci + 1],
+        b: colors[ci + 2],
         s: sizeRef[idx],
       };
       const tween = gsap.to(obj, {
-        x: tx, y: ty, z: tz,
-        r: accent.r * 1.35, g: accent.g * 1.35, b: accent.b * 1.35,
+        x: tx,
+        y: ty,
+        z: tz,
+        r: accent.r * 1.35,
+        g: accent.g * 1.35,
+        b: accent.b * 1.35,
         s: baseSize * 2.1,
         duration: 0.4 + Math.random() * 0.3,
         ease: "power3.out",
         onUpdate() {
-          positions[ci]     = obj.x;
+          positions[ci] = obj.x;
           positions[ci + 1] = obj.y;
           positions[ci + 2] = obj.z;
-          colors[ci]        = obj.r;
-          colors[ci + 1]    = obj.g;
-          colors[ci + 2]    = obj.b;
-          sizeRef[idx]      = obj.s;
+          colors[ci] = obj.r;
+          colors[ci + 1] = obj.g;
+          colors[ci + 2] = obj.b;
+          sizeRef[idx] = obj.s;
         },
       });
       this.gatherTweens.set(idx, tween);
@@ -664,26 +702,39 @@ export class AvatarEngine {
       if (direction === "cancel") {
         // Smoothly return home, restore color
         const obj = {
-          x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
-          r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[idx],
+          x: positions[ci],
+          y: positions[ci + 1],
+          z: positions[ci + 2],
+          r: colors[ci],
+          g: colors[ci + 1],
+          b: colors[ci + 2],
+          s: sizeRef[idx],
         };
         gsap.to(obj, {
-          x: homeX, y: homeY, z: homeZ,
-          r: baseR, g: baseG, b: baseB, s: baseSize,
+          x: homeX,
+          y: homeY,
+          z: homeZ,
+          r: baseR,
+          g: baseG,
+          b: baseB,
+          s: baseSize,
           duration: 0.65 + Math.random() * 0.45,
           ease: "power2.out",
           onUpdate() {
-            positions[ci]     = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
-            colors[ci]        = obj.r; colors[ci + 1]    = obj.g; colors[ci + 2]    = obj.b;
-            sizeRef[idx]      = obj.s;
+            positions[ci] = obj.x;
+            positions[ci + 1] = obj.y;
+            positions[ci + 2] = obj.z;
+            colors[ci] = obj.r;
+            colors[ci + 1] = obj.g;
+            colors[ci + 2] = obj.b;
+            sizeRef[idx] = obj.s;
           },
         });
-
       } else if (direction === "left") {
         // Flash red → scatter outward from gather center → return home dimmed → recover
-        const dxS = (positions[ci] - gpx) || (Math.random() - 0.5);
-        const dyS = (positions[ci + 1] - gpy) || (Math.random() - 0.5);
-        const dzS = (positions[ci + 2] - gpz) || (Math.random() - 0.5);
+        const dxS = positions[ci] - gpx || Math.random() - 0.5;
+        const dyS = positions[ci + 1] - gpy || Math.random() - 0.5;
+        const dzS = positions[ci + 2] - gpz || Math.random() - 0.5;
         const scatterLen = this.BR * (0.85 + Math.random() * 0.45);
         const scatterNorm = Math.sqrt(dxS * dxS + dyS * dyS + dzS * dzS) || 1;
         const scatterX = homeX + (dxS / scatterNorm) * scatterLen * 0.4;
@@ -691,45 +742,84 @@ export class AvatarEngine {
         const scatterZ = homeZ + (dzS / scatterNorm) * scatterLen * 0.4;
 
         const obj = {
-          x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
-          r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[idx],
+          x: positions[ci],
+          y: positions[ci + 1],
+          z: positions[ci + 2],
+          r: colors[ci],
+          g: colors[ci + 1],
+          b: colors[ci + 2],
+          s: sizeRef[idx],
         };
-        gsap.timeline()
+        gsap
+          .timeline()
           .to(obj, {
-            r: 0.9, g: 0.18, b: 0.22, s: baseSize * 2.8,
+            r: 0.9,
+            g: 0.18,
+            b: 0.22,
+            s: baseSize * 2.8,
             duration: 0.08,
-            onUpdate() { colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b; sizeRef[idx] = obj.s; },
+            onUpdate() {
+              colors[ci] = obj.r;
+              colors[ci + 1] = obj.g;
+              colors[ci + 2] = obj.b;
+              sizeRef[idx] = obj.s;
+            },
           })
           .to(obj, {
-            x: scatterX, y: scatterY, z: scatterZ,
-            r: 0.5, g: 0.1, b: 0.12, s: baseSize * 1.7,
+            x: scatterX,
+            y: scatterY,
+            z: scatterZ,
+            r: 0.5,
+            g: 0.1,
+            b: 0.12,
+            s: baseSize * 1.7,
             duration: 0.38,
             ease: "expo.out",
             onUpdate() {
-              positions[ci] = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
-              colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b;
+              positions[ci] = obj.x;
+              positions[ci + 1] = obj.y;
+              positions[ci + 2] = obj.z;
+              colors[ci] = obj.r;
+              colors[ci + 1] = obj.g;
+              colors[ci + 2] = obj.b;
               sizeRef[idx] = obj.s;
             },
           })
           .to(obj, {
-            x: homeX, y: homeY, z: homeZ,
-            r: baseR * 0.5, g: baseG * 0.5, b: baseB * 0.5, s: baseSize * 0.65,
+            x: homeX,
+            y: homeY,
+            z: homeZ,
+            r: baseR * 0.5,
+            g: baseG * 0.5,
+            b: baseB * 0.5,
+            s: baseSize * 0.65,
             duration: 0.95,
             ease: "power2.inOut",
             onUpdate() {
-              positions[ci] = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
-              colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b;
+              positions[ci] = obj.x;
+              positions[ci + 1] = obj.y;
+              positions[ci + 2] = obj.z;
+              colors[ci] = obj.r;
+              colors[ci + 1] = obj.g;
+              colors[ci + 2] = obj.b;
               sizeRef[idx] = obj.s;
             },
           })
           .to(obj, {
-            r: baseR, g: baseG, b: baseB, s: baseSize,
+            r: baseR,
+            g: baseG,
+            b: baseB,
+            s: baseSize,
             duration: 1.6,
             ease: "power1.inOut",
             delay: 0.25,
-            onUpdate() { colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b; sizeRef[idx] = obj.s; },
+            onUpdate() {
+              colors[ci] = obj.r;
+              colors[ci + 1] = obj.g;
+              colors[ci + 2] = obj.b;
+              sizeRef[idx] = obj.s;
+            },
           });
-
       } else {
         // direction === 'right': absorb (accent burst → white core)
         this.absorbed[idx] = 1;
@@ -743,31 +833,52 @@ export class AvatarEngine {
         const targetY = cr * Math.sin(a2) * Math.sin(a1);
         const targetZ = cr * Math.cos(a2);
 
-        this.homePos[ci]     = targetX;
+        this.homePos[ci] = targetX;
         this.homePos[ci + 1] = targetY;
         this.homePos[ci + 2] = targetZ;
 
         const obj = {
-          x: positions[ci], y: positions[ci + 1], z: positions[ci + 2],
-          r: colors[ci], g: colors[ci + 1], b: colors[ci + 2], s: sizeRef[idx],
+          x: positions[ci],
+          y: positions[ci + 1],
+          z: positions[ci + 2],
+          r: colors[ci],
+          g: colors[ci + 1],
+          b: colors[ci + 2],
+          s: sizeRef[idx],
         };
-        gsap.timeline()
+        gsap
+          .timeline()
           .to(obj, {
-            r: accent.r * 1.7, g: accent.g * 1.7, b: accent.b * 1.7,
+            r: accent.r * 1.7,
+            g: accent.g * 1.7,
+            b: accent.b * 1.7,
             s: baseSize * 4.0,
             duration: 0.16,
             ease: "power2.out",
-            onUpdate() { colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b; sizeRef[idx] = obj.s; },
+            onUpdate() {
+              colors[ci] = obj.r;
+              colors[ci + 1] = obj.g;
+              colors[ci + 2] = obj.b;
+              sizeRef[idx] = obj.s;
+            },
           })
           .to(obj, {
-            r: 1.0, g: 1.0, b: 1.0,
-            x: targetX, y: targetY, z: targetZ,
+            r: 1.0,
+            g: 1.0,
+            b: 1.0,
+            x: targetX,
+            y: targetY,
+            z: targetZ,
             s: baseSize * 1.6,
             duration: 1.05,
             ease: "expo.inOut",
             onUpdate() {
-              colors[ci] = obj.r; colors[ci + 1] = obj.g; colors[ci + 2] = obj.b;
-              positions[ci] = obj.x; positions[ci + 1] = obj.y; positions[ci + 2] = obj.z;
+              colors[ci] = obj.r;
+              colors[ci + 1] = obj.g;
+              colors[ci + 2] = obj.b;
+              positions[ci] = obj.x;
+              positions[ci + 1] = obj.y;
+              positions[ci + 2] = obj.z;
               sizeRef[idx] = obj.s;
             },
           });
@@ -785,7 +896,8 @@ export class AvatarEngine {
     const colors = this.geo.attributes.color.array as Float32Array;
     const baseCol = this.baseColor;
     const t = { p: 0 };
-    gsap.timeline()
+    gsap
+      .timeline()
       .to(t, {
         p: 1,
         duration: dur * 0.35,
@@ -794,7 +906,7 @@ export class AvatarEngine {
           for (let i = 0; i < this.N; i++) {
             if (this.absorbed[i]) continue;
             const ci = i * 3;
-            colors[ci]     = baseCol[ci]     + (r - baseCol[ci])     * t.p;
+            colors[ci] = baseCol[ci] + (r - baseCol[ci]) * t.p;
             colors[ci + 1] = baseCol[ci + 1] + (g - baseCol[ci + 1]) * t.p;
             colors[ci + 2] = baseCol[ci + 2] + (b - baseCol[ci + 2]) * t.p;
           }
@@ -808,7 +920,7 @@ export class AvatarEngine {
           for (let i = 0; i < this.N; i++) {
             if (this.absorbed[i]) continue;
             const ci = i * 3;
-            colors[ci]     = baseCol[ci]     + (r - baseCol[ci])     * t.p;
+            colors[ci] = baseCol[ci] + (r - baseCol[ci]) * t.p;
             colors[ci + 1] = baseCol[ci + 1] + (g - baseCol[ci + 1]) * t.p;
             colors[ci + 2] = baseCol[ci + 2] + (b - baseCol[ci + 2]) * t.p;
           }

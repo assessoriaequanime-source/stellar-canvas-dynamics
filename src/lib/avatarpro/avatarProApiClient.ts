@@ -26,16 +26,6 @@ export function getCurrentUser() {
       },
     });
   }
-  if (!hasSessionToken()) {
-    return Promise.resolve({
-      authenticated: false,
-      user: {
-        id: "fallback-reviewer",
-        name: "Reviewer",
-        walletAddress: "",
-      },
-    });
-  }
 
   return withFallback(
     requestJson<{ authenticated?: boolean; user?: Record<string, unknown> }>("/auth/me"),
@@ -58,12 +48,6 @@ export function getProfile() {
       role: "AvatarPro Demo User",
     });
   }
-  if (!hasSessionToken()) {
-    return Promise.resolve({
-      name: "Reviewer",
-      role: "Judge",
-    });
-  }
 
   return withFallback(requestJson<Record<string, unknown>>("/user/profile"), {
     name: "Reviewer",
@@ -78,14 +62,6 @@ export function getWalletStatus() {
       network: "Solana Devnet / Demo",
       sglBalance: 10000,
       status: "provisioned",
-    });
-  }
-  if (!hasSessionToken()) {
-    return Promise.resolve({
-      walletAddress: "",
-      network: "Solana Devnet",
-      sglBalance: 0,
-      status: "unavailable",
     });
   }
 
@@ -119,15 +95,6 @@ export function provisionWallet(payload: { walletAddress: string; email?: string
 
 export function getAvatarProStatus() {
   if (isExplicitAvatarProDemoMode()) {
-    return Promise.resolve({
-      avatarId: DEMO_AVATAR_ID,
-      status: "active",
-      mode: "Safe Quantum",
-      absorptionScore: 0.72,
-      omegaScore: 0.68,
-    });
-  }
-  if (!hasSessionToken()) {
     return Promise.resolve({
       avatarId: DEMO_AVATAR_ID,
       status: "active",

@@ -1,6 +1,6 @@
 // test/SGLToken.test.js
 const { expect } = require("chai");
-const { ethers }  = require("hardhat");
+const { ethers } = require("hardhat");
 
 describe("SGLToken", function () {
   let admin, minter, pauser, user;
@@ -33,9 +33,8 @@ describe("SGLToken", function () {
     });
 
     it("não-MINTER deve falhar ao tentar mintar", async function () {
-      await expect(
-        sglToken.connect(user).mint(user.address, ethers.parseEther("1"))
-      ).to.be.reverted;
+      await expect(sglToken.connect(user).mint(user.address, ethers.parseEther("1"))).to.be
+        .reverted;
     });
   });
 
@@ -43,18 +42,16 @@ describe("SGLToken", function () {
     it("PAUSER_ROLE deve pausar e bloquear transferências", async function () {
       await sglToken.connect(admin).mint(user.address, ethers.parseEther("10"));
       await sglToken.connect(admin).pause();
-      await expect(
-        sglToken.connect(user).transfer(admin.address, ethers.parseEther("1"))
-      ).to.be.reverted;
+      await expect(sglToken.connect(user).transfer(admin.address, ethers.parseEther("1"))).to.be
+        .reverted;
     });
 
     it("unpause deve restaurar transferências", async function () {
       await sglToken.connect(admin).mint(user.address, ethers.parseEther("10"));
       await sglToken.connect(admin).pause();
       await sglToken.connect(admin).unpause();
-      await expect(
-        sglToken.connect(user).transfer(admin.address, ethers.parseEther("1"))
-      ).to.not.be.reverted;
+      await expect(sglToken.connect(user).transfer(admin.address, ethers.parseEther("1"))).to.not.be
+        .reverted;
     });
   });
 
@@ -81,12 +78,14 @@ describe("StakingPool", function () {
       await sglToken.getAddress(),
       await sglToken.getAddress(),
       admin.address,
-      admin.address
+      admin.address,
     );
 
     // Mint e approve
     await sglToken.mint(staker.address, ethers.parseEther("1000"));
-    await sglToken.connect(staker).approve(await stakingPool.getAddress(), ethers.parseEther("1000"));
+    await sglToken
+      .connect(staker)
+      .approve(await stakingPool.getAddress(), ethers.parseEther("1000"));
     // Funding de rewards
     await sglToken.mint(await stakingPool.getAddress(), ethers.parseEther("10000"));
   });

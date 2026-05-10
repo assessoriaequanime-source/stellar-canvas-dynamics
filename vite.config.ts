@@ -15,30 +15,20 @@ export default defineConfig({
       host: true,
       proxy: {
         "/api": {
-            target: "http://127.0.0.1:8091",
+          target: "http://127.0.0.1:8091",
           changeOrigin: true,
         },
       },
-      allowedHosts: [
-        "singulai.live",
-        "www.singulai.live",
-        "app.singulai.live",
-        "dk.singulai.live",
-      ],
+      allowedHosts: ["singulai.live", "www.singulai.live", "app.singulai.live", "dk.singulai.live"],
     },
     preview: {
       proxy: {
         "/api": {
-            target: "http://127.0.0.1:8091",
+          target: "http://127.0.0.1:8091",
           changeOrigin: true,
         },
       },
-      allowedHosts: [
-        "singulai.live",
-        "www.singulai.live",
-        "app.singulai.live",
-        "dk.singulai.live",
-      ],
+      allowedHosts: ["singulai.live", "www.singulai.live", "app.singulai.live", "dk.singulai.live"],
     },
   },
 });

@@ -4,7 +4,7 @@
 
 **Timeline**: 5 dias  
 **Risk Level**: BAIXO (apenas setup, sem código business)  
-**Team**: Run (Chefe Dev) + DevOps  
+**Team**: Run (Chefe Dev) + DevOps
 
 ---
 
@@ -13,18 +13,21 @@
 ### ✅ Tasks
 
 #### 1.1 Auditoria Infra (Read-Only)
+
 ```bash
 # Verificar status atual
 ssh root@72.60.147.56 "echo 'Auditoria VPS'; pwd; ss -tulpn | grep -E ':5001|:5100|:8091|:9200'; df -h; free -h; docker ps"
 ```
 
 **Esperado**:
+
 - ✅ 3 processos SingulAI rodando (singulai, singulai-dev, singulai-alt-backend)
 - ✅ Porta 9200 LIVRE (confirmada)
 - ✅ PostgreSQL + Redis containers ativos
 - ✅ Mínimo 5GB disco disponível
 
 #### 1.2 Criar Raiz do Projeto
+
 ```bash
 # Na VPS
 mkdir -p /var/www/stellar-backend
@@ -32,6 +35,7 @@ ls -la /var/www/  # Validar isolamento
 ```
 
 #### 1.3 Verificar Nginx Disponível
+
 ```bash
 # Nginx status
 ssh root@72.60.147.56 "systemctl status nginx; nginx -t"
@@ -46,10 +50,11 @@ ssh root@72.60.147.56 "systemctl status nginx; nginx -t"
 ### ✅ Tasks
 
 #### 2.1 Docker Compose para Dados
+
 **Arquivo**: `/var/www/stellar-backend/docker-compose.yml`
 
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -58,11 +63,11 @@ services:
     environment:
       POSTGRES_DB: stellar_db
       POSTGRES_USER: stellar_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}  # ← .env
+      POSTGRES_PASSWORD: ${DB_PASSWORD} # ← .env
     volumes:
       - stellar_postgres_data:/var/lib/postgresql/data
     ports:
-      - "127.0.0.1:5433:5432"  # ← não expor publicamente
+      - "127.0.0.1:5433:5432" # ← não expor publicamente
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U stellar_user"]
       interval: 10s
@@ -74,11 +79,11 @@ services:
   redis:
     image: redis:7-alpine
     container_name: stellar-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD}  # ← .env
+    command: redis-server --requirepass ${REDIS_PASSWORD} # ← .env
     volumes:
       - stellar_redis_data:/data
     ports:
-      - "127.0.0.1:6380:6379"  # ← não expor publicamente
+      - "127.0.0.1:6380:6379" # ← não expor publicamente
     healthcheck:
       test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
       interval: 10s
@@ -99,6 +104,7 @@ networks:
 ```
 
 #### 2.2 Iniciar Containers
+
 ```bash
 cd /var/www/stellar-backend
 docker-compose up -d
@@ -107,12 +113,14 @@ docker-compose logs postgres redis  # Verificar saúde
 ```
 
 **Esperado**:
+
 - ✅ PostgreSQL listening 127.0.0.1:5433
 - ✅ Redis listening 127.0.0.1:6380
 - ✅ Health checks passando
 - ✅ Volumes criados e persistentes
 
 #### 2.3 Testar Conexão
+
 ```bash
 # PostgreSQL
 psql -h 127.0.0.1 -p 5433 -U stellar_user -d stellar_db -c "SELECT version();"
@@ -128,6 +136,7 @@ redis-cli -h 127.0.0.1 -p 6380 -a ${REDIS_PASSWORD} ping
 ### ✅ Tasks
 
 #### 3.1 Criar Config Nginx
+
 **Arquivo**: `/etc/nginx/sites-available/stellar-backend`
 
 ```nginx
@@ -174,6 +183,7 @@ server {
 ```
 
 #### 3.2 Ativar Config
+
 ```bash
 ln -s /etc/nginx/sites-available/stellar-backend /etc/nginx/sites-enabled/stellar-backend
 
@@ -185,6 +195,7 @@ systemctl reload nginx
 ```
 
 #### 3.3 DNS Configuration
+
 ```
 IMPORTANTE: Confirmar com CI que DNS foi criado:
 
@@ -203,6 +214,7 @@ Resultado esperado: stellar-backend.rodrigo.run → 72.60.147.56
 ### ✅ Tasks
 
 #### 4.1 Criar .env.example
+
 **Arquivo**: `/var/www/stellar-backend/.env.example`
 
 ```env
@@ -253,6 +265,7 @@ SENTRY_DSN=https://your_sentry_dsn_here
 ```
 
 #### 4.2 Criar .gitignore entry
+
 ```bash
 # No repo root
 echo "/var/www/stellar-backend/.env" >> .gitignore
@@ -260,6 +273,7 @@ echo "!.env.example" >> .gitignore
 ```
 
 #### 4.3 Setup Scripts
+
 **Arquivo**: `/var/www/stellar-backend/scripts/setup.sh`
 
 ```bash
@@ -320,6 +334,7 @@ echo "ℹ️  Próximo passo: npm run dev"
 ### ✅ Tasks
 
 #### 5.1 Checklist Infra
+
 ```
 [ ] PostgreSQL rodando (health check OK)
 [ ] Redis rodando (health check OK)
@@ -333,23 +348,28 @@ echo "ℹ️  Próximo passo: npm run dev"
 ```
 
 #### 5.2 Criar DEPLOYMENT.md
-```markdown
+
+````markdown
 # Deployment Guide
 
 ## Local Development
 
 ### Primeiro setup
+
 ```bash
 cd /var/www/stellar-backend
 bash scripts/setup.sh
 ```
+````
 
 ### Iniciar
+
 ```bash
 npm run dev   # Development com hot reload
 ```
 
 ### Parar
+
 ```bash
 npm run stop  # Para express
 docker-compose down  # Para PostgreSQL + Redis
@@ -358,6 +378,7 @@ docker-compose down  # Para PostgreSQL + Redis
 ## VPS Deployment (Week 8+)
 
 (Será documentado após fase inicial)
+
 ```
 
 #### 5.3 Arquivo .MD Executável Week 1
@@ -390,3 +411,4 @@ Após aprovação desta semana, iniciar:
 - Authentication middleware
 
 **Aguardando**: CEO confirmação para prosseguir
+```

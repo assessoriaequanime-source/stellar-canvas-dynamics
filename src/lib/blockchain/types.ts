@@ -22,11 +22,11 @@ export interface TransactionResult {
 }
 
 export interface GasETHTransfer extends TransactionResult {
-  type: 'gas_eth';
+  type: "gas_eth";
 }
 
 export interface SGLTransfer extends TransactionResult {
-  type: 'sgl_transfer';
+  type: "sgl_transfer";
 }
 
 export interface ContractConfig {

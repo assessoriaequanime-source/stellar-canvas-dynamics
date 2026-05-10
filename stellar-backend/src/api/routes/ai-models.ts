@@ -114,7 +114,11 @@ router.put("/preference", requireAuth, async (req: Request, res: Response, next:
     }
 
     if (!plan.allowedUserPlans.includes(payload.userPlanTier)) {
-      throw new AppError(400, "User plan tier is not allowed for selected plan", "PLAN_TIER_NOT_ALLOWED");
+      throw new AppError(
+        400,
+        "User plan tier is not allowed for selected plan",
+        "PLAN_TIER_NOT_ALLOWED",
+      );
     }
 
     const selectionEnabled = readEnvFlag("AI_PROVIDER_ALLOW_USER_MODEL_CHOICE", false);
@@ -126,7 +130,11 @@ router.put("/preference", requireAuth, async (req: Request, res: Response, next:
 
     if (preferredModelId) {
       if (!plan.allowedModelIds.includes(preferredModelId)) {
-        throw new AppError(400, "Preferred model is not allowed by plan", "MODEL_NOT_ALLOWED_BY_PLAN");
+        throw new AppError(
+          400,
+          "Preferred model is not allowed by plan",
+          "MODEL_NOT_ALLOWED_BY_PLAN",
+        );
       }
 
       const model = getProviderModel(preferredModelId);
@@ -137,7 +145,11 @@ router.put("/preference", requireAuth, async (req: Request, res: Response, next:
       const tenantPolicy = getTenantPolicy(payload.tenantId);
       if (tenantPolicy) {
         if (!tenantPolicy.enabledProviders.includes(model.provider)) {
-          throw new AppError(400, "Preferred model provider not enabled for tenant", "MODEL_PROVIDER_NOT_ENABLED");
+          throw new AppError(
+            400,
+            "Preferred model provider not enabled for tenant",
+            "MODEL_PROVIDER_NOT_ENABLED",
+          );
         }
         if (tenantPolicy.blockedModelIds.includes(model.id)) {
           throw new AppError(400, "Preferred model blocked by tenant policy", "MODEL_BLOCKED");

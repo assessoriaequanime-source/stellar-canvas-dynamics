@@ -22,7 +22,14 @@ type Props = {
  * Premium spacing, two-line buttons (label + hint), draggable to reorder.
  * Houses the Ω cohesion index (subtle, monochrome 3D) and online indicator.
  */
-export default function ActionRail({ actions, onReorder, onClose, omegaPct = 0, omegaStatus = "", online = true }: Props) {
+export default function ActionRail({
+  actions,
+  onReorder,
+  onClose,
+  omegaPct = 0,
+  omegaStatus = "",
+  online = true,
+}: Props) {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -119,11 +126,7 @@ export default function ActionRail({ actions, onReorder, onClose, omegaPct = 0, 
             onDragEnd={commitDrop}
             onDrop={commitDrop}
           >
-            <button
-              className="rail-btn"
-              onClick={a.onClick}
-              title={a.hint ?? a.label}
-            >
+            <button className="rail-btn" onClick={a.onClick} title={a.hint ?? a.label}>
               <span className="rail-grip" aria-hidden>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
                   <circle cx="9" cy="6" r="1" />
@@ -151,9 +154,7 @@ export default function ActionRail({ actions, onReorder, onClose, omegaPct = 0, 
             </button>
           </li>
         ))}
-        {filtered.length === 0 && (
-          <li className="rail-empty">Nenhuma ação encontrada</li>
-        )}
+        {filtered.length === 0 && <li className="rail-empty">Nenhuma ação encontrada</li>}
       </ul>
 
       <footer className="rail-foot">

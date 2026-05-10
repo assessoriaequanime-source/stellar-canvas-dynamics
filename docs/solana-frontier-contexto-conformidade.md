@@ -81,26 +81,33 @@ Não pode conter:
 ## 6. Critérios de julgamento e tradução para o SingulAI
 
 1. Functionality:
+
 - Demonstrar fluxo funcional completo (não apenas conceito).
 - Estado atual exigido para demo: AvatarPro -> Snapshot -> TimeCapsule -> Trigger -> Delivery -> Proof.
 
 2. Code Quality:
+
 - Repositório organizado, legível e executável.
 - Scripts claros para rodar localmente.
 
 3. Potential Impact:
+
 - Endereçar mercado amplo de legado digital executável e prestação de serviço baseada em expertise humana.
 
 4. Novelty:
+
 - Combinação única: AvatarPro + TimeCapsule + execução verificável + modelo de absorção de partículas.
 
 5. UX:
+
 - Fluxo simples e rápido para demonstrar valor em 2-3 minutos.
 
 6. Open-source:
+
 - Projeto publicamente auditável e com documentação de setup.
 
 7. Business Plan:
+
 - Modelo viável com foco em execução futura (sem narrativa especulativa).
 
 ## 7. Guardrails de segurança e privacidade para submissão

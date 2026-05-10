@@ -48,17 +48,15 @@ function ensureRecipientAllowed(recipient: JudgeAccessRecipient): void {
   const allowedPhones = parsePhoneList(process.env.JUDGE_AUDITORS_WHATSAPP_ALLOWLIST);
 
   const providedEmail = recipient.recipientEmail?.trim().toLowerCase() || "";
-  const providedPhone = recipient.recipientWhatsapp ? normalizePhone(recipient.recipientWhatsapp).toLowerCase() : "";
+  const providedPhone = recipient.recipientWhatsapp
+    ? normalizePhone(recipient.recipientWhatsapp).toLowerCase()
+    : "";
 
   const emailAllowed = providedEmail ? allowedEmails.includes(providedEmail) : false;
   const phoneAllowed = providedPhone ? allowedPhones.includes(providedPhone) : false;
 
   if (!allowedEmails.length && !allowedPhones.length) {
-    throw new AppError(
-      503,
-      "Judge allowlist is not configured",
-      "JUDGE_ALLOWLIST_NOT_CONFIGURED",
-    );
+    throw new AppError(503, "Judge allowlist is not configured", "JUDGE_ALLOWLIST_NOT_CONFIGURED");
   }
 
   if (!emailAllowed && !phoneAllowed) {
@@ -166,7 +164,10 @@ export async function dispatchJudgeAccess(params: {
   let emailSent = false;
   let whatsappSent = false;
 
-  if ((params.channel === "email" || params.channel === "both") && params.recipient.recipientEmail) {
+  if (
+    (params.channel === "email" || params.channel === "both") &&
+    params.recipient.recipientEmail
+  ) {
     if (emailWebhook) {
       emailSent = await dispatchToWebhook(emailWebhook, {
         provider: "email",
@@ -182,7 +183,10 @@ export async function dispatchJudgeAccess(params: {
     }
   }
 
-  if ((params.channel === "whatsapp" || params.channel === "both") && params.recipient.recipientWhatsapp) {
+  if (
+    (params.channel === "whatsapp" || params.channel === "both") &&
+    params.recipient.recipientWhatsapp
+  ) {
     if (whatsappWebhook) {
       whatsappSent = await dispatchToWebhook(whatsappWebhook, {
         provider: "whatsapp",

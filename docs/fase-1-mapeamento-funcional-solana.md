@@ -13,19 +13,19 @@ Unificar a semântica técnica do SingulAI para Solana Devnet, substituindo ling
 
 ## 1. Mapa de equivalência EVM -> Solana
 
-| Referência atual | Referência Solana para hackathon |
-|---|---|
-| Sepolia Testnet | Solana Devnet |
-| Etherscan | Solscan |
-| Smart Contract | Solana Program |
-| Contract Address | Program ID |
-| Wallet Link Contract | Permission Account |
-| ERC-20 Token | SPL Token Mint |
-| Gas Price | Network Fee / Priority Fee |
-| Hardhat | Anchor |
-| Solidity | Rust (Anchor) |
-| Transaction Hash | Signature |
-| Block Number | Slot |
+| Referência atual     | Referência Solana para hackathon |
+| -------------------- | -------------------------------- |
+| Sepolia Testnet      | Solana Devnet                    |
+| Etherscan            | Solscan                          |
+| Smart Contract       | Solana Program                   |
+| Contract Address     | Program ID                       |
+| Wallet Link Contract | Permission Account               |
+| ERC-20 Token         | SPL Token Mint                   |
+| Gas Price            | Network Fee / Priority Fee       |
+| Hardhat              | Anchor                           |
+| Solidity             | Rust (Anchor)                    |
+| Transaction Hash     | Signature                        |
+| Block Number         | Slot                             |
 
 ## 2. Programas funcionais do MVP
 

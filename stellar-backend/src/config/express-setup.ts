@@ -22,7 +22,7 @@ export function setupMiddlewares(app: Express): void {
         // Skip logging for health checks
         return req.path === "/health" || req.path === "/metrics";
       },
-    })
+    }),
   );
 
   // Request ID middleware (useful for tracing)

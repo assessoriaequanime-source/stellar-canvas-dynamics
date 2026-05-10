@@ -38,7 +38,9 @@ function clamp(value: number, min: number, max: number): number {
 
 function computePasFromAbsorptionEvents(events: Array<{ details: unknown }>) {
   const directions = events
-    .map((event) => normalizeDirection((event.details as Record<string, unknown> | null)?.direction))
+    .map((event) =>
+      normalizeDirection((event.details as Record<string, unknown> | null)?.direction),
+    )
     .filter((value): value is "left" | "right" => Boolean(value));
 
   const rightCount = directions.filter((direction) => direction === "right").length;
@@ -109,7 +111,9 @@ router.get("/status", async (req: Request, res: Response, next: NextFunction) =>
 router.get("/wallet", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const walletFromQuery = req.query.walletAddress?.toString();
-    const walletAddress = walletFromQuery ? new PublicKey(walletFromQuery).toBase58() : ensureUserOrDemo(req).walletAddress;
+    const walletAddress = walletFromQuery
+      ? new PublicKey(walletFromQuery).toBase58()
+      : ensureUserOrDemo(req).walletAddress;
     const balance = await getSglBalance(walletAddress);
 
     res.status(200).json({

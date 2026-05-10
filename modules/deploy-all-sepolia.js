@@ -43,12 +43,12 @@
  */
 
 const { ethers } = require("ethers");
-const path       = require("path");
-const fs         = require("fs");
+const path = require("path");
+const fs = require("fs");
 
-const RPC_URL        = process.env.SEPOLIA_RPC_URL    || "";
-const DEPLOYER_KEY   = process.env.DEPLOYER_PRIVATE_KEY || "";
-const ADMIN_ADDRESS  = process.env.ADMIN_ADDRESS       || "";
+const RPC_URL = process.env.SEPOLIA_RPC_URL || "";
+const DEPLOYER_KEY = process.env.DEPLOYER_PRIVATE_KEY || "";
+const ADMIN_ADDRESS = process.env.ADMIN_ADDRESS || "";
 
 if (!RPC_URL || !DEPLOYER_KEY) {
   console.error("❌ Configure SEPOLIA_RPC_URL e DEPLOYER_PRIVATE_KEY como variáveis de ambiente.");
@@ -56,8 +56,8 @@ if (!RPC_URL || !DEPLOYER_KEY) {
 }
 
 const provider = new ethers.JsonRpcProvider(RPC_URL);
-const deployer  = new ethers.Wallet(DEPLOYER_KEY, provider);
-const admin     = ADMIN_ADDRESS || deployer.address;
+const deployer = new ethers.Wallet(DEPLOYER_KEY, provider);
+const admin = ADMIN_ADDRESS || deployer.address;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ function loadArtifact(moduleName, contractName) {
     "artifacts",
     "contracts",
     `${contractName}.sol`,
-    `${contractName}.json`
+    `${contractName}.json`,
   );
   if (!fs.existsSync(artifactPath)) {
     throw new Error(`Artifact não encontrado: ${artifactPath}\nCompile o módulo primeiro.`);
@@ -78,7 +78,7 @@ function loadArtifact(moduleName, contractName) {
 
 async function deployContract(moduleName, contractName, args, label) {
   const artifact = loadArtifact(moduleName, contractName);
-  const factory  = new ethers.ContractFactory(artifact.abi, artifact.bytecode, deployer);
+  const factory = new ethers.ContractFactory(artifact.abi, artifact.bytecode, deployer);
   console.log(`  ⏳ Deploy ${label || contractName}...`);
   const contract = await factory.deploy(...args);
   await contract.waitForDeployment();
@@ -106,22 +106,34 @@ async function main() {
   console.log("\n── FASE 1: Tokenomics SGL ──────────────────────");
 
   const { address: sglTokenAddr } = await deployContract(
-    "tokenomics-sgl", "SGLToken", [admin, admin, admin], "SGLToken"
+    "tokenomics-sgl",
+    "SGLToken",
+    [admin, admin, admin],
+    "SGLToken",
   );
   addresses.SGLToken = sglTokenAddr;
 
   const { address: escrowAddr } = await deployContract(
-    "tokenomics-sgl", "EscrowContract", [sglTokenAddr, admin], "EscrowContract"
+    "tokenomics-sgl",
+    "EscrowContract",
+    [sglTokenAddr, admin],
+    "EscrowContract",
   );
   addresses.EscrowContract = escrowAddr;
 
   const { address: feeManagerAddr } = await deployContract(
-    "tokenomics-sgl", "FeeManager", [sglTokenAddr, admin, admin], "FeeManager"
+    "tokenomics-sgl",
+    "FeeManager",
+    [sglTokenAddr, admin, admin],
+    "FeeManager",
   );
   addresses.FeeManager = feeManagerAddr;
 
   const { address: stakingAddr } = await deployContract(
-    "tokenomics-sgl", "StakingPool", [sglTokenAddr, admin, ethers.parseEther("0.001")], "StakingPool"
+    "tokenomics-sgl",
+    "StakingPool",
+    [sglTokenAddr, admin, ethers.parseEther("0.001")],
+    "StakingPool",
   );
   addresses.StakingPool = stakingAddr;
 
@@ -132,12 +144,18 @@ async function main() {
 
   // OracleGateway ainda não deployado — será configurado após FASE 4
   const { address: timeCapsuleAddr } = await deployContract(
-    "capsule-legado", "TimeCapsule", [sglTokenAddr, ethers.ZeroAddress, admin], "TimeCapsule"
+    "capsule-legado",
+    "TimeCapsule",
+    [sglTokenAddr, ethers.ZeroAddress, admin],
+    "TimeCapsule",
   );
   addresses.TimeCapsule = timeCapsuleAddr;
 
   const { address: legacyPolicyAddr } = await deployContract(
-    "capsule-legado", "LegacyPolicy", [admin], "LegacyPolicy"
+    "capsule-legado",
+    "LegacyPolicy",
+    [admin],
+    "LegacyPolicy",
   );
   addresses.LegacyPolicy = legacyPolicyAddr;
 
@@ -147,23 +165,35 @@ async function main() {
   console.log("\n── FASE 3: Avatares Evolutivos ─────────────────");
 
   const { address: avatarBaseAddr } = await deployContract(
-    "avatares-evolutivos", "AvatarBase", [admin, admin], "AvatarBase"
+    "avatares-evolutivos",
+    "AvatarBase",
+    [admin, admin],
+    "AvatarBase",
   );
   addresses.AvatarBase = avatarBaseAddr;
 
   const { address: avatarWalletLinkAddr } = await deployContract(
-    "avatares-evolutivos", "AvatarWalletLink", [admin], "AvatarWalletLink"
+    "avatares-evolutivos",
+    "AvatarWalletLink",
+    [admin],
+    "AvatarWalletLink",
   );
   addresses.AvatarWalletLink = avatarWalletLinkAddr;
 
   const { address: consentRegistryAddr } = await deployContract(
-    "avatares-evolutivos", "ConsentRegistry", [admin], "ConsentRegistry"
+    "avatares-evolutivos",
+    "ConsentRegistry",
+    [admin],
+    "ConsentRegistry",
   );
   addresses.ConsentRegistry = consentRegistryAddr;
 
   // AvatarPro depende de SGLToken; ConsentRegistry será configurado via setConsentRegistry
   const { address: avatarProAddr } = await deployContract(
-    "avatares-evolutivos", "AvatarPro", [sglTokenAddr, admin, admin], "AvatarPro"
+    "avatares-evolutivos",
+    "AvatarPro",
+    [sglTokenAddr, admin, admin],
+    "AvatarPro",
   );
   addresses.AvatarPro = avatarProAddr;
 
@@ -173,23 +203,35 @@ async function main() {
   console.log("\n── FASE 4: Integrações Institucionais ──────────");
 
   const { address: whiteLabelAddr } = await deployContract(
-    "integracoes-institucionais", "WhiteLabelRegistry", [admin], "WhiteLabelRegistry"
+    "integracoes-institucionais",
+    "WhiteLabelRegistry",
+    [admin],
+    "WhiteLabelRegistry",
   );
   addresses.WhiteLabelRegistry = whiteLabelAddr;
 
   // OracleGateway sem WhiteLabelRegistry — será configurado no wiring
   const { address: oracleAddr } = await deployContract(
-    "integracoes-institucionais", "OracleGateway", [admin], "OracleGateway"
+    "integracoes-institucionais",
+    "OracleGateway",
+    [admin],
+    "OracleGateway",
   );
   addresses.OracleGateway = oracleAddr;
 
   const { address: auditLogAddr } = await deployContract(
-    "integracoes-institucionais", "AuditLog", [admin], "AuditLog"
+    "integracoes-institucionais",
+    "AuditLog",
+    [admin],
+    "AuditLog",
   );
   addresses.AuditLog = auditLogAddr;
 
   const { address: instEscrowAddr } = await deployContract(
-    "integracoes-institucionais", "InstitutionalEscrow", [sglTokenAddr, admin, admin], "InstitutionalEscrow"
+    "integracoes-institucionais",
+    "InstitutionalEscrow",
+    [sglTokenAddr, admin, admin],
+    "InstitutionalEscrow",
   );
   addresses.InstitutionalEscrow = instEscrowAddr;
 
@@ -231,9 +273,9 @@ async function main() {
   console.log("════════════════════════════════════════════════\n");
 
   const summary = {
-    network:   "sepolia",
+    network: "sepolia",
     deployedAt: new Date().toISOString(),
-    deployer:   deployer.address,
+    deployer: deployer.address,
     admin,
     contracts: addresses,
   };

@@ -22,9 +22,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -34,12 +32,8 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "@openzeppelin/contracts/utils/Pausable.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "AvatarBase"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["AvatarBase"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/Pausable.sol": {
       "lastModificationDate": 1776838567178,
@@ -62,22 +56,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Pausable"
-      ]
+      "imports": ["../utils/Context.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Pausable"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
       "lastModificationDate": 1776838566290,
@@ -100,9 +86,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -112,12 +96,8 @@
         "../utils/Context.sol",
         "../utils/introspection/ERC165.sol"
       ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "AccessControl"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["AccessControl"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol": {
       "lastModificationDate": 1776838566693,
@@ -140,9 +120,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -156,12 +134,8 @@
         "../../utils/introspection/ERC165.sol",
         "../../interfaces/draft-IERC6093.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "ERC721"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["ERC721"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/Context.sol": {
       "lastModificationDate": 1776838566411,
@@ -184,20 +158,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Context"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Context"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/access/IAccessControl.sol": {
       "lastModificationDate": 1776838566895,
@@ -220,20 +188,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IAccessControl"
-      ]
+      "versionPragmas": [">=0.8.4"],
+      "artifacts": ["IAccessControl"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
       "lastModificationDate": 1776838566586,
@@ -256,22 +218,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC165"
-      ]
+      "imports": ["./IERC165.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ERC165"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
       "lastModificationDate": 1776838566959,
@@ -294,20 +248,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC165"
-      ]
+      "versionPragmas": [">=0.4.16"],
+      "artifacts": ["IERC165"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
       "lastModificationDate": 1776838567306,
@@ -330,25 +278,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./math/Math.sol",
-        "./math/SafeCast.sol",
-        "./math/SignedMath.sol",
-        "./Bytes.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "Strings"
-      ]
+      "imports": ["./math/Math.sol", "./math/SafeCast.sol", "./math/SignedMath.sol", "./Bytes.sol"],
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["Strings"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
       "lastModificationDate": 1776838566485,
@@ -371,22 +308,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IERC1155Errors",
-        "IERC20Errors",
-        "IERC721Errors"
-      ]
+      "versionPragmas": [">=0.8.4"],
+      "artifacts": ["IERC1155Errors", "IERC20Errors", "IERC721Errors"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC721/IERC721.sol": {
       "lastModificationDate": 1776838567038,
@@ -409,22 +338,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC721"
-      ]
+      "imports": ["../../utils/introspection/IERC165.sol"],
+      "versionPragmas": [">=0.6.2"],
+      "artifacts": ["IERC721"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol": {
       "lastModificationDate": 1776838567060,
@@ -447,22 +368,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../IERC721.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC721Metadata"
-      ]
+      "imports": ["../IERC721.sol"],
+      "versionPragmas": [">=0.6.2"],
+      "artifacts": ["IERC721Metadata"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol": {
       "lastModificationDate": 1776838566747,
@@ -485,23 +398,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../IERC721Receiver.sol",
-        "../../../interfaces/draft-IERC6093.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC721Utils"
-      ]
+      "imports": ["../IERC721Receiver.sol", "../../../interfaces/draft-IERC6093.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ERC721Utils"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/Bytes.sol": {
       "lastModificationDate": 1776838566380,
@@ -524,22 +428,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./math/Math.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "Bytes"
-      ]
+      "imports": ["./math/Math.sol"],
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["Bytes"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/math/Math.sol": {
       "lastModificationDate": 1776838567103,
@@ -562,23 +458,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../Panic.sol",
-        "./SafeCast.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Math"
-      ]
+      "imports": ["../Panic.sol", "./SafeCast.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Math"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol": {
       "lastModificationDate": 1776838567229,
@@ -601,20 +488,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SafeCast"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["SafeCast"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol": {
       "lastModificationDate": 1776838567260,
@@ -637,22 +518,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./SafeCast.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SignedMath"
-      ]
+      "imports": ["./SafeCast.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["SignedMath"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/Panic.sol": {
       "lastModificationDate": 1776838567175,
@@ -675,20 +548,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Panic"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Panic"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol": {
       "lastModificationDate": 1776838567067,
@@ -711,20 +578,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.5.0"
-      ],
-      "artifacts": [
-        "IERC721Receiver"
-      ]
+      "versionPragmas": [">=0.5.0"],
+      "artifacts": ["IERC721Receiver"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/interfaces/IERC165.sol": {
       "lastModificationDate": 1776838566956,
@@ -747,19 +608,13 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
+      "imports": ["../utils/introspection/IERC165.sol"],
+      "versionPragmas": [">=0.4.16"],
       "artifacts": []
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/interfaces/IERC1363.sol": {
@@ -783,23 +638,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./IERC20.sol",
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC1363"
-      ]
+      "imports": ["./IERC20.sol", "./IERC165.sol"],
+      "versionPragmas": [">=0.6.2"],
+      "artifacts": ["IERC1363"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/interfaces/IERC20.sol": {
       "lastModificationDate": 1776838566965,
@@ -822,19 +668,13 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../token/ERC20/IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
+      "imports": ["../token/ERC20/IERC20.sol"],
+      "versionPragmas": [">=0.4.16"],
       "artifacts": []
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
@@ -858,20 +698,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC20"
-      ]
+      "versionPragmas": [">=0.4.16"],
+      "artifacts": ["IERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": {
       "lastModificationDate": 1776838567245,
@@ -894,23 +728,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../IERC20.sol",
-        "../../../interfaces/IERC1363.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SafeERC20"
-      ]
+      "imports": ["../IERC20.sol", "../../../interfaces/IERC1363.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["SafeERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/contracts/AvatarPro.sol": {
       "lastModificationDate": 1776919537189,
@@ -933,9 +758,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -947,13 +770,8 @@
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "AvatarPro",
-        "IConsentRegistry"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["AvatarPro", "IConsentRegistry"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
       "lastModificationDate": 1776838567193,
@@ -976,22 +794,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./StorageSlot.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ReentrancyGuard"
-      ]
+      "imports": ["./StorageSlot.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ReentrancyGuard"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
       "lastModificationDate": 1776838567299,
@@ -1014,20 +824,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "StorageSlot"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["StorageSlot"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/contracts/ConsentRegistry.sol": {
       "lastModificationDate": 1776838513470,
@@ -1050,9 +854,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -1061,12 +863,8 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "@openzeppelin/contracts/utils/Pausable.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "ConsentRegistry"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["ConsentRegistry"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/contracts/AvatarWalletLink.sol": {
       "lastModificationDate": 1776838164366,
@@ -1089,9 +887,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -1100,12 +896,8 @@
         "@openzeppelin/contracts/access/AccessControl.sol",
         "@openzeppelin/contracts/utils/Pausable.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "AvatarWalletLink"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["AvatarWalletLink"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/avatares-evolutivos/contracts/AvatarContractZero.sol": {
       "lastModificationDate": 1776919556292,
@@ -1128,22 +920,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "AvatarContractZero"
-      ]
+      "imports": ["@openzeppelin/contracts/access/AccessControl.sol"],
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["AvatarContractZero"]
     }
   }
 }

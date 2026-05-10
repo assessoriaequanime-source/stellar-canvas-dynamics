@@ -155,7 +155,10 @@ router.get("/", async (req: Request, res: Response, next: NextFunction) => {
     }
 
     const userId = sessionUserId;
-    const capsules = await prisma.timeCapsule.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
+    const capsules = await prisma.timeCapsule.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
     res.status(200).json(capsules);
   } catch (error) {
     next(error);
@@ -188,92 +191,97 @@ router.post("/", async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.post("/judge-access", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = ensureUserId(req);
-    const payload = parseOrThrow(createJudgeAccessCapsuleSchema, req.body);
+router.post(
+  "/judge-access",
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = ensureUserId(req);
+      const payload = parseOrThrow(createJudgeAccessCapsuleSchema, req.body);
 
-    const unlockDateIso =
-      payload.deliveryType === "scheduled"
-        ? payload.unlockDate || new Date(Date.now() + 60 * 60 * 1000).toISOString()
-        : new Date().toISOString();
+      const unlockDateIso =
+        payload.deliveryType === "scheduled"
+          ? payload.unlockDate || new Date(Date.now() + 60 * 60 * 1000).toISOString()
+          : new Date().toISOString();
 
-    const envelope = createJudgeAccessEnvelope(getAuditEntryBaseUrl(req));
-    const metadata = buildJudgeAccessMetadata({
-      recipient: {
-        recipientName: payload.recipientName,
-        recipientEmail: payload.recipientEmail,
-        recipientWhatsapp: payload.recipientWhatsapp,
-      },
-      channel: payload.channel,
-      deliveryType: payload.deliveryType,
-      envelope,
-      unlockDateIso,
-    });
-
-    const capsule = await prisma.timeCapsule.create({
-      data: {
-        userId,
-        name: payload.name,
-        content: payload.content,
-        unlockDate: new Date(unlockDateIso),
-        metadata: metadata as Prisma.InputJsonValue,
-      },
-    });
-
-    let dispatchStatus: "scheduled" | "sent" | "pending-webhook" = "scheduled";
-    let dispatchResult = { emailSent: false, whatsappSent: false };
-
-    if (payload.deliveryType === "immediate") {
-      dispatchResult = await dispatchJudgeAccess({
+      const envelope = createJudgeAccessEnvelope(getAuditEntryBaseUrl(req));
+      const metadata = buildJudgeAccessMetadata({
         recipient: {
           recipientName: payload.recipientName,
           recipientEmail: payload.recipientEmail,
           recipientWhatsapp: payload.recipientWhatsapp,
         },
         channel: payload.channel,
+        deliveryType: payload.deliveryType,
         envelope,
-        capsuleId: capsule.id,
+        unlockDateIso,
       });
 
-      dispatchStatus = dispatchResult.emailSent || dispatchResult.whatsappSent ? "sent" : "pending-webhook";
-
-      const currentMetadata = assertJudgeCapsuleMetadata(capsule.metadata);
-      const nextMetadata: JudgeCapsuleMetadata = {
-        ...currentMetadata,
-        delivery: {
-          ...currentMetadata.delivery,
-          status: dispatchStatus,
-          dispatchedAt: dispatchStatus === "sent" ? new Date().toISOString() : null,
+      const capsule = await prisma.timeCapsule.create({
+        data: {
+          userId,
+          name: payload.name,
+          content: payload.content,
+          unlockDate: new Date(unlockDateIso),
+          metadata: metadata as Prisma.InputJsonValue,
         },
-      };
-
-      await prisma.timeCapsule.update({
-        where: { id: capsule.id },
-        data: { metadata: nextMetadata as Prisma.InputJsonValue },
       });
+
+      let dispatchStatus: "scheduled" | "sent" | "pending-webhook" = "scheduled";
+      let dispatchResult = { emailSent: false, whatsappSent: false };
+
+      if (payload.deliveryType === "immediate") {
+        dispatchResult = await dispatchJudgeAccess({
+          recipient: {
+            recipientName: payload.recipientName,
+            recipientEmail: payload.recipientEmail,
+            recipientWhatsapp: payload.recipientWhatsapp,
+          },
+          channel: payload.channel,
+          envelope,
+          capsuleId: capsule.id,
+        });
+
+        dispatchStatus =
+          dispatchResult.emailSent || dispatchResult.whatsappSent ? "sent" : "pending-webhook";
+
+        const currentMetadata = assertJudgeCapsuleMetadata(capsule.metadata);
+        const nextMetadata: JudgeCapsuleMetadata = {
+          ...currentMetadata,
+          delivery: {
+            ...currentMetadata.delivery,
+            status: dispatchStatus,
+            dispatchedAt: dispatchStatus === "sent" ? new Date().toISOString() : null,
+          },
+        };
+
+        await prisma.timeCapsule.update({
+          where: { id: capsule.id },
+          data: { metadata: nextMetadata as Prisma.InputJsonValue },
+        });
+      }
+
+      const inviteLink = `${envelope.dashboardUrl}?cid=${encodeURIComponent(capsule.id)}&jt=${encodeURIComponent(envelope.inviteToken)}`;
+
+      res.status(201).json({
+        id: capsule.id,
+        name: capsule.name,
+        unlockDate: capsule.unlockDate,
+        deliveryType: payload.deliveryType,
+        channel: payload.channel,
+        dispatchStatus,
+        dispatchResult,
+        judgeAccess: {
+          inviteLink,
+          accessCode: envelope.accessCode,
+          temporaryWalletAddress: envelope.temporaryWalletAddress,
+        },
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const inviteLink = `${envelope.dashboardUrl}?cid=${encodeURIComponent(capsule.id)}&jt=${encodeURIComponent(envelope.inviteToken)}`;
-
-    res.status(201).json({
-      id: capsule.id,
-      name: capsule.name,
-      unlockDate: capsule.unlockDate,
-      deliveryType: payload.deliveryType,
-      channel: payload.channel,
-      dispatchStatus,
-      dispatchResult,
-      judgeAccess: {
-        inviteLink,
-        accessCode: envelope.accessCode,
-        temporaryWalletAddress: envelope.temporaryWalletAddress,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 router.post(
   "/judge-access/:id/consume",
@@ -353,34 +361,38 @@ router.post(
   },
 );
 
-router.post("/:id/simulate-trigger", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const userId = ensureUserId(req);
+router.post(
+  "/:id/simulate-trigger",
+  requireAuth,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = ensureUserId(req);
 
-    const capsule = await prisma.timeCapsule.findFirst({
-      where: { id: req.params.id, userId },
-    });
+      const capsule = await prisma.timeCapsule.findFirst({
+        where: { id: req.params.id, userId },
+      });
 
-    if (!capsule) {
-      throw new AppError(404, "Capsule not found", "CAPSULE_NOT_FOUND");
+      if (!capsule) {
+        throw new AppError(404, "Capsule not found", "CAPSULE_NOT_FOUND");
+      }
+
+      const metadata = {
+        ...(typeof capsule.metadata === "object" && capsule.metadata ? capsule.metadata : {}),
+        simulatedTriggerAt: new Date().toISOString(),
+        status: "SIMULATED_TRIGGERED",
+      } as Prisma.InputJsonValue;
+
+      const updated = await prisma.timeCapsule.update({
+        where: { id: capsule.id },
+        data: { metadata },
+      });
+
+      // TODO: wire to TimeCapsule contract trigger flow.
+      res.status(200).json(updated);
+    } catch (error) {
+      next(error);
     }
-
-    const metadata = {
-      ...(typeof capsule.metadata === "object" && capsule.metadata ? capsule.metadata : {}),
-      simulatedTriggerAt: new Date().toISOString(),
-      status: "SIMULATED_TRIGGERED",
-    } as Prisma.InputJsonValue;
-
-    const updated = await prisma.timeCapsule.update({
-      where: { id: capsule.id },
-      data: { metadata },
-    });
-
-    // TODO: wire to TimeCapsule contract trigger flow.
-    res.status(200).json(updated);
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 export default router;

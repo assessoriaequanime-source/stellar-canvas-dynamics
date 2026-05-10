@@ -2,7 +2,7 @@ const hre = require("hardhat");
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
-  const admin    = process.env.ADMIN_ADDRESS    || deployer.address;
+  const admin = process.env.ADMIN_ADDRESS || deployer.address;
   const treasury = process.env.TREASURY_ADDRESS || deployer.address;
   const sglToken = process.env.SGL_TOKEN_ADDRESS;
 
@@ -33,8 +33,8 @@ async function main() {
   if (!sglToken) {
     console.warn(
       "\n[AVISO] SGL_TOKEN_ADDRESS nao configurado. " +
-      "InstitutionalEscrow nao sera deployado. " +
-      "Configure o endereco do SGLToken do Modulo 3 no .env e rode novamente.\n"
+        "InstitutionalEscrow nao sera deployado. " +
+        "Configure o endereco do SGLToken do Modulo 3 no .env e rode novamente.\n",
     );
   } else {
     const InstitutionalEscrow = await hre.ethers.getContractFactory("InstitutionalEscrow");

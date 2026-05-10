@@ -5,7 +5,11 @@ export function parseOrThrow<T extends z.ZodTypeAny>(schema: T, payload: unknown
   const result = schema.safeParse(payload);
 
   if (!result.success) {
-    throw new AppError(400, result.error.issues.map((issue) => issue.message).join("; "), "VALIDATION_ERROR");
+    throw new AppError(
+      400,
+      result.error.issues.map((issue) => issue.message).join("; "),
+      "VALIDATION_ERROR",
+    );
   }
 
   return result.data;

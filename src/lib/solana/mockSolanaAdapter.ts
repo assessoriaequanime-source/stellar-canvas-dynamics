@@ -1,4 +1,8 @@
-import type { SolanaAdapter, SolanaTransactionRequest, SolanaTransactionResult } from "./solanaAdapter";
+import type {
+  SolanaAdapter,
+  SolanaTransactionRequest,
+  SolanaTransactionResult,
+} from "./solanaAdapter";
 
 function randomId(size: number): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789";

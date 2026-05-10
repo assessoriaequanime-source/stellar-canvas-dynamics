@@ -8,15 +8,15 @@
 
 ## 🔍 Resumo Executivo
 
-| Critério | Status | Detalhes |
-|----------|--------|----------|
-| Build Frontend | ✅ Sucesso | Vite build completo, dist/client pronto |
-| Build Backend | ✅ Sucesso | TypeScript compilation sem erros |
-| Testes Integração | ✅ 14/14 PASS | Todas rotas, fluxos auth, isolamento cross-user, audit logs |
-| Compatibilidade API | ✅ Corrigida | Nginx rewrite `/alt-api/*` → `/api/v1/*` |
-| Health Check | ✅ Implementado | Backend expõe `/health` e `/metrics` |
-| Isolamento Dados | ✅ Validado | Cross-user access bloqueado em todos endpoints |
-| Port Conflicts | ✅ Sem conflitos | Frontend: Vite dev, Backend: 127.0.0.1:9200, Nginx: 80/443 |
+| Critério            | Status           | Detalhes                                                    |
+| ------------------- | ---------------- | ----------------------------------------------------------- |
+| Build Frontend      | ✅ Sucesso       | Vite build completo, dist/client pronto                     |
+| Build Backend       | ✅ Sucesso       | TypeScript compilation sem erros                            |
+| Testes Integração   | ✅ 14/14 PASS    | Todas rotas, fluxos auth, isolamento cross-user, audit logs |
+| Compatibilidade API | ✅ Corrigida     | Nginx rewrite `/alt-api/*` → `/api/v1/*`                    |
+| Health Check        | ✅ Implementado  | Backend expõe `/health` e `/metrics`                        |
+| Isolamento Dados    | ✅ Validado      | Cross-user access bloqueado em todos endpoints              |
+| Port Conflicts      | ✅ Sem conflitos | Frontend: Vite dev, Backend: 127.0.0.1:9200, Nginx: 80/443  |
 
 ---
 
@@ -25,30 +25,35 @@
 ### **1. Mismatch de Rotas API (CRÍTICO — CORRIGIDO)**
 
 **Problema Encontrado:**
+
 - Frontend chama: `https://singulai.live/alt-api/auth/simple`
 - Backend serve: `/api/v1/auth/simple`
 - Sem mapeamento, as requisições resultariam em 404
 
 **Código Afetado:**
+
 ```typescript
 // src/lib/altApi.ts
-export const ALT_API_BASE: string = 
+export const ALT_API_BASE: string =
   import.meta.env.VITE_ALT_API_BASE || "https://singulai.live/alt-api";
 ```
 
 **Endpoints Chamados pelo Frontend:**
+
 - `POST /alt-api/auth/simple` (login)
 - `POST /alt-api/auth/verify-session` (verify token)
 - `POST /alt-api/avatar/message` (send message to avatar)
 
 **Solução Implementada:**
 Adicionado rewrite rule no Nginx (`stellar-backend/nginx-stellar-backend.conf`):
+
 ```nginx
 # Rewrite /alt-api/* -> /api/v1/* for frontend compatibility
 rewrite ^/alt-api/(.*)$ /api/v1/$1 break;
 ```
 
 **Efeito:**
+
 - `/alt-api/auth/simple` → `/api/v1/auth/simple` ✅
 - `/alt-api/auth/verify-session` → `/api/v1/auth/verify-session` ✅
 - `/alt-api/avatar/message` → `/api/v1/avatar/message` ✅
@@ -58,30 +63,39 @@ rewrite ^/alt-api/(.*)$ /api/v1/$1 break;
 ## ✅ Validações Técnicas Realizadas
 
 ### **Build Frontend**
+
 ```bash
 npm run build
 ```
+
 **Resultado:** ✅ Success
+
 - Client bundle: 356.99 kB (114.06 kB gzipped)
 - Dashboard: 567.80 kB (156.17 kB gzipped)
 - Server build: 38.66 kB
 - **Warnings:** Chunk size > 500kB (esperado em Vite, não crítico)
 
 ### **Build Backend**
+
 ```bash
 cd stellar-backend && npm run build
 ```
+
 **Resultado:** ✅ Success
+
 - TypeScript compilation: sem erros
 - Dist folder pronto para production
 
 ### **Testes de Integração**
+
 ```bash
 cd stellar-backend && npm run test
 ```
+
 **Resultado:** ✅ 14/14 PASS
 
 Testes cobrem:
+
 1. ✅ Auth flow (challenge → verify → refresh → logout)
 2. ✅ User profile CRUD
 3. ✅ Avatar model CRUD
@@ -98,6 +112,7 @@ Testes cobrem:
 ## 🏗️ Arquitetura Validada
 
 ### **Frontend (Vite + TanStack Router)**
+
 ```
 src/
 ├── components/              ← UI components
@@ -118,6 +133,7 @@ src/
 ```
 
 ### **Backend (Node + Express + Prisma)**
+
 ```
 stellar-backend/
 ├── src/
@@ -150,6 +166,7 @@ stellar-backend/
 ```
 
 ### **Reverse Proxy (Nginx)**
+
 ```
 Browser: https://singulai.live
      ↓
@@ -164,24 +181,26 @@ Backend: http://127.0.0.1:9200
 
 ## 📊 Matriz de Compatibilidade
 
-| Requisição | Origem | Via Nginx | Recebida Em | Status |
-|-----------|--------|-----------|-----------|--------|
-| POST /alt-api/auth/simple | Frontend | Rewrite + Proxy | /api/v1/auth/simple | ✅ |
-| POST /alt-api/auth/verify-session | Frontend | Rewrite + Proxy | /api/v1/auth/verify-session | ✅ |
-| POST /alt-api/avatar/message | Frontend | Rewrite + Proxy | /api/v1/avatar/message | ✅ |
-| GET /health | Monitoring | Proxy | /health | ✅ |
-| GET /metrics | Monitoring | Proxy (restricted) | /metrics | ✅ |
+| Requisição                        | Origem     | Via Nginx          | Recebida Em                 | Status |
+| --------------------------------- | ---------- | ------------------ | --------------------------- | ------ |
+| POST /alt-api/auth/simple         | Frontend   | Rewrite + Proxy    | /api/v1/auth/simple         | ✅     |
+| POST /alt-api/auth/verify-session | Frontend   | Rewrite + Proxy    | /api/v1/auth/verify-session | ✅     |
+| POST /alt-api/avatar/message      | Frontend   | Rewrite + Proxy    | /api/v1/avatar/message      | ✅     |
+| GET /health                       | Monitoring | Proxy              | /health                     | ✅     |
+| GET /metrics                      | Monitoring | Proxy (restricted) | /metrics                    | ✅     |
 
 ---
 
 ## 🔐 Segurança Verificada
 
 ### **Isolamento de Dados**
+
 - ✅ `requireAuth()` middleware em todas rotas
 - ✅ `ensureUserId()` em queries (bloqueia cross-user)
 - ✅ Audit logs isolados por usuário
 
 ### **Headers de Segurança (Nginx)**
+
 - ✅ X-Frame-Options: SAMEORIGIN
 - ✅ X-Content-Type-Options: nosniff
 - ✅ X-XSS-Protection: 1; mode=block
@@ -189,24 +208,26 @@ Backend: http://127.0.0.1:9200
 - ✅ Content-Security-Policy: default-src 'self'
 
 ### **Rate Limiting**
+
 - ✅ 10 req/s por IP
 - ✅ Burst de 20 requisições
 
 ### **Acesso Sensível**
+
 - ✅ /metrics restrita a 127.0.0.1 e 10.0.0.0/8
-- ✅ .env e /.* bloqueados
+- ✅ .env e /.\* bloqueados
 
 ---
 
 ## 🚀 Portas e Processos
 
-| Serviço | Porta | Host | Status |
-|---------|-------|------|--------|
-| Nginx (HTTP) | 80 | 0.0.0.0 | ✅ Pronto |
-| Nginx (HTTPS) | 443 | 0.0.0.0 | 📋 Após DNS ativo |
-| Backend API | 9200 | 127.0.0.1 | ✅ Pronto |
-| Frontend Dev | 5173 | localhost | ✅ Desenvolvido |
-| Frontend Prod | SSR | 127.0.0.1:9200 | ✅ Pronto |
+| Serviço       | Porta | Host           | Status            |
+| ------------- | ----- | -------------- | ----------------- |
+| Nginx (HTTP)  | 80    | 0.0.0.0        | ✅ Pronto         |
+| Nginx (HTTPS) | 443   | 0.0.0.0        | 📋 Após DNS ativo |
+| Backend API   | 9200  | 127.0.0.1      | ✅ Pronto         |
+| Frontend Dev  | 5173  | localhost      | ✅ Desenvolvido   |
+| Frontend Prod | SSR   | 127.0.0.1:9200 | ✅ Pronto         |
 
 ---
 

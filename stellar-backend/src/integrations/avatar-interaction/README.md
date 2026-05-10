@@ -3,6 +3,7 @@
 Status: pending expansion (no runtime wiring yet).
 
 This folder prepares a provider-based architecture for:
+
 - sentimental voice synthesis (ElevenLabs)
 - user-owned model API integration (custom provider)
 

@@ -35,7 +35,11 @@ export class CustomLlmProvider implements LlmProvider {
       },
     );
 
-    const data = response.data as { text: string; model?: string; usage?: { promptTokens?: number; completionTokens?: number } };
+    const data = response.data as {
+      text: string;
+      model?: string;
+      usage?: { promptTokens?: number; completionTokens?: number };
+    };
 
     return {
       text: data.text,

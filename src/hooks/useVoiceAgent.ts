@@ -3,9 +3,9 @@
  * React hook for managing xAI Realtime Voice Agent WebSocket connection
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { submitAbsorptionFeedback } from '@/lib/avatarpro/absorptionApiClient';
-import { RealSolanaAdapter } from '@/lib/solana/realSolanaAdapter';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { submitAbsorptionFeedback } from "@/lib/avatarpro/absorptionApiClient";
+import { RealSolanaAdapter } from "@/lib/solana/realSolanaAdapter";
 import {
   SessionTokenManager,
   audioToBase64,
@@ -13,12 +13,12 @@ import {
   getDefaultSessionConfig,
   XaiMessageEvent,
   XaiSessionConfig,
-} from '@/lib/xai-utils';
+} from "@/lib/xai-utils";
 
 export interface VoiceMessage {
   id: string;
-  role: 'user' | 'assistant';
-  type: 'text' | 'audio';
+  role: "user" | "assistant";
+  type: "text" | "audio";
   content: string; // For text: the message, for audio: base64-encoded PCM (optional in transcript mode)
   transcript?: string; // Transcription of user speech or assistant audio
   interrupted?: boolean;
@@ -33,29 +33,29 @@ export interface UseVoiceAgentOptions {
   onError?: (error: Error) => void;
 }
 
-export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'active' | 'error';
+export type ConnectionStatus = "idle" | "connecting" | "connected" | "active" | "error";
 
-type AbsorptionGesture = 'right' | 'left' | 'none';
+type AbsorptionGesture = "right" | "left" | "none";
 
 type VoiceAbsorptionPayload = {
   response_to_user?: string;
-  avatar_id?: 'pedro' | 'laura' | 'leticia';
+  avatar_id?: "pedro" | "laura" | "leticia";
   absorption_update?: {
     target?: string;
     gesture_feedback?: AbsorptionGesture;
     pas_previous?: number;
     pas_new?: number;
     delta?: number;
-    learning_outcome?: 'reinforced' | 'corrected' | 'unchanged';
+    learning_outcome?: "reinforced" | "corrected" | "unchanged";
   };
 };
 
 function getSessionWalletAddress(): string | null {
   try {
-    const raw = localStorage.getItem('singulai_wallet');
+    const raw = localStorage.getItem("singulai_wallet");
     if (raw) {
       const parsed = JSON.parse(raw) as Record<string, unknown>;
-      if (typeof parsed.address === 'string' && parsed.address.length > 0) {
+      if (typeof parsed.address === "string" && parsed.address.length > 0) {
         return parsed.address;
       }
     }
@@ -66,24 +66,24 @@ function getSessionWalletAddress(): string | null {
 }
 
 async function sha256Hex(input: string): Promise<string> {
-  if (typeof crypto === 'undefined' || !crypto.subtle) {
+  if (typeof crypto === "undefined" || !crypto.subtle) {
     let hash = 0;
     for (let i = 0; i < input.length; i += 1) {
       hash = (hash << 5) - hash + input.charCodeAt(i);
       hash |= 0;
     }
-    return `fallback-${Math.abs(hash).toString(16).padStart(8, '0')}`;
+    return `fallback-${Math.abs(hash).toString(16).padStart(8, "0")}`;
   }
 
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
   return Array.from(new Uint8Array(digest))
-    .map((value) => value.toString(16).padStart(2, '0'))
-    .join('');
+    .map((value) => value.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function extractFirstJsonObject(text: string): string | null {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
   if (start === -1 || end === -1 || end <= start) return null;
   return text.slice(start, end + 1);
 }
@@ -106,7 +106,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
   const { sessionConfig, autoConnect = false, onMessage, onStatusChange, onError } = options;
 
   // ─── State ────────────────────────────────────────────────────────────
-  const [status, setStatus] = useState<ConnectionStatus>('idle');
+  const [status, setStatus] = useState<ConnectionStatus>("idle");
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -119,17 +119,20 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
   const micBufferRef = useRef<Int16Array[]>([]);
   const sessionReadyRef = useRef(false);
   const currentResponseIdRef = useRef<string | null>(null);
-  const assistantTranscriptRef = useRef('');
+  const assistantTranscriptRef = useRef("");
   const nextPlayTimeRef = useRef(0);
   const queuedSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const messageIdCounterRef = useRef(0);
   const solanaAdapterRef = useRef(new RealSolanaAdapter());
 
   // ─── Status Management ────────────────────────────────────────────────
-  const updateStatus = useCallback((newStatus: ConnectionStatus) => {
-    setStatus(newStatus);
-    onStatusChange?.(newStatus);
-  }, [onStatusChange]);
+  const updateStatus = useCallback(
+    (newStatus: ConnectionStatus) => {
+      setStatus(newStatus);
+      onStatusChange?.(newStatus);
+    },
+    [onStatusChange],
+  );
 
   const addMessage = useCallback(
     (message: VoiceMessage) => {
@@ -195,7 +198,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       // Warm up AudioContext inside user gesture (Safari requirement)
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioContext({ sampleRate: 24000 });
-        if (audioContextRef.current.state === 'suspended') {
+        if (audioContextRef.current.state === "suspended") {
           await audioContextRef.current.resume();
         }
       }
@@ -213,11 +216,11 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       micStreamRef.current = stream;
 
       // Add AudioWorklet module
-      await audioContextRef.current.audioWorklet.addModule('/pcm-processor-worklet.js');
+      await audioContextRef.current.audioWorklet.addModule("/pcm-processor-worklet.js");
 
       // Create worklet node for PCM processing
       const source = audioContextRef.current.createMediaStreamSource(stream);
-      const workletNode = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
+      const workletNode = new AudioWorkletNode(audioContextRef.current, "pcm-processor");
 
       // Handle audio chunks
       workletNode.port.onmessage = (event) => {
@@ -228,7 +231,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
           if (wsRef.current?.readyState === WebSocket.OPEN) {
             wsRef.current.send(
               JSON.stringify({
-                type: 'input_audio_buffer.append',
+                type: "input_audio_buffer.append",
                 audio: audioToBase64(int16Data),
               }),
             );
@@ -245,7 +248,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
       onError?.(error);
-      updateStatus('error');
+      updateStatus("error");
     }
   }, [onError, updateStatus]);
 
@@ -259,12 +262,12 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
 
   // ─── WebSocket Management ─────────────────────────────────────────────
   const connect = useCallback(async () => {
-    if (status !== 'idle') {
-      console.warn('[xAI] Not in idle state, skipping connect');
+    if (status !== "idle") {
+      console.warn("[xAI] Not in idle state, skipping connect");
       return;
     }
 
-    updateStatus('connecting');
+    updateStatus("connecting");
 
     try {
       // Start mic capture in parallel (do NOT wait for WebSocket)
@@ -274,7 +277,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       const token = await tokenManagerRef.current.getToken();
 
       // Create WebSocket
-      const ws = new WebSocket('wss://api.x.ai/v1/realtime?model=grok-voice-think-fast-1.0', [
+      const ws = new WebSocket("wss://api.x.ai/v1/realtime?model=grok-voice-think-fast-1.0", [
         `xai-client-secret.${token}`,
       ]);
 
@@ -284,22 +287,22 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       const timeoutHandle = setTimeout(() => {
         if (ws.readyState !== WebSocket.OPEN) {
           ws.close();
-          const err = new Error('WebSocket connection timeout (10s)');
+          const err = new Error("WebSocket connection timeout (10s)");
           setError(err);
           onError?.(err);
-          updateStatus('error');
+          updateStatus("error");
         }
       }, 10000);
 
       ws.onopen = () => {
         clearTimeout(timeoutHandle);
-        console.debug('[xAI] WebSocket open');
+        console.debug("[xAI] WebSocket open");
 
         // Send session config
         const config = { ...getDefaultSessionConfig(), ...sessionConfig };
         ws.send(
           JSON.stringify({
-            type: 'session.update',
+            type: "session.update",
             session: config,
           }),
         );
@@ -310,23 +313,23 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
           const event = JSON.parse(data) as XaiMessageEvent;
           handleXaiMessage(event);
         } catch (err) {
-          console.error('[xAI] Message parsing error:', err);
+          console.error("[xAI] Message parsing error:", err);
         }
       };
 
       ws.onerror = (event) => {
-        console.error('[xAI] WebSocket error:', event);
-        const err = new Error('WebSocket error');
+        console.error("[xAI] WebSocket error:", event);
+        const err = new Error("WebSocket error");
         setError(err);
         onError?.(err);
-        updateStatus('error');
+        updateStatus("error");
       };
 
       ws.onclose = () => {
-        console.debug('[xAI] WebSocket closed');
+        console.debug("[xAI] WebSocket closed");
         sessionReadyRef.current = false;
         micBufferRef.current = [];
-        updateStatus('idle');
+        updateStatus("idle");
       };
 
       // Wait for mic setup
@@ -335,7 +338,7 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       const error = err instanceof Error ? err : new Error(String(err));
       setError(error);
       onError?.(error);
-      updateStatus('error');
+      updateStatus("error");
       stopMicCapture();
     }
   }, [status, startMicCapture, stopMicCapture, sessionConfig, onError, updateStatus]);
@@ -348,9 +351,9 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
     stopMicCapture();
     interruptPlayback();
     sessionReadyRef.current = false;
-    assistantTranscriptRef.current = '';
+    assistantTranscriptRef.current = "";
     micBufferRef.current = [];
-    updateStatus('idle');
+    updateStatus("idle");
   }, [stopMicCapture, interruptPlayback, updateStatus]);
 
   const persistAbsorptionUpdate = useCallback(async (assistantText: string) => {
@@ -360,14 +363,14 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
     }
 
     const absorption = payload.absorption_update;
-    const gesture = absorption.gesture_feedback ?? 'none';
+    const gesture = absorption.gesture_feedback ?? "none";
     const pasPrevious = Number(absorption.pas_previous ?? 0.5);
     const pasNew = Number(absorption.pas_new ?? 0.5);
     const delta = Number(absorption.delta ?? pasNew - pasPrevious);
 
     const walletAddress = getSessionWalletAddress();
     if (!walletAddress) {
-      throw new Error('Wallet de sessão não encontrada para persistência PAS');
+      throw new Error("Wallet de sessão não encontrada para persistência PAS");
     }
     const timestamp = new Date().toISOString();
 
@@ -377,8 +380,8 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       pas_previous: pasPrevious,
       pas_new: pasNew,
       delta,
-      learning_outcome: absorption.learning_outcome ?? 'unchanged',
-      target: absorption.target ?? 'last_ai_response',
+      learning_outcome: absorption.learning_outcome ?? "unchanged",
+      target: absorption.target ?? "last_ai_response",
       ts: timestamp,
     };
 
@@ -386,21 +389,21 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
 
     const tx = await solanaAdapterRef.current.submitTransaction({
       walletAddress,
-      serviceType: 'update_particle_score',
+      serviceType: "update_particle_score",
       payloadHash,
     });
 
-    if (gesture === 'left' || gesture === 'right') {
+    if (gesture === "left" || gesture === "right") {
       await submitAbsorptionFeedback({
         direction: gesture,
         profile: payload.avatar_id,
         intensity: Math.min(100, Math.round(Math.abs(delta) * 100)),
-        source: 'xai-voice-agent',
+        source: "xai-voice-agent",
         targetResponseHash: payloadHash,
       });
     }
 
-    console.info('[xAI] PAS persisted', {
+    console.info("[xAI] PAS persisted", {
       avatar: payload.avatar_id,
       gesture,
       pasPrevious,
@@ -416,21 +419,21 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
       const messageIdCounter = messageIdCounterRef.current++;
 
       switch (event.type) {
-        case 'session.created':
-          console.debug('[xAI] Session created:', event.session?.id);
+        case "session.created":
+          console.debug("[xAI] Session created:", event.session?.id);
           break;
 
-        case 'session.updated':
-          console.debug('[xAI] Session updated');
+        case "session.updated":
+          console.debug("[xAI] Session updated");
           sessionReadyRef.current = true;
-          updateStatus('connected');
+          updateStatus("connected");
 
           // Flush buffered audio in order
           if (wsRef.current?.readyState === WebSocket.OPEN) {
             for (const chunk of micBufferRef.current) {
               wsRef.current.send(
                 JSON.stringify({
-                  type: 'input_audio_buffer.append',
+                  type: "input_audio_buffer.append",
                   audio: audioToBase64(chunk),
                 }),
               );
@@ -439,36 +442,36 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
           }
           break;
 
-        case 'input_audio_buffer.speech_started':
-          console.debug('[xAI] User started speaking');
+        case "input_audio_buffer.speech_started":
+          console.debug("[xAI] User started speaking");
           interruptPlayback();
-          updateStatus('active');
+          updateStatus("active");
           break;
 
-        case 'response.created':
+        case "response.created":
           currentResponseIdRef.current = event.response?.id || `resp-${messageIdCounter}`;
-          assistantTranscriptRef.current = '';
+          assistantTranscriptRef.current = "";
           addMessage({
             id: currentResponseIdRef.current,
-            role: 'assistant',
-            type: 'text',
-            content: '',
-            transcript: '',
+            role: "assistant",
+            type: "text",
+            content: "",
+            transcript: "",
             timestamp: Date.now(),
           });
           break;
 
-        case 'response.output_audio_transcript.delta':
-          assistantTranscriptRef.current += String(event.delta || '');
+        case "response.output_audio_transcript.delta":
+          assistantTranscriptRef.current += String(event.delta || "");
           // Stream transcript text
           setMessages((prev) => {
             const lastMsg = prev[prev.length - 1];
-            if (lastMsg?.id === currentResponseIdRef.current && lastMsg.role === 'assistant') {
+            if (lastMsg?.id === currentResponseIdRef.current && lastMsg.role === "assistant") {
               return [
                 ...prev.slice(0, -1),
                 {
                   ...lastMsg,
-                  transcript: (lastMsg.transcript || '') + (event.delta || ''),
+                  transcript: (lastMsg.transcript || "") + (event.delta || ""),
                 },
               ];
             }
@@ -476,26 +479,26 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
           });
           break;
 
-        case 'response.output_audio.delta':
+        case "response.output_audio.delta":
           // Play audio chunk
           playPcmChunk(event.delta as string);
           break;
 
-        case 'conversation.item.input_audio_transcription.completed':
+        case "conversation.item.input_audio_transcription.completed":
           // User speech transcected
           if (event.transcript) {
             addMessage({
               id: `user-${messageIdCounter}`,
-              role: 'user',
-              type: 'text',
+              role: "user",
+              type: "text",
               content: event.transcript,
               timestamp: Date.now(),
             });
           }
           break;
 
-        case 'response.output_audio_transcript.done':
-          if (typeof event.transcript === 'string') {
+        case "response.output_audio_transcript.done":
+          if (typeof event.transcript === "string") {
             assistantTranscriptRef.current = event.transcript;
           }
           // Finalize assistant transcript
@@ -503,38 +506,39 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === currentResponseIdRef.current && msg.transcript
-                  ? { ...msg, type: 'text', content: msg.transcript }
+                  ? { ...msg, type: "text", content: msg.transcript }
                   : msg,
               ),
             );
           }
           break;
 
-        case 'response.done':
-          console.debug('[xAI] Response done, tokens:', event.usage?.total_tokens);
+        case "response.done":
+          console.debug("[xAI] Response done, tokens:", event.usage?.total_tokens);
           if (assistantTranscriptRef.current.trim().length > 0) {
             void persistAbsorptionUpdate(assistantTranscriptRef.current).catch((persistError) => {
-              console.warn('[xAI] PAS persist failed:', persistError);
+              console.warn("[xAI] PAS persist failed:", persistError);
             });
           }
           currentResponseIdRef.current = null;
-          assistantTranscriptRef.current = '';
-          updateStatus('connected');
+          assistantTranscriptRef.current = "";
+          updateStatus("connected");
           break;
 
-        case 'input_audio_buffer.speech_stopped':
-          console.debug('[xAI] User stopped speaking');
+        case "input_audio_buffer.speech_stopped":
+          console.debug("[xAI] User stopped speaking");
           break;
 
-        case 'error':
-          console.error('[xAI] Error:', event.message);
+        case "error": {
+          console.error("[xAI] Error:", event.message);
           const err = new Error(event.message as string);
           setError(err);
           onError?.(err);
           break;
+        }
 
         default:
-          console.debug('[xAI] Unhandled event:', event.type);
+          console.debug("[xAI] Unhandled event:", event.type);
       }
     },
     [addMessage, interruptPlayback, persistAbsorptionUpdate, playPcmChunk, updateStatus, onError],
@@ -544,37 +548,37 @@ export function useVoiceAgent(options: UseVoiceAgentOptions = {}) {
   const sendText = useCallback(
     (text: string) => {
       if (wsRef.current?.readyState !== WebSocket.OPEN) {
-        console.warn('[xAI] WebSocket not open');
+        console.warn("[xAI] WebSocket not open");
         return;
       }
 
       addMessage({
         id: `user-${messageIdCounterRef.current++}`,
-        role: 'user',
-        type: 'text',
+        role: "user",
+        type: "text",
         content: text,
         timestamp: Date.now(),
       });
 
       wsRef.current.send(
         JSON.stringify({
-          type: 'conversation.item.create',
+          type: "conversation.item.create",
           item: {
-            type: 'message',
-            role: 'user',
-            content: [{ type: 'input_text', text }],
+            type: "message",
+            role: "user",
+            content: [{ type: "input_text", text }],
           },
         }),
       );
 
-      wsRef.current.send(JSON.stringify({ type: 'response.create' }));
+      wsRef.current.send(JSON.stringify({ type: "response.create" }));
     },
     [addMessage],
   );
 
   // ─── Cleanup ──────────────────────────────────────────────────────────
   useEffect(() => {
-    if (autoConnect && status === 'idle') {
+    if (autoConnect && status === "idle") {
       connect();
     }
 

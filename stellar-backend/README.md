@@ -172,14 +172,14 @@ Activation status:
 
 ## 🔌 API Endpoints (v1)
 
-| Method | Endpoint | Description |
-| ------ | -------- | ----------- |
-| `GET` | `/health` | Health check |
-| `POST` | `/api/v1/auth/login` | User authentication |
-| `GET` | `/api/v1/avatars` | List avatars |
-| `POST` | `/api/v1/sessions` | Create paid session |
-| `POST` | `/api/v1/consent` | Register consent |
-| `GET` | `/api/v1/wallet/balance` | Check SGL balance |
+| Method | Endpoint                 | Description         |
+| ------ | ------------------------ | ------------------- |
+| `GET`  | `/health`                | Health check        |
+| `POST` | `/api/v1/auth/login`     | User authentication |
+| `GET`  | `/api/v1/avatars`        | List avatars        |
+| `POST` | `/api/v1/sessions`       | Create paid session |
+| `POST` | `/api/v1/consent`        | Register consent    |
+| `GET`  | `/api/v1/wallet/balance` | Check SGL balance   |
 
 Full API documentation: See `docs/API.md` (coming in Week 2)
 

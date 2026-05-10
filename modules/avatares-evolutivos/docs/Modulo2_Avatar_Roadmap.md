@@ -1,4 +1,5 @@
 # SingulAI — Módulo 2: Avatares Evolutivos
+
 ## Outline do Deck para Investidores / Parceiros
 
 Tagline: "Essência imutável. Memória viva. Legado executável."
@@ -55,12 +56,12 @@ Tagline: "Essência imutável. Memória viva. Legado executável."
 
 ## Slide 5 — Contratos & Componentes
 
-| Contrato | Função |
-|---|---|
-| **AvatarBase.sol** | NFT ERC721 com snapshot IPFS. Mint, update, deactivate. |
-| **AvatarWalletLink.sol** | Permissões de carteira com expiração e nível granular. |
-| **ConsentRegistry.sol** | Bitmask LGPD/GDPR: voz, marketing, venda, uso jurídico. |
-| **AvatarPro.sol** | Sessões pagas em SGL com limite diário e hash de auditoria. |
+| Contrato                 | Função                                                      |
+| ------------------------ | ----------------------------------------------------------- |
+| **AvatarBase.sol**       | NFT ERC721 com snapshot IPFS. Mint, update, deactivate.     |
+| **AvatarWalletLink.sol** | Permissões de carteira com expiração e nível granular.      |
+| **ConsentRegistry.sol**  | Bitmask LGPD/GDPR: voz, marketing, venda, uso jurídico.     |
+| **AvatarPro.sol**        | Sessões pagas em SGL com limite diário e hash de auditoria. |
 
 - Próximo: `OracleLink.sol` para validação de identidade civil e testemunhos.
 
@@ -89,38 +90,38 @@ Tagline: "Essência imutável. Memória viva. Legado executável."
 
 ## Slide 8 — Casos de Uso Prioritários
 
-| Contexto | Caso | Monetização |
-|---|---|---|
-| **Familiar** | Conversas entre netos e avó digital | Grátis / modelo freemium |
-| **Profissional** | Mentor técnico sênior como avatar | Assinatura mensal em SGL |
-| **Artistas / Fãs** | Sessões pagas com avatar de artista | Microtransações SGL |
-| **Jurídico** | Testemunho avatar com prova on-chain | B2B / escritórios parceiros |
+| Contexto           | Caso                                 | Monetização                 |
+| ------------------ | ------------------------------------ | --------------------------- |
+| **Familiar**       | Conversas entre netos e avó digital  | Grátis / modelo freemium    |
+| **Profissional**   | Mentor técnico sênior como avatar    | Assinatura mensal em SGL    |
+| **Artistas / Fãs** | Sessões pagas com avatar de artista  | Microtransações SGL         |
+| **Jurídico**       | Testemunho avatar com prova on-chain | B2B / escritórios parceiros |
 
 ---
 
 ## Slide 9 — Roadmap (12 semanas MVP)
 
-| Fase | Semanas | Entregável |
-|---|---|---|
-| Design & Requisitos | 1 | Protótipos Figma, roteiro de onboarding |
-| Dados & Indexação | 2–3 | Vector DB + ASR + ingest de memórias |
-| RAG + LLM | 4–5 | Endpoint `interactAvatar` com contexto |
-| Contratos On-Chain | 6 | Deploy AvatarBase + WalletLink em testnet |
-| Dashboard & Chat UI | 7–8 | Painel de consentimento + chat texto |
-| Voice & TTS | 9 | TTS com consentimento, ASR feedback |
-| Legal & Compliance | 10–12 | PoC jurídico, relatório LGPD/GDPR |
+| Fase                | Semanas | Entregável                                |
+| ------------------- | ------- | ----------------------------------------- |
+| Design & Requisitos | 1       | Protótipos Figma, roteiro de onboarding   |
+| Dados & Indexação   | 2–3     | Vector DB + ASR + ingest de memórias      |
+| RAG + LLM           | 4–5     | Endpoint `interactAvatar` com contexto    |
+| Contratos On-Chain  | 6       | Deploy AvatarBase + WalletLink em testnet |
+| Dashboard & Chat UI | 7–8     | Painel de consentimento + chat texto      |
+| Voice & TTS         | 9       | TTS com consentimento, ASR feedback       |
+| Legal & Compliance  | 10–12   | PoC jurídico, relatório LGPD/GDPR         |
 
 ---
 
 ## Slide 10 — KPIs do MVP
 
-| Métrica | Meta |
-|---|---|
-| Fidelity Score (aprovação humana) | > 75% |
-| Latência de resposta (RAG + LLM) | < 3s (P95) |
-| Taxa de revogação de consentimento | < 2% |
-| Interações por usuário/semana | > 5 |
-| Incidentes de segurança / 10k sessões | 0 |
+| Métrica                               | Meta       |
+| ------------------------------------- | ---------- |
+| Fidelity Score (aprovação humana)     | > 75%      |
+| Latência de resposta (RAG + LLM)      | < 3s (P95) |
+| Taxa de revogação de consentimento    | < 2%       |
+| Interações por usuário/semana         | > 5        |
+| Incidentes de segurança / 10k sessões | 0          |
 
 ---
 

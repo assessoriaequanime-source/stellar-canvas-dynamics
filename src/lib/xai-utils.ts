@@ -18,7 +18,7 @@ export function audioToBase64(int16Array: Int16Array): string {
     parts.push(String.fromCharCode(...Array.from(chunk)));
   }
 
-  return btoa(parts.join(''));
+  return btoa(parts.join(""));
 }
 
 /**
@@ -63,9 +63,9 @@ export class SessionTokenManager {
   }
 
   private async refresh(): Promise<string> {
-    const response = await fetch('/api/v1/xai/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/v1/xai/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
     });
 
     if (!response.ok) {
@@ -80,7 +80,9 @@ export class SessionTokenManager {
     this.token = data.token;
     this.expiresAt = data.expiresAt * 1000; // Convert to ms
 
-    console.debug(`[xAI] Session token refreshed, expires in ${data.expiresAt - Math.floor(Date.now() / 1000)}s`);
+    console.debug(
+      `[xAI] Session token refreshed, expires in ${data.expiresAt - Math.floor(Date.now() / 1000)}s`,
+    );
 
     return this.token;
   }
@@ -90,16 +92,16 @@ export class SessionTokenManager {
  * Message type definitions for xAI WebSocket protocol
  */
 export interface XaiSessionConfig {
-  voice: 'Eve' | 'Ara' | 'Leo' | 'Rex' | 'Sal';
+  voice: "Eve" | "Ara" | "Leo" | "Rex" | "Sal";
   instructions: string;
   turn_detection: {
-    type: 'server_vad';
+    type: "server_vad";
     threshold?: number;
     silence_duration_ms?: number;
     prefix_padding_ms?: number;
   };
   tools: Array<{
-    type: 'function';
+    type: "function";
     name: string;
     description: string;
     parameters: object;
@@ -121,7 +123,7 @@ export interface XaiMessageEvent {
  */
 export function getDefaultSessionConfig(): XaiSessionConfig {
   return {
-    voice: 'Eve',
+    voice: "Eve",
     instructions: `You are the SingulAI Avatar Engine, the guardian of a digital legacy vault.
 
 Mission:
@@ -205,48 +207,48 @@ Validation rules:
 - learning_outcome must be one of: reinforced, corrected, unchanged.
 - decision_factors and limitations must always be present (at least one item each).`,
     turn_detection: {
-      type: 'server_vad',
+      type: "server_vad",
       threshold: 0.85,
       silence_duration_ms: 0,
       prefix_padding_ms: 300,
     },
     tools: [
       {
-        type: 'function',
-        name: 'check_availability',
+        type: "function",
+        name: "check_availability",
         description:
-          'Check available appointment slots for a given date and provider. Return normalized available time slots in the requested timezone, and include a short user-facing message.',
+          "Check available appointment slots for a given date and provider. Return normalized available time slots in the requested timezone, and include a short user-facing message.",
         parameters: {
-          type: 'object',
+          type: "object",
           properties: {
             date: {
-              type: 'string',
-              description: 'Target date in ISO format YYYY-MM-DD',
+              type: "string",
+              description: "Target date in ISO format YYYY-MM-DD",
             },
             provider_id: {
-              type: 'string',
-              description: 'Unique provider identifier',
+              type: "string",
+              description: "Unique provider identifier",
             },
             timezone: {
-              type: 'string',
-              description: 'IANA timezone name, e.g. America/Sao_Paulo',
-              default: 'America/Sao_Paulo',
+              type: "string",
+              description: "IANA timezone name, e.g. America/Sao_Paulo",
+              default: "America/Sao_Paulo",
             },
             appointment_type: {
-              type: 'string',
-              description: 'Optional appointment type filter',
-              enum: ['consultation', 'follow_up', 'exam', 'procedure'],
+              type: "string",
+              description: "Optional appointment type filter",
+              enum: ["consultation", "follow_up", "exam", "procedure"],
             },
           },
-          required: ['date', 'provider_id'],
+          required: ["date", "provider_id"],
           additionalProperties: false,
         },
       },
     ],
-    input_audio_transcription: { model: 'grok-2-audio' },
+    input_audio_transcription: { model: "grok-2-audio" },
     audio: {
-      input: { format: { type: 'audio/pcm', rate: 24000 } },
-      output: { format: { type: 'audio/pcm', rate: 24000 } },
+      input: { format: { type: "audio/pcm", rate: 24000 } },
+      output: { format: { type: "audio/pcm", rate: 24000 } },
     },
   };
 }

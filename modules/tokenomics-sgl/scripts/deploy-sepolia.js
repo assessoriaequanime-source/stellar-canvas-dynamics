@@ -24,7 +24,12 @@ async function main() {
   await feeManager.waitForDeployment();
 
   const StakingPool = await hre.ethers.getContractFactory("StakingPool");
-  const stakingPool = await StakingPool.deploy(tokenAddress, tokenAddress, deployer.address, rewardDistributor);
+  const stakingPool = await StakingPool.deploy(
+    tokenAddress,
+    tokenAddress,
+    deployer.address,
+    rewardDistributor,
+  );
   await stakingPool.waitForDeployment();
 
   console.log("SGLToken:", tokenAddress);

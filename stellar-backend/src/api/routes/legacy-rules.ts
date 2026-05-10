@@ -24,7 +24,10 @@ function ensureUserId(req: Request): string {
 router.get("/", requireAuth, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = ensureUserId(req);
-    const rules = await prisma.digitalLegacy.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
+    const rules = await prisma.digitalLegacy.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+    });
     res.status(200).json(rules);
   } catch (error) {
     next(error);

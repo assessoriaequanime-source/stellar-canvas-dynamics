@@ -1,9 +1,5 @@
 import type { AvatarMaturityState } from "./types";
-import type {
-  AssertivenessCycle,
-  DomainPolicy,
-  GovernanceDecision,
-} from "./governance-types";
+import type { AssertivenessCycle, DomainPolicy, GovernanceDecision } from "./governance-types";
 
 // --- Políticas canônicas por domínio ---
 
@@ -18,8 +14,8 @@ const DEFAULT_POLICIES: Record<string, DomainPolicy> = {
   },
   "time-capsule-delivery": {
     domain: "time-capsule-delivery",
-    promotionThreshold: 0.80,
-    demotionThreshold: 0.50,
+    promotionThreshold: 0.8,
+    demotionThreshold: 0.5,
     maxEscalationRate: 0.15,
     minInteractionCount: 5,
     reviewerRequired: false,
@@ -28,24 +24,20 @@ const DEFAULT_POLICIES: Record<string, DomainPolicy> = {
     domain: "legacy-execution",
     promotionThreshold: 0.85,
     demotionThreshold: 0.55,
-    maxEscalationRate: 0.10,
+    maxEscalationRate: 0.1,
     minInteractionCount: 15,
     reviewerRequired: true,
   },
 };
 
-const policyRegistry = new Map<string, DomainPolicy>(
-  Object.entries(DEFAULT_POLICIES),
-);
+const policyRegistry = new Map<string, DomainPolicy>(Object.entries(DEFAULT_POLICIES));
 
 export const registerDomainPolicy = (policy: DomainPolicy) => {
   policyRegistry.set(policy.domain, policy);
 };
 
 export const getPolicy = (domain: string): DomainPolicy => {
-  return (
-    policyRegistry.get(domain) ?? policyRegistry.get("professional-method")!
-  );
+  return policyRegistry.get(domain) ?? policyRegistry.get("professional-method")!;
 };
 
 // --- Motor de avaliação de maturidade ---
@@ -61,12 +53,9 @@ export const evaluateMaturity = (params: {
 }): GovernanceDecision => {
   const policy = getPolicy(params.domain);
   const escalationRate =
-    params.interactionCount > 0
-      ? params.escalationCount / params.interactionCount
-      : 1;
+    params.interactionCount > 0 ? params.escalationCount / params.interactionCount : 1;
 
-  const meetsMinInteractions =
-    params.interactionCount >= policy.minInteractionCount;
+  const meetsMinInteractions = params.interactionCount >= policy.minInteractionCount;
   const escalationOk = escalationRate <= policy.maxEscalationRate;
 
   let nextState: AvatarMaturityState = params.currentState;
@@ -76,11 +65,7 @@ export const evaluateMaturity = (params: {
   let reason = "Manteve estado atual.";
 
   if (params.currentState === "Draft") {
-    if (
-      meetsMinInteractions &&
-      params.pas >= policy.promotionThreshold &&
-      escalationOk
-    ) {
+    if (meetsMinInteractions && params.pas >= policy.promotionThreshold && escalationOk) {
       nextState = "Assisted";
       promoted = true;
       reason = `PAS ${params.pas.toFixed(2)} atingiu limiar ${policy.promotionThreshold}. Promovido para Assisted.`;
@@ -88,11 +73,7 @@ export const evaluateMaturity = (params: {
       reason = `PAS ${params.pas.toFixed(2)} abaixo de ${policy.promotionThreshold} ou critérios insuficientes.`;
     }
   } else if (params.currentState === "Assisted") {
-    if (
-      meetsMinInteractions &&
-      params.pas >= policy.promotionThreshold &&
-      escalationOk
-    ) {
+    if (meetsMinInteractions && params.pas >= policy.promotionThreshold && escalationOk) {
       nextState = "Trusted";
       promoted = true;
       reason = `PAS ${params.pas.toFixed(2)} e taxa de escalonamento ${(escalationRate * 100).toFixed(1)}% OK. Promovido para Trusted.`;
@@ -103,10 +84,7 @@ export const evaluateMaturity = (params: {
       reason = `PAS ${params.pas.toFixed(2)} caiu abaixo do limiar de rebaixamento ${policy.demotionThreshold}. Requer revisão humana.`;
     }
   } else if (params.currentState === "Trusted") {
-    if (
-      params.pas < policy.demotionThreshold ||
-      escalationRate > policy.maxEscalationRate
-    ) {
+    if (params.pas < policy.demotionThreshold || escalationRate > policy.maxEscalationRate) {
       nextState = "Assisted";
       demoted = true;
       fallbackRequired = params.pas < policy.demotionThreshold;

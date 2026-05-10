@@ -81,6 +81,7 @@
 > **[Clique no serviço → animação de execução → novo AuditRecord aparece na lista]**
 
 > "In real time, the system:"
+>
 > - "Generates a deterministic payload hash from the avatar's professional method."
 > - "Submits the hash to Solana Devnet via the Real Solana Adapter."
 > - "Receives a transaction signature."
@@ -253,6 +254,7 @@ npx vitest run src/lib/hackathon/__tests__/mvp.test.ts
 ```
 
 > "Including:"
+>
 > - "Full MVP flow end-to-end."
 > - "TimeCapsule lifecycle: Created → Armed → Triggered → Delivered."
 > - "PAS calculation and trust delta."
@@ -288,20 +290,20 @@ npx vitest run src/lib/hackathon/__tests__/mvp.test.ts
 
 ## Checklist técnico para gravação
 
-| Item | Status |
-|------|--------|
-| Rotas /demo, /vault, /audit acessíveis | ✅ |
-| 16 testes passando (`vitest run`) | ✅ |
-| SGL balance visível no Vault | ✅ |
-| Execução de serviço gera AuditRecord com Signature e Slot | ✅ |
-| Painel de auditoria acessível com senha `judge2026` | ✅ |
-| Explorer URL clicável (Solana Devnet) | ✅ |
-| Particle field animado no Dashboard | ✅ |
-| PAS e Omega Score visíveis | ✅ |
-| Governance decision logada no console ou painel | ✅ |
-| Footer: DEV - rodrigo.run © 2026 SingulAI | ✅ |
+| Item                                                      | Status |
+| --------------------------------------------------------- | ------ |
+| Rotas /demo, /vault, /audit acessíveis                    | ✅     |
+| 16 testes passando (`vitest run`)                         | ✅     |
+| SGL balance visível no Vault                              | ✅     |
+| Execução de serviço gera AuditRecord com Signature e Slot | ✅     |
+| Painel de auditoria acessível com senha `judge2026`       | ✅     |
+| Explorer URL clicável (Solana Devnet)                     | ✅     |
+| Particle field animado no Dashboard                       | ✅     |
+| PAS e Omega Score visíveis                                | ✅     |
+| Governance decision logada no console ou painel           | ✅     |
+| Footer: DEV - rodrigo.run © 2026 SingulAI                 | ✅     |
 
 ---
 
-*Documento gerado por Run — Chefe de Desenvolvimento SingulAI*  
-*DEV - [rodrigo.run](https://rodrigo.run) © 2026 SingulAI — Todos os direitos reservados*
+_Documento gerado por Run — Chefe de Desenvolvimento SingulAI_  
+_DEV - [rodrigo.run](https://rodrigo.run) © 2026 SingulAI — Todos os direitos reservados_

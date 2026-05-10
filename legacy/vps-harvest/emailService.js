@@ -1,47 +1,47 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 class EmailService {
-    constructor() {
-        this.transporter = null;
-        this.initialized = false;
+  constructor() {
+    this.transporter = null;
+    this.initialized = false;
+  }
+
+  initialize() {
+    if (this.initialized) return;
+
+    const smtpHost = process.env.SMTP_HOST || "smtp.hostinger.com";
+    const smtpPort = parseInt(process.env.SMTP_PORT || "465");
+    const smtpUser = process.env.SMTP_USER || "hello@singulai.site";
+    const smtpPass = process.env.SMTP_PASS;
+
+    if (!smtpPass) {
+      console.warn("Email service: SMTP_PASS not configured");
+      return;
     }
 
-    initialize() {
-        if (this.initialized) return;
+    this.transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
 
-        const smtpHost = process.env.SMTP_HOST || 'smtp.hostinger.com';
-        const smtpPort = parseInt(process.env.SMTP_PORT || '465');
-        const smtpUser = process.env.SMTP_USER || 'hello@singulai.site';
-        const smtpPass = process.env.SMTP_PASS;
+    this.initialized = true;
+    console.log("Email service initialized");
+  }
 
-        if (!smtpPass) {
-            console.warn('Email service: SMTP_PASS not configured');
-            return;
-        }
+  async sendWelcomeEmail(to, name) {
+    console.log(`[EMAIL] sendWelcomeEmail called - to: ${to}, name: ${name}`);
 
-        this.transporter = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpPort === 465,
-            auth: {
-                user: smtpUser,
-                pass: smtpPass
-            }
-        });
-
-        this.initialized = true;
-        console.log('Email service initialized');
+    if (!this.transporter) {
+      console.log("[EMAIL] Email service not configured, skipping email");
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendWelcomeEmail(to, name) {
-        console.log(`[EMAIL] sendWelcomeEmail called - to: ${to}, name: ${name}`);
-        
-        if (!this.transporter) {
-            console.log('[EMAIL] Email service not configured, skipping email');
-            return { success: false, reason: 'not_configured' };
-        }
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -96,33 +96,35 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            console.log(`[EMAIL] Attempting to send welcome email to ${to}...`);
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI" <hello@singulai.site>',
-                to: to,
-                subject: `Bem-vindo ao SingulAI, ${name}! Seu legado digital começa agora`,
-                html: html
-            });
+    try {
+      console.log(`[EMAIL] Attempting to send welcome email to ${to}...`);
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI" <hello@singulai.site>',
+        to: to,
+        subject: `Bem-vindo ao SingulAI, ${name}! Seu legado digital começa agora`,
+        html: html,
+      });
 
-            console.log(`[EMAIL] Welcome email sent successfully to ${to} - messageId: ${result.messageId}`);
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error(`[EMAIL] Error sending welcome email to ${to}:`, error.message);
-            console.error(`[EMAIL] Full error:`, error);
-            return { success: false, error: error.message };
-        }
+      console.log(
+        `[EMAIL] Welcome email sent successfully to ${to} - messageId: ${result.messageId}`,
+      );
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error(`[EMAIL] Error sending welcome email to ${to}:`, error.message);
+      console.error(`[EMAIL] Full error:`, error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendEmailVerification(to, name, walletAddress, verificationLink) {
+    console.log(`[EMAIL] sendEmailVerification called - to: ${to}, name: ${name}`);
+
+    if (!this.transporter) {
+      console.log("[EMAIL] Email service not configured, skipping verification email");
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendEmailVerification(to, name, walletAddress, verificationLink) {
-        console.log(`[EMAIL] sendEmailVerification called - to: ${to}, name: ${name}`);
-        
-        if (!this.transporter) {
-            console.log('[EMAIL] Email service not configured, skipping verification email');
-            return { success: false, reason: 'not_configured' };
-        }
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -158,33 +160,35 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            console.log(`[EMAIL] Attempting to send verification email to ${to}...`);
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI" <hello@singulai.site>',
-                to: to,
-                subject: 'Confirme sua wallet SingulAI e libere seus tokens SGL',
-                html: html
-            });
+    try {
+      console.log(`[EMAIL] Attempting to send verification email to ${to}...`);
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI" <hello@singulai.site>',
+        to: to,
+        subject: "Confirme sua wallet SingulAI e libere seus tokens SGL",
+        html: html,
+      });
 
-            console.log(`[EMAIL] Verification email sent successfully to ${to} - messageId: ${result.messageId}`);
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error(`[EMAIL] Error sending verification email to ${to}:`, error.message);
-            console.error(`[EMAIL] Full error:`, error);
-            return { success: false, error: error.message };
-        }
+      console.log(
+        `[EMAIL] Verification email sent successfully to ${to} - messageId: ${result.messageId}`,
+      );
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error(`[EMAIL] Error sending verification email to ${to}:`, error.message);
+      console.error(`[EMAIL] Full error:`, error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendWalletReceiptConfirmedEmail(to, name) {
+    console.log(`[EMAIL] sendWalletReceiptConfirmedEmail called - to: ${to}, name: ${name}`);
+
+    if (!this.transporter) {
+      console.log("[EMAIL] Email service not configured, skipping receipt confirmation email");
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendWalletReceiptConfirmedEmail(to, name) {
-        console.log(`[EMAIL] sendWalletReceiptConfirmedEmail called - to: ${to}, name: ${name}`);
-        
-        if (!this.transporter) {
-            console.log('[EMAIL] Email service not configured, skipping receipt confirmation email');
-            return { success: false, reason: 'not_configured' };
-        }
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -214,35 +218,37 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI" <hello@singulai.site>',
-                to: to,
-                subject: 'Recebimento da sua wallet confirmado',
-                html: html
-            });
+    try {
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI" <hello@singulai.site>',
+        to: to,
+        subject: "Recebimento da sua wallet confirmado",
+        html: html,
+      });
 
-            console.log(`[EMAIL] Receipt confirmation email sent successfully to ${to} - messageId: ${result.messageId}`);
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error(`[EMAIL] Error sending receipt confirmation email to ${to}:`, error.message);
-            return { success: false, error: error.message };
-        }
+      console.log(
+        `[EMAIL] Receipt confirmation email sent successfully to ${to} - messageId: ${result.messageId}`,
+      );
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error(`[EMAIL] Error sending receipt confirmation email to ${to}:`, error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendLegacyConfirmation(to, name, legacyTitle, triggerType) {
+    if (!this.transporter) {
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendLegacyConfirmation(to, name, legacyTitle, triggerType) {
-        if (!this.transporter) {
-            return { success: false, reason: 'not_configured' };
-        }
+    const triggerLabels = {
+      date: "em uma data específica",
+      age: "quando atingir a idade definida",
+      event: "quando o evento de vida ocorrer",
+      death: "quando as condições forem confirmadas pelo Oracle",
+    };
 
-        const triggerLabels = {
-            date: 'em uma data específica',
-            age: 'quando atingir a idade definida',
-            event: 'quando o evento de vida ocorrer',
-            death: 'quando as condições forem confirmadas pelo Oracle'
-        };
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -273,7 +279,7 @@ class EmailService {
             
             <div class="legacy-card">
                 <p style="margin: 0;"><strong>Título:</strong> <span class="highlight">${legacyTitle}</span></p>
-                <p style="margin: 8px 0 0 0;"><strong>Liberação:</strong> ${triggerLabels[triggerType] || 'condições definidas'}</p>
+                <p style="margin: 8px 0 0 0;"><strong>Liberação:</strong> ${triggerLabels[triggerType] || "condições definidas"}</p>
             </div>
             
             <p>Quando as condições forem atendidas, o destinatário receberá sua mensagem. Este é o seu legado - uma parte de você que permanecerá para sempre.</p>
@@ -286,30 +292,39 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI" <hello@singulai.site>',
-                to: to,
-                subject: `Legado "${legacyTitle}" criado com sucesso - SingulAI`,
-                html: html
-            });
+    try {
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI" <hello@singulai.site>',
+        to: to,
+        subject: `Legado "${legacyTitle}" criado com sucesso - SingulAI`,
+        html: html,
+      });
 
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error('Error sending legacy confirmation:', error);
-            return { success: false, error: error.message };
-        }
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("Error sending legacy confirmation:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendLegacyNotification(
+    to,
+    recipientName,
+    senderName,
+    legacyTitle,
+    accessCode,
+    walletAddress,
+  ) {
+    if (!this.transporter) {
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendLegacyNotification(to, recipientName, senderName, legacyTitle, accessCode, walletAddress) {
-        if (!this.transporter) {
-            return { success: false, reason: 'not_configured' };
-        }
+    const accessLink = `https://singulai.site/legacy.html?code=${accessCode || ""}`;
+    const whatsappText = encodeURIComponent(
+      `${senderName} me deixou um legado digital! 💙\n\nTítulo: "${legacyTitle}"\n\nAcesse aqui: ${accessLink}\n\nChave: ${accessCode || "N/A"}`,
+    );
 
-        const accessLink = `https://singulai.site/legacy.html?code=${accessCode || ''}`;
-        const whatsappText = encodeURIComponent(`${senderName} me deixou um legado digital! 💙\n\nTítulo: "${legacyTitle}"\n\nAcesse aqui: ${accessLink}\n\nChave: ${accessCode || 'N/A'}`);
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -342,12 +357,16 @@ class EmailService {
             <p>Esta é uma mensagem especial que foi preparada com muito amor e carinho, aguardando o momento certo para chegar até você.</p>
             <p style="font-size: 18px; color: #60a5fa;"><strong>"${legacyTitle}"</strong></p>
             
-            ${accessCode ? `
+            ${
+              accessCode
+                ? `
             <div class="key-box">
                 <p style="margin: 0 0 12px 0; font-size: 14px;"><strong>Sua chave de acesso:</strong></p>
                 <div class="private-key">${accessCode}</div>
             </div>
-            ` : ''}
+            `
+                : ""
+            }
             
             <center>
                 <a href="${accessLink}" class="button">ACESSAR MEU LEGADO</a>
@@ -361,7 +380,7 @@ class EmailService {
                 </a>
             </div>
             
-            ${walletAddress ? `<p style="font-size: 12px; margin-top: 24px; opacity: 0.6; text-align: center;">Wallet: ${walletAddress}</p>` : ''}
+            ${walletAddress ? `<p style="font-size: 12px; margin-top: 24px; opacity: 0.6; text-align: center;">Wallet: ${walletAddress}</p>` : ""}
         </div>
         
         <div class="footer">
@@ -371,29 +390,29 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI" <hello@singulai.site>',
-                to: to,
-                subject: `${senderName} deixou uma mensagem especial para você`,
-                html: html
-            });
+    try {
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI" <hello@singulai.site>',
+        to: to,
+        subject: `${senderName} deixou uma mensagem especial para você`,
+        html: html,
+      });
 
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error('Error sending legacy notification:', error);
-            return { success: false, error: error.message };
-        }
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("Error sending legacy notification:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendCapsuleDelivery(to, recipientName, senderName, title, accessCode, walletAddress) {
+    if (!this.transporter) {
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendCapsuleDelivery(to, recipientName, senderName, title, accessCode, walletAddress) {
-        if (!this.transporter) {
-            return { success: false, reason: 'not_configured' };
-        }
+    const accessLink = `https://singulai.site/capsule.html?code=${accessCode}`;
 
-        const accessLink = `https://singulai.site/capsule.html?code=${accessCode}`;
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -455,28 +474,28 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI Capsules" <hello@singulai.site>',
-                to: to,
-                subject: `${senderName} has sent you a message: "${title}"`,
-                html: html
-            });
+    try {
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI Capsules" <hello@singulai.site>',
+        to: to,
+        subject: `${senderName} has sent you a message: "${title}"`,
+        html: html,
+      });
 
-            console.log(`Capsule email sent to ${to}: ${result.messageId}`);
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error('Error sending capsule delivery:', error);
-            return { success: false, error: error.message };
-        }
+      console.log(`Capsule email sent to ${to}: ${result.messageId}`);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("Error sending capsule delivery:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendWalletCredentials(to, name, pdfBuffer) {
+    if (!this.transporter) {
+      return { success: false, reason: "not_configured" };
     }
 
-    async sendWalletCredentials(to, name, pdfBuffer) {
-        if (!this.transporter) {
-            return { success: false, reason: 'not_configured' };
-        }
-
-        const html = `
+    const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -519,39 +538,41 @@ class EmailService {
 </body>
 </html>`;
 
-        try {
-            const result = await this.transporter.sendMail({
-                from: '"SingulAI" <hello@singulai.site>',
-                to: to,
-                subject: 'Suas Credenciais de Wallet - SingulAI',
-                html: html,
-                attachments: [{
-                    filename: 'singulai-wallet-credentials.pdf',
-                    content: pdfBuffer,
-                    contentType: 'application/pdf'
-                }]
-            });
+    try {
+      const result = await this.transporter.sendMail({
+        from: '"SingulAI" <hello@singulai.site>',
+        to: to,
+        subject: "Suas Credenciais de Wallet - SingulAI",
+        html: html,
+        attachments: [
+          {
+            filename: "singulai-wallet-credentials.pdf",
+            content: pdfBuffer,
+            contentType: "application/pdf",
+          },
+        ],
+      });
 
-            return { success: true, messageId: result.messageId };
-        } catch (error) {
-            console.error('Error sending wallet credentials:', error);
-            return { success: false, error: error.message };
-        }
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("Error sending wallet credentials:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async verifyConnection() {
+    if (!this.transporter) {
+      return { success: false, reason: "not_configured" };
     }
 
-    async verifyConnection() {
-        if (!this.transporter) {
-            return { success: false, reason: 'not_configured' };
-        }
-
-        try {
-            await this.transporter.verify();
-            return { success: true };
-        } catch (error) {
-            console.error('SMTP verification failed:', error);
-            return { success: false, error: error.message };
-        }
+    try {
+      await this.transporter.verify();
+      return { success: true };
+    } catch (error) {
+      console.error("SMTP verification failed:", error);
+      return { success: false, error: error.message };
     }
+  }
 }
 
 module.exports = new EmailService();

@@ -4,11 +4,11 @@
  * Designed to integrate into the capsule modal
  */
 
-import { useState } from 'react';
-import { Mic, MicOff, MessageCircle, AlertCircle, Loader } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useVoiceAgent, VoiceMessage } from '@/hooks/useVoiceAgent';
+import { useState } from "react";
+import { Mic, MicOff, MessageCircle, AlertCircle, Loader } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useVoiceAgent, VoiceMessage } from "@/hooks/useVoiceAgent";
 
 export interface VoiceAgentCardProps {
   isOpen?: boolean;
@@ -18,12 +18,16 @@ export interface VoiceAgentCardProps {
 
 interface TranscriptMessage {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   text: string;
   interrupted?: boolean;
 }
 
-export function VoiceAgentCard({ isOpen = true, onTranscript, className = '' }: VoiceAgentCardProps) {
+export function VoiceAgentCard({
+  isOpen = true,
+  onTranscript,
+  className = "",
+}: VoiceAgentCardProps) {
   const { status, messages, error, isRecording, connect, disconnect, sendText, clearMessages } =
     useVoiceAgent();
 
@@ -38,7 +42,7 @@ export function VoiceAgentCard({ isOpen = true, onTranscript, className = '' }: 
   }));
 
   const handleMicToggle = async () => {
-    if (status === 'idle' || status === 'error') {
+    if (status === "idle" || status === "error") {
       await connect();
     } else {
       disconnect();
@@ -50,9 +54,9 @@ export function VoiceAgentCard({ isOpen = true, onTranscript, className = '' }: 
     setLocalMessages([]);
   };
 
-  const isConnecting = status === 'connecting';
-  const isActive = status === 'active' || status === 'connected';
-  const hasError = status === 'error';
+  const isConnecting = status === "connecting";
+  const isActive = status === "active" || status === "connected";
+  const hasError = status === "error";
 
   return (
     <div className={`flex flex-col h-full w-full ${className}`}>
@@ -63,25 +67,25 @@ export function VoiceAgentCard({ isOpen = true, onTranscript, className = '' }: 
           <span className="font-semibold text-sm">SingulAI Voice Agent</span>
           <span
             className={`ml-2 text-xs font-medium px-2 py-1 rounded-full ${
-              status === 'idle'
-                ? 'bg-slate-200 text-slate-700'
+              status === "idle"
+                ? "bg-slate-200 text-slate-700"
                 : isConnecting
-                  ? 'bg-blue-200 text-blue-700 animate-pulse'
+                  ? "bg-blue-200 text-blue-700 animate-pulse"
                   : isActive
-                    ? 'bg-green-200 text-green-700'
+                    ? "bg-green-200 text-green-700"
                     : hasError
-                      ? 'bg-red-200 text-red-700'
-                      : 'bg-slate-200 text-slate-700'
+                      ? "bg-red-200 text-red-700"
+                      : "bg-slate-200 text-slate-700"
             }`}
           >
-            {status === 'idle'
-              ? 'Ready'
+            {status === "idle"
+              ? "Ready"
               : isConnecting
-                ? 'Connecting...'
+                ? "Connecting..."
                 : isActive
-                  ? 'Listening'
+                  ? "Listening"
                   : hasError
-                    ? 'Error'
+                    ? "Error"
                     : status}
           </span>
         </div>
@@ -109,16 +113,16 @@ export function VoiceAgentCard({ isOpen = true, onTranscript, className = '' }: 
               <div
                 key={msg.id}
                 className={`flex gap-3 text-sm ${
-                  msg.role === 'user' ? 'justify-end' : 'justify-start'
+                  msg.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-xs rounded-lg px-3 py-2 ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white'
+                    msg.role === "user"
+                      ? "bg-blue-600 text-white"
                       : msg.interrupted
-                        ? 'bg-slate-200 text-slate-700 opacity-50'
-                        : 'bg-slate-100 text-slate-900'
+                        ? "bg-slate-200 text-slate-700 opacity-50"
+                        : "bg-slate-100 text-slate-900"
                   }`}
                 >
                   {msg.text}
@@ -145,19 +149,19 @@ export function VoiceAgentCard({ isOpen = true, onTranscript, className = '' }: 
           disabled={isConnecting}
           className={`rounded-full w-14 h-14 p-0 transition-all ${
             isActive
-              ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse'
+              ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
               : isConnecting
-                ? 'bg-blue-400 text-white'
+                ? "bg-blue-400 text-white"
                 : hasError
-                  ? 'bg-red-500 hover:bg-red-600 text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? "bg-red-500 hover:bg-red-600 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
           }`}
           title={
-            status === 'idle' || status === 'error'
-              ? 'Start listening'
+            status === "idle" || status === "error"
+              ? "Start listening"
               : isConnecting
-                ? 'Connecting...'
-                : 'Stop listening'
+                ? "Connecting..."
+                : "Stop listening"
           }
         >
           {isConnecting ? (

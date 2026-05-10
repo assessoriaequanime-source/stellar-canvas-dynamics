@@ -33,9 +33,7 @@ export function isMobileDevice(): boolean {
  * @returns Full URL, e.g. "https://app.singulai.live/dashboard"
  */
 export function getDashboardUrl(path = "/dashboard"): string {
-  const base = isMobileDevice()
-    ? "https://app.singulai.live"
-    : "https://dk.singulai.live";
+  const base = isMobileDevice() ? "https://app.singulai.live" : "https://dk.singulai.live";
 
   return `${base}${path}`;
 }

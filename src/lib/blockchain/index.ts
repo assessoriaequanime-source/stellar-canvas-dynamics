@@ -15,7 +15,7 @@ export type {
   DigitalLegacy,
   BlockchainProvider,
   WriteOperation,
-} from './types';
+} from "./types";
 
 // Contracts
 export {
@@ -26,7 +26,7 @@ export {
   ERC20_ABI,
   CONTRACTS,
   getContractConfig,
-} from './contracts';
+} from "./contracts";
 
 // Wallet utilities
 export {
@@ -38,7 +38,7 @@ export {
   decryptData,
   formatAddressShort,
   getAddressFromPrivateKey,
-} from './wallet';
+} from "./wallet";
 
 // Blockchain service
-export { blockchainService, BlockchainReadService } from './blockchain';
+export { blockchainService, BlockchainReadService } from "./blockchain";

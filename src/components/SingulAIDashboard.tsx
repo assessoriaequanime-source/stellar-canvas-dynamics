@@ -957,7 +957,8 @@ export default function SingulAIDashboard() {
     } catch {
       setBackendStatus("unavailable");
       setStatusMessage("Live chat unavailable");
-      reply = "Unable to get a response from the live backend right now. Please check your session and API.";
+      reply =
+        "Unable to get a response from the live backend right now. Please check your session and API.";
     }
 
     const aiId = ++msgIdRef.current;

@@ -44,7 +44,9 @@ export function getSglBalance(walletAddress?: string) {
   }
 
   return withFallback(
-    requestJson<Record<string, unknown>>(`/sgl/balance?walletAddress=${encodeURIComponent(resolvedWallet)}`),
+    requestJson<Record<string, unknown>>(
+      `/sgl/balance?walletAddress=${encodeURIComponent(resolvedWallet)}`,
+    ),
     {
       walletAddress: resolvedWallet,
       network: "Solana Devnet",
@@ -99,7 +101,9 @@ export function getSglLedger(walletAddress: string) {
     ]);
   }
   return withFallback(
-    requestJson<Array<Record<string, unknown>>>(`/sgl/ledger?walletAddress=${encodeURIComponent(walletAddress)}`),
+    requestJson<Array<Record<string, unknown>>>(
+      `/sgl/ledger?walletAddress=${encodeURIComponent(walletAddress)}`,
+    ),
     [],
   );
 }

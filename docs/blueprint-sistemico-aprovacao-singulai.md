@@ -56,26 +56,31 @@ Objetivo de aprovação:
 ### 4.1 Camadas
 
 1. Application Layer (Frontend/Orquestração)
+
 - Fluxos de criação, execução, acompanhamento e prova.
 - Controle de estado do ciclo do avatar e cápsulas.
 
 2. Intelligence Layer (AvatarPro)
+
 - Ingestão de método profissional.
 - Snapshot versionado da metodologia.
 - Score de assertividade por domínio.
 - Regras de escalonamento para humano.
 
 3. Execution Layer (Serviços)
+
 - Trigger engine (tempo, evento, simulação).
 - Delivery engine (execução de cápsula).
 - Auditoria e trilha de evidência.
 
 4. Trust Layer (Solana)
+
 - Registro de hash de snapshots.
 - Registro de criação/atualização de cápsulas.
 - Registro de prova de execução.
 
 5. Data Layer (Off-chain)
+
 - Memória criptografada.
 - Metadados operacionais.
 - Logs e telemetria.
@@ -314,15 +319,19 @@ Gate:
 ## 11. Riscos e Mitigações
 
 1. Risco: parecer IA genérica.
+
 - Mitigação: evidenciar viés profissional e método singular.
 
 2. Risco: parecer especulação por token.
+
 - Mitigação: posicionar SGL como combustível de execução.
 
 3. Risco: privacidade.
+
 - Mitigação: dados sensíveis off-chain; on-chain apenas prova.
 
 4. Risco: escopo excessivo.
+
 - Mitigação: manter um único fluxo de demo obrigatório.
 
 ## 12. Decisão Solicitada para Aprovação

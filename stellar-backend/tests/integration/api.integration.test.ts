@@ -176,16 +176,18 @@ describe("API integration: auth + user + avatar + consent", () => {
   });
 
   it("should execute transaction flow", async () => {
-    const verifyResponse = await request(app).post("/api/v1/auth/verify").send({
-      walletAddress: wallet.address,
-      signature: await wallet.signMessage(
-        (
-          await request(app).post("/api/v1/auth/challenge").send({
-            walletAddress: wallet.address,
-          })
-        ).body.challenge,
-      ),
-    });
+    const verifyResponse = await request(app)
+      .post("/api/v1/auth/verify")
+      .send({
+        walletAddress: wallet.address,
+        signature: await wallet.signMessage(
+          (
+            await request(app).post("/api/v1/auth/challenge").send({
+              walletAddress: wallet.address,
+            })
+          ).body.challenge,
+        ),
+      });
 
     accessToken = verifyResponse.body.accessToken;
 
@@ -225,10 +227,12 @@ describe("API integration: auth + user + avatar + consent", () => {
       walletAddress: secondaryWallet.address,
     });
 
-    const secondaryVerify = await request(app).post("/api/v1/auth/verify").send({
-      walletAddress: secondaryWallet.address,
-      signature: await secondaryWallet.signMessage(secondaryChallenge.body.challenge),
-    });
+    const secondaryVerify = await request(app)
+      .post("/api/v1/auth/verify")
+      .send({
+        walletAddress: secondaryWallet.address,
+        signature: await secondaryWallet.signMessage(secondaryChallenge.body.challenge),
+      });
 
     secondaryAccessToken = secondaryVerify.body.accessToken;
 

@@ -23,8 +23,7 @@ const state = {
 
 const nextSlot = () => ++state.slot;
 
-const createId = (prefix: string) =>
-  `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+const createId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 
 const createSignature = () => `sig_${crypto.randomUUID().replaceAll("-", "")}`;
 
@@ -184,7 +183,15 @@ export const updateParticleAbsorption = (
 
   const pasCurrent = Math.max(
     0,
-    Math.min(1, previous + interactionFactor + assertivenessFactor + executionFactor + escalationPenalty - 0.2),
+    Math.min(
+      1,
+      previous +
+        interactionFactor +
+        assertivenessFactor +
+        executionFactor +
+        escalationPenalty -
+        0.2,
+    ),
   );
 
   const particle: ParticleAbsorptionState = {

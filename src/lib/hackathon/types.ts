@@ -1,11 +1,6 @@
 export type AvatarMaturityState = "Draft" | "Assisted" | "Trusted";
 
-export type CapsuleStatus =
-  | "Created"
-  | "Armed"
-  | "Triggered"
-  | "Delivered"
-  | "Audited";
+export type CapsuleStatus = "Created" | "Armed" | "Triggered" | "Delivered" | "Audited";
 
 export type TriggerType = "timestamp" | "manual" | "event";
 

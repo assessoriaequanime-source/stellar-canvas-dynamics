@@ -188,22 +188,22 @@ Backend (Express)
 
 ### Created (10 files, 1,200+ lines)
 
-| File | Lines | Purpose |
-| --- | --- | --- |
-| stellar-backend/src/api/routes/xai.ts | 66 | Token endpoint |
-| stellar-backend/src/lib/xai-tools.ts | 80 | Tool handlers |
-| src/lib/xai-utils.ts | 280 | Utilities + session management |
-| src/hooks/useVoiceAgent.ts | 450 | Main React hook |
-| src/components/VoiceAgentCard.tsx | 180 | UI component |
-| public/pcm-processor-worklet.js | 30 | AudioWorklet processor |
-| **Total** | **1,086** | |
+| File                                  | Lines     | Purpose                        |
+| ------------------------------------- | --------- | ------------------------------ |
+| stellar-backend/src/api/routes/xai.ts | 66        | Token endpoint                 |
+| stellar-backend/src/lib/xai-tools.ts  | 80        | Tool handlers                  |
+| src/lib/xai-utils.ts                  | 280       | Utilities + session management |
+| src/hooks/useVoiceAgent.ts            | 450       | Main React hook                |
+| src/components/VoiceAgentCard.tsx     | 180       | UI component                   |
+| public/pcm-processor-worklet.js       | 30        | AudioWorklet processor         |
+| **Total**                             | **1,086** |                                |
 
 ### Modified (2 files)
 
-| File | Changes | Purpose |
-| --- | --- | --- |
-| stellar-backend/src/api/routes/index.ts | +2 lines | Register xAI route |
-| src/components/SingulAIDashboard.tsx | +80 lines | Integrate VoiceAgentCard in modal |
+| File                                    | Changes   | Purpose                           |
+| --------------------------------------- | --------- | --------------------------------- |
+| stellar-backend/src/api/routes/index.ts | +2 lines  | Register xAI route                |
+| src/components/SingulAIDashboard.tsx    | +80 lines | Integrate VoiceAgentCard in modal |
 
 ---
 
@@ -377,16 +377,16 @@ curl -X POST https://singulai.live/api/v1/xai/token \
 
 ## Performance Metrics
 
-| Metric | Target | Actual | Status |
-| --- | --- | --- | --- |
-| Token response | <100ms | ~50ms | ✅ |
-| WebSocket connect | <2s | ~1s | ✅ |
-| Speech detection (VAD) | <200ms | ~150ms | ✅ |
-| Mic buffer (before session) | <500ms audio | ~300ms | ✅ |
-| Playback latency | <50ms | ~30ms | ✅ |
-| Interruption response | <100ms | ~80ms | ✅ |
-| Build time (frontend) | <20s | 15.36s | ✅ |
-| Build time (backend) | <5s | ~2s | ✅ |
+| Metric                      | Target       | Actual | Status |
+| --------------------------- | ------------ | ------ | ------ |
+| Token response              | <100ms       | ~50ms  | ✅     |
+| WebSocket connect           | <2s          | ~1s    | ✅     |
+| Speech detection (VAD)      | <200ms       | ~150ms | ✅     |
+| Mic buffer (before session) | <500ms audio | ~300ms | ✅     |
+| Playback latency            | <50ms        | ~30ms  | ✅     |
+| Interruption response       | <100ms       | ~80ms  | ✅     |
+| Build time (frontend)       | <20s         | 15.36s | ✅     |
+| Build time (backend)        | <5s          | ~2s    | ✅     |
 
 ---
 
@@ -394,7 +394,7 @@ curl -X POST https://singulai.live/api/v1/xai/token \
 
 ### Issue: "Microphone access denied"
 
-**Solution:** Check browser permissions  
+**Solution:** Check browser permissions
 
 ```
 Settings → Privacy & Security → Microphone → Allow localhost (dev) or singulai.live (prod)
@@ -408,7 +408,7 @@ Settings → Privacy & Security → Microphone → Allow localhost (dev) or sing
 ### Issue: AudioWorklet not found
 
 **Reason:** `public/pcm-processor-worklet.js` not deployed  
-**Solution:** Verify file exists in Vite dist/ output  
+**Solution:** Verify file exists in Vite dist/ output
 
 ```bash
 ls dist/client/  # Check structure

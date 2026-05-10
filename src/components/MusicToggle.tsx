@@ -30,9 +30,7 @@ export default function MusicToggle() {
         height: 40,
         borderRadius: "50%",
         border: `1px solid ${playing ? "rgba(143,211,255,0.35)" : "rgba(255,255,255,0.14)"}`,
-        background: playing
-          ? "rgba(143,211,255,0.12)"
-          : "rgba(0,0,0,0.55)",
+        background: playing ? "rgba(143,211,255,0.12)" : "rgba(0,0,0,0.55)",
         backdropFilter: "blur(10px)",
         color: playing ? "rgba(143,211,255,0.95)" : "rgba(255,255,255,0.3)",
         display: "flex",
@@ -46,7 +44,14 @@ export default function MusicToggle() {
           : "0 2px 8px rgba(0,0,0,0.4)",
       }}
     >
-      <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+      <span
+        style={{
+          position: "relative",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         ♫
         {!playing && (
           <span

@@ -3,7 +3,7 @@
 **Apresentado para**: CEO Rodrigo Alves  
 **Data**: 2026-04-23  
 **Status**: ✅ PLANEJADO E PRONTO PARA EXECUÇÃO  
-**Aprovação Técnica**: Run (Chefe Desenvolvimento)  
+**Aprovação Técnica**: Run (Chefe Desenvolvimento)
 
 ---
 
@@ -12,6 +12,7 @@
 Você aprovou **Path B**: Criar backend isolado na VPS para fortalecer a arquitetura SingulAI.
 
 **Resultado do Planejamento**:
+
 - ✅ Arquitetura completa definida
 - ✅ AvatarPro.sol auditado (GDPR OK, 5 recomendações)
 - ✅ 8 semanas de roadmap detalhado
@@ -23,16 +24,16 @@ Você aprovou **Path B**: Criar backend isolado na VPS para fortalecer a arquite
 
 ## 📊 NÚMEROS
 
-| Métrica | Valor | Notas |
-|---------|-------|-------|
-| **Duração estimada** | 8 semanas | 2 meses até deploy |
-| **Linhas de código** | ~8000-12000 | Backend + frontend integration |
-| **Microservices** | 7 core | Avatar, Contract, Wallet, Session, Consent, Notification, AI |
-| **Smart Contracts lidos** | 4 | AvatarBase, TimeCapsule, DigitalLegacy, AvatarWalletLink |
-| **Modelos de dados** | 8 | User, Avatar, Contract, Session, Consent, Transaction, AuditLog |
-| **Endpoints API v1** | 25+ | CRUD + blockchain readers + GDPR endpoints |
-| **Test coverage** | 80%+ | Unit + Integration + E2E |
-| **Team** | 1-2 persons | Run + Junior Dev (opcional) |
+| Métrica                   | Valor       | Notas                                                           |
+| ------------------------- | ----------- | --------------------------------------------------------------- |
+| **Duração estimada**      | 8 semanas   | 2 meses até deploy                                              |
+| **Linhas de código**      | ~8000-12000 | Backend + frontend integration                                  |
+| **Microservices**         | 7 core      | Avatar, Contract, Wallet, Session, Consent, Notification, AI    |
+| **Smart Contracts lidos** | 4           | AvatarBase, TimeCapsule, DigitalLegacy, AvatarWalletLink        |
+| **Modelos de dados**      | 8           | User, Avatar, Contract, Session, Consent, Transaction, AuditLog |
+| **Endpoints API v1**      | 25+         | CRUD + blockchain readers + GDPR endpoints                      |
+| **Test coverage**         | 80%+        | Unit + Integration + E2E                                        |
+| **Team**                  | 1-2 persons | Run + Junior Dev (opcional)                                     |
 
 ---
 
@@ -66,9 +67,11 @@ ISOLAMENTO GARANTIDO:
 ## ✅ AUDITORIA AVATARPRO.SOL
 
 ### Compliance GDPR
+
 **Status**: ✅ **APROVADO COM RECOMENDAÇÕES**
 
 #### O que está OK:
+
 - ✅ Consentimento explícito verificado antes de sessão (Art. 4.11)
 - ✅ Transparência em pagamento (preço visível)
 - ✅ Audit trail imutável (event log + hash)
@@ -78,13 +81,13 @@ ISOLAMENTO GARANTIDO:
 
 #### Recomendações (para implementar):
 
-| ID | Recomendação | Prioridade | Semana |
-|----|--------------|-----------|--------|
-| 1 | Método `purgeOldSessions()` para limpeza dados >180 dias | ALTA | Week 5 |
-| 2 | Evento `ConsentRevoked` + pause sessões real-time | ALTA | Week 5 |
-| 3 | Endpoint `exportSessionData()` para DSAR (Data Subject Access) | MÉDIA | Week 6 |
-| 4 | Event `DataControllerIdentified` com contato legal | MÉDIA | Week 5 |
-| 5 | Publicar log criptografado em IPFS para auditoria | BAIXA | Week 7 |
+| ID  | Recomendação                                                   | Prioridade | Semana |
+| --- | -------------------------------------------------------------- | ---------- | ------ |
+| 1   | Método `purgeOldSessions()` para limpeza dados >180 dias       | ALTA       | Week 5 |
+| 2   | Evento `ConsentRevoked` + pause sessões real-time              | ALTA       | Week 5 |
+| 3   | Endpoint `exportSessionData()` para DSAR (Data Subject Access) | MÉDIA      | Week 6 |
+| 4   | Event `DataControllerIdentified` com contato legal             | MÉDIA      | Week 5 |
+| 5   | Publicar log criptografado em IPFS para auditoria              | BAIXA      | Week 7 |
 
 **Ação imediata**: Implementar recomendações 1-2 em Week 5
 
@@ -93,6 +96,7 @@ ISOLAMENTO GARANTIDO:
 ## 📅 ROADMAP DETALHADO
 
 ### Week 1: Infrastructure (5 dias)
+
 **Risco**: BAIXO | **Complexidade**: BAIXA
 
 - [ ] Auditoria VPS (read-only)
@@ -109,6 +113,7 @@ ISOLAMENTO GARANTIDO:
 ---
 
 ### Week 2-3: Core API (10 dias)
+
 **Risco**: BAIXO | **Complexidade**: MÉDIO
 
 - [ ] Express.js + TypeScript boilerplate
@@ -127,6 +132,7 @@ ISOLAMENTO GARANTIDO:
 ---
 
 ### Week 4: Blockchain Integration (7 dias)
+
 **Risco**: MÉDIO | **Complexidade**: MÉDIO
 
 - [ ] ethers.js v6 integration
@@ -145,6 +151,7 @@ ISOLAMENTO GARANTIDO:
 ---
 
 ### Week 5-6: GDPR + Payments (14 dias)
+
 **Risco**: ALTO | **Complexidade**: ALTO
 
 - [ ] ConsentService (verificar, registrar, revogar)
@@ -164,6 +171,7 @@ ISOLAMENTO GARANTIDO:
 ---
 
 ### Week 7: Testing + Documentation (7 dias)
+
 **Risco**: BAIXO | **Complexidade**: MÉDIO
 
 - [ ] Unit tests (services, models)
@@ -181,6 +189,7 @@ ISOLAMENTO GARANTIDO:
 ---
 
 ### Week 8: Deploy + Validation (7 dias)
+
 **Risco**: MÉDIO | **Complexidade**: MÉDIO
 
 - [ ] Docker build + registry push
@@ -200,6 +209,7 @@ ISOLAMENTO GARANTIDO:
 ## 💡 INTEGRAÇÕES
 
 ### Frontend (stellar-canvas-dynamics)
+
 ```
 Phase 3 (paralelo): Integrar blockchain + backend
 ├── useBlockchain() hook (Phase 2)
@@ -209,6 +219,7 @@ Phase 3 (paralelo): Integrar blockchain + backend
 ```
 
 ### VPS Infrastructure
+
 ```
 Isolamento Total:
 ├── Novo PM2 process: stellar-backend (porta 9200)
@@ -223,6 +234,7 @@ Isolamento Total:
 ## 💰 CUSTOS / RECURSOS
 
 ### VPS (existente, compartilhado)
+
 ```
 Recursos utilizados:
 ├── CPU: ~1 core (40% picos)
@@ -232,6 +244,7 @@ Recursos utilizados:
 ```
 
 ### Time
+
 ```
 Estimado:
 ├── Run: 45 horas (full-time, 8 semanas)
@@ -241,6 +254,7 @@ Estimado:
 ```
 
 ### Ferramentas
+
 ```
 Tudo grátis (open-source):
 ├── Node.js / Express / TypeScript
@@ -254,13 +268,13 @@ Tudo grátis (open-source):
 
 ## ⚠️ RISCOS IDENTIFICADOS
 
-| Risco | Probabilidade | Impacto | Mitigação |
-|-------|--------------|--------|-----------|
-| GDPR compliance complexidade | MÉDIA | ALTO | Recomendações Phase 4 implementadas em Week 5 |
-| Blockchain RPC failures | BAIXA | MÉDIO | 4 fallback URLs Sepolia + local cache |
-| PostgreSQL migration failures | BAIXA | ALTO | Backup diário + restore testing |
-| PM2 conflict com existentes | BAIXA | CRÍTICO | Novo process name + port único (9200) |
-| JWT secret leak | BAIXA | CRÍTICO | Rotação secrets + alertas |
+| Risco                         | Probabilidade | Impacto | Mitigação                                     |
+| ----------------------------- | ------------- | ------- | --------------------------------------------- |
+| GDPR compliance complexidade  | MÉDIA         | ALTO    | Recomendações Phase 4 implementadas em Week 5 |
+| Blockchain RPC failures       | BAIXA         | MÉDIO   | 4 fallback URLs Sepolia + local cache         |
+| PostgreSQL migration failures | BAIXA         | ALTO    | Backup diário + restore testing               |
+| PM2 conflict com existentes   | BAIXA         | CRÍTICO | Novo process name + port único (9200)         |
+| JWT secret leak               | BAIXA         | CRÍTICO | Rotação secrets + alertas                     |
 
 **Estratégia**: Risco ZERO em Week 1 (infra only), risco médio Week 2-4, risco alto Week 5 (GDPR + payments)
 
@@ -288,6 +302,7 @@ Tudo grátis (open-source):
 **Três opções:**
 
 ### 🅰️ Começar Week 1 AGORA
+
 - ✅ Run executa infra setup (5 dias)
 - ✅ PostgreSQL + Redis + Nginx pronto
 - ✅ Próxima semana: codificação backend
@@ -295,6 +310,7 @@ Tudo grátis (open-source):
 **Ação**: "Siga com Week 1"
 
 ### 🅱️ Revisar Arquitetura Primeiro
+
 - ⏳ Agendar call com tech team
 - ⏳ Validar schema Prisma
 - ⏳ Ajustar timeline se necessário
@@ -302,6 +318,7 @@ Tudo grátis (open-source):
 **Ação**: "Quero revisar com time"
 
 ### 🅲️ Ajustar Escopo
+
 - ⏳ Remover feature X
 - ⏳ Adicionar feature Y
 - ⏳ Repensar timeline
@@ -331,7 +348,7 @@ Tudo grátis (open-source):
 
 **Responsável**: Run (Chefe Desenvolvimento)  
 **Email**: (via Copilot)  
-**Disponibilidade**: Começar imediatamente após aprovação CEO  
+**Disponibilidade**: Começar imediatamente após aprovação CEO
 
 **Próxima reunião**: Aguardando confirmação
 
@@ -339,7 +356,6 @@ Tudo grátis (open-source):
 
 ## ASSINATURA
 
-**CEO Rodrigo Alves**: _____________________ | Data: _____
+**CEO Rodrigo Alves**: **********\_********** | Data: **\_**
 
 **Run (Chefe Dev)**: ✅ Validado | Data: 2026-04-23
-

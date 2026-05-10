@@ -157,7 +157,11 @@ export async function refreshAccessToken(refreshToken: string): Promise<{ access
     include: { user: true },
   });
 
-  if (!session || session.refreshToken !== refreshToken || session.expiresAt.getTime() < Date.now()) {
+  if (
+    !session ||
+    session.refreshToken !== refreshToken ||
+    session.expiresAt.getTime() < Date.now()
+  ) {
     throw new AppError(401, "Refresh session invalid or expired", "REFRESH_INVALID");
   }
 

@@ -88,7 +88,9 @@ export function saveAuditRecords(records: AuditRecord[]): void {
   localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(records));
 }
 
-export async function executePaidService(input: ExecuteServiceInput): Promise<ExecuteServiceResult> {
+export async function executePaidService(
+  input: ExecuteServiceInput,
+): Promise<ExecuteServiceResult> {
   const config = SERVICE_CATALOG[input.serviceType];
 
   if (!config) {
@@ -113,7 +115,9 @@ export async function executePaidService(input: ExecuteServiceInput): Promise<Ex
     }),
   );
 
-  const snapshotHash = await sha256Hex(`${input.avatarId}:${input.serviceType}:${newTotalSpent}:${timestamp}`);
+  const snapshotHash = await sha256Hex(
+    `${input.avatarId}:${input.serviceType}:${newTotalSpent}:${timestamp}`,
+  );
 
   const tx = await input.adapter.submitTransaction({
     walletAddress: input.walletAddress,

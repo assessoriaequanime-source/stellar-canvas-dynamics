@@ -1,7 +1,4 @@
-import type {
-  ProviderModel,
-  UserModelPreference,
-} from "../contracts/provider-plan-types.js";
+import type { ProviderModel, UserModelPreference } from "../contracts/provider-plan-types.js";
 import {
   getProviderModel,
   getProviderPlan,
@@ -9,9 +6,7 @@ import {
   listProviderModels,
 } from "../registry/provider-plan-catalog.js";
 
-export function resolveModelForUserPreference(
-  input: UserModelPreference,
-): ProviderModel {
+export function resolveModelForUserPreference(input: UserModelPreference): ProviderModel {
   const allowUserModelChoice = readEnvFlag("AI_PROVIDER_ALLOW_USER_MODEL_CHOICE", false);
   const nativeModelId = process.env.AI_NATIVE_MODEL_ID;
   const tenantPolicy = getTenantPolicy(input.tenantId);
@@ -20,7 +15,8 @@ export function resolveModelForUserPreference(
   // 1) If tenant forces a fallback model, it always wins.
   if (tenantPolicy?.forcedFallbackModelId) {
     const forced = getProviderModel(tenantPolicy.forcedFallbackModelId);
-    if (forced && forced.enabled && isModelAllowedByTenant(forced.id, input.tenantId)) return forced;
+    if (forced && forced.enabled && isModelAllowedByTenant(forced.id, input.tenantId))
+      return forced;
   }
 
   // 2) User preference only when explicitly enabled.

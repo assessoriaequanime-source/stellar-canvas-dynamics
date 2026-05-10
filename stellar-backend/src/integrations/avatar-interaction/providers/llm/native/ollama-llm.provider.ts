@@ -32,7 +32,11 @@ export class OllamaLlmProvider implements LlmProvider {
       },
     );
 
-    const data = response.data as { response?: string; eval_count?: number; prompt_eval_count?: number };
+    const data = response.data as {
+      response?: string;
+      eval_count?: number;
+      prompt_eval_count?: number;
+    };
 
     return {
       text: (data.response || "").trim(),

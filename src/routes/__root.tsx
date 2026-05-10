@@ -31,21 +31,27 @@ function setJudgeSession() {
   const addr = JUDGE_WALLET_ADDRESS;
   localStorage.setItem(DEMO_WALLET_KEY, addr);
   localStorage.setItem(LOCAL_SESSION_KEY, `judge-session-${addr.slice(0, 8)}`);
-  localStorage.setItem(LOCAL_USER_KEY, JSON.stringify({
-    id: "judge-avatarpro-demo",
-    name: "Hackathon Judge",
-    email: "judge@singulai.live",
-    walletAddress: addr,
-    sglBalance: JUDGE_SGL_BALANCE,
-  }));
-  localStorage.setItem(LOCAL_WALLET_KEY, JSON.stringify({
-    address: addr,
-    walletAddress: addr,
-    network: "solana-devnet",
-    chainId: "devnet",
-    type: "avatarpro_judge",
-    sglBalance: JUDGE_SGL_BALANCE,
-  }));
+  localStorage.setItem(
+    LOCAL_USER_KEY,
+    JSON.stringify({
+      id: "judge-avatarpro-demo",
+      name: "Hackathon Judge",
+      email: "judge@singulai.live",
+      walletAddress: addr,
+      sglBalance: JUDGE_SGL_BALANCE,
+    }),
+  );
+  localStorage.setItem(
+    LOCAL_WALLET_KEY,
+    JSON.stringify({
+      address: addr,
+      walletAddress: addr,
+      network: "solana-devnet",
+      chainId: "devnet",
+      type: "avatarpro_judge",
+      sglBalance: JUDGE_SGL_BALANCE,
+    }),
+  );
 }
 
 function removeQueryParam(key: string) {
@@ -60,7 +66,10 @@ function removeQueryParams() {
   const url = new URL(window.location.href);
   let hasChanges = false;
   AUTH_QUERY_PARAMS.forEach((key) => {
-    if (url.searchParams.has(key)) { url.searchParams.delete(key); hasChanges = true; }
+    if (url.searchParams.has(key)) {
+      url.searchParams.delete(key);
+      hasChanges = true;
+    }
   });
   if (!hasChanges) return;
   const nextSearch = url.searchParams.toString();
@@ -98,24 +107,38 @@ function isPublicPath() {
   return PUBLIC_PATHS.has(normalizedPath);
 }
 
-
-
-
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "SingulAI — Intelligence Beyond Limits" },
-      { name: "description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
+      {
+        name: "description",
+        content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy.",
+      },
       { property: "og:title", content: "SingulAI — Intelligence Beyond Limits" },
-      { property: "og:description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
+      {
+        property: "og:description",
+        content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "SingulAI — Intelligence Beyond Limits" },
-      { name: "twitter:description", content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png" },
+      {
+        name: "twitter:description",
+        content: "SingulAI Dashboard with neural particles, Omega index, and digital legacy.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/40da9729-d247-4f58-96ef-993cd1d7b10b/id-preview-ec55e181--b2f10f05-bea7-4ee5-b675-635f50af0b44.lovable.app-1776577002653.png",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -151,7 +174,9 @@ function RootComponent() {
   const triedAuth = useRef(false);
 
   // Retoma música se estava ativa antes de uma navegação full-reload
-  useEffect(() => { initMusic(); }, []);
+  useEffect(() => {
+    initMusic();
+  }, []);
 
   const handleOnboardingSuccess = () => setAuthState("ready");
 
@@ -185,8 +210,26 @@ function RootComponent() {
 
   if (authState === "loading") {
     return (
-      <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", background: "#0b0b0b" }}>
-        <div style={{ fontFamily: "monospace", fontSize: 11, letterSpacing: "0.18em", color: "rgba(255,255,255,0.28)", textTransform: "uppercase" }}>Initializing…</div>
+      <div
+        style={{
+          display: "flex",
+          minHeight: "100dvh",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#0b0b0b",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: "monospace",
+            fontSize: 11,
+            letterSpacing: "0.18em",
+            color: "rgba(255,255,255,0.28)",
+            textTransform: "uppercase",
+          }}
+        >
+          Initializing…
+        </div>
       </div>
     );
   }

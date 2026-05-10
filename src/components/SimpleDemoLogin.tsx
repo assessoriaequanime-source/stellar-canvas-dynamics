@@ -9,7 +9,9 @@ interface Props {
 
 export default function SimpleDemoLogin({ onSuccess }: Props) {
   const [identifier, setIdentifier] = useState("");
-  const [userPlanTier, setUserPlanTier] = useState<"essential" | "professional" | "curator_digital">("essential");
+  const [userPlanTier, setUserPlanTier] = useState<
+    "essential" | "professional" | "curator_digital"
+  >("essential");
   const [activePlanId, setActivePlanId] = useState("plan-essential");
   const [preferredModelId, setPreferredModelId] = useState("native-ollama");
   const [loading, setLoading] = useState(false);
@@ -52,9 +54,7 @@ export default function SimpleDemoLogin({ onSuccess }: Props) {
           <BrandLogo {...BRAND_LOGO_USAGE.modal} />
         </div>
         <h2 className="slogin-title">Modo Demonstração</h2>
-        <p className="slogin-sub">
-          Acesse com e-mail ou celular para explorar os avatares
-        </p>
+        <p className="slogin-sub">Acesse com e-mail ou celular para explorar os avatares</p>
         <form className="slogin-form" onSubmit={handleSubmit} noValidate>
           <input
             className="f-input slogin-input"

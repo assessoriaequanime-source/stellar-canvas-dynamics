@@ -3,9 +3,9 @@
  * Only reads from blockchain, no write operations
  */
 
-import { ethers } from 'ethers';
-import { CONTRACTS, SEPOLIA_RPC_URLS, SGL_TOKEN_ADDRESS, ERC20_ABI } from './contracts';
-import type { BlockchainProvider, Avatar, TimeCapsule, DigitalLegacy } from './types';
+import { ethers } from "ethers";
+import { CONTRACTS, SEPOLIA_RPC_URLS, SGL_TOKEN_ADDRESS, ERC20_ABI } from "./contracts";
+import type { BlockchainProvider, Avatar, TimeCapsule, DigitalLegacy } from "./types";
 
 class BlockchainReadService {
   private provider: ethers.JsonRpcProvider | null = null;
@@ -37,12 +37,12 @@ class BlockchainReadService {
         }
       }
 
-      throw new Error('Could not connect to any RPC endpoint');
+      throw new Error("Could not connect to any RPC endpoint");
     } catch (error) {
-      console.error('Blockchain service initialization failed:', error);
+      console.error("Blockchain service initialization failed:", error);
       return {
         isConnected: false,
-        url: '',
+        url: "",
       };
     }
   }
@@ -52,7 +52,7 @@ class BlockchainReadService {
    */
   private initializeContracts(): void {
     if (!this.provider) {
-      throw new Error('Provider not initialized');
+      throw new Error("Provider not initialized");
     }
 
     for (const [name, config] of Object.entries(CONTRACTS)) {
@@ -76,7 +76,7 @@ class BlockchainReadService {
    */
   async getNetwork(): Promise<string> {
     if (!this.provider) {
-      throw new Error('Provider not initialized');
+      throw new Error("Provider not initialized");
     }
     const network = await this.provider.getNetwork();
     return `${network.name} (Chain ID: ${network.chainId})`;
@@ -87,7 +87,7 @@ class BlockchainReadService {
    */
   async getSGLBalance(address: string): Promise<string> {
     if (!this.provider) {
-      throw new Error('Provider not initialized');
+      throw new Error("Provider not initialized");
     }
 
     try {
@@ -96,7 +96,7 @@ class BlockchainReadService {
       const decimals = await sglContract.decimals();
       return ethers.formatUnits(balance, decimals);
     } catch (error) {
-      console.error('Failed to get SGL balance:', error);
+      console.error("Failed to get SGL balance:", error);
       throw error;
     }
   }
@@ -106,14 +106,14 @@ class BlockchainReadService {
    */
   async getETHBalance(address: string): Promise<string> {
     if (!this.provider) {
-      throw new Error('Provider not initialized');
+      throw new Error("Provider not initialized");
     }
 
     try {
       const balance = await this.provider.getBalance(address);
       return ethers.formatEther(balance);
     } catch (error) {
-      console.error('Failed to get ETH balance:', error);
+      console.error("Failed to get ETH balance:", error);
       throw error;
     }
   }
@@ -122,15 +122,15 @@ class BlockchainReadService {
    * Get total avatars created
    */
   async getTotalAvatars(): Promise<number> {
-    if (!this.contracts['AvatarBase']) {
-      throw new Error('AvatarBase contract not initialized');
+    if (!this.contracts["AvatarBase"]) {
+      throw new Error("AvatarBase contract not initialized");
     }
 
     try {
-      const total = await this.contracts['AvatarBase'].totalAvatars();
+      const total = await this.contracts["AvatarBase"].totalAvatars();
       return Number(total);
     } catch (error) {
-      console.error('Failed to get total avatars:', error);
+      console.error("Failed to get total avatars:", error);
       throw error;
     }
   }
@@ -139,12 +139,12 @@ class BlockchainReadService {
    * Get avatar information
    */
   async getAvatar(avatarId: number): Promise<Avatar | null> {
-    if (!this.contracts['AvatarBase']) {
-      throw new Error('AvatarBase contract not initialized');
+    if (!this.contracts["AvatarBase"]) {
+      throw new Error("AvatarBase contract not initialized");
     }
 
     try {
-      const avatar = await this.contracts['AvatarBase'].getAvatar(avatarId);
+      const avatar = await this.contracts["AvatarBase"].getAvatar(avatarId);
       return {
         id: avatarId,
         name: avatar.name,
@@ -162,12 +162,12 @@ class BlockchainReadService {
    * Get avatar owner
    */
   async getAvatarOwner(avatarId: number): Promise<string> {
-    if (!this.contracts['AvatarBase']) {
-      throw new Error('AvatarBase contract not initialized');
+    if (!this.contracts["AvatarBase"]) {
+      throw new Error("AvatarBase contract not initialized");
     }
 
     try {
-      return await this.contracts['AvatarBase'].avatarOwner(avatarId);
+      return await this.contracts["AvatarBase"].avatarOwner(avatarId);
     } catch (error) {
       console.error(`Failed to get avatar owner for ${avatarId}:`, error);
       throw error;
@@ -178,12 +178,12 @@ class BlockchainReadService {
    * Get time capsule information
    */
   async getCapsule(capsuleId: number): Promise<TimeCapsule | null> {
-    if (!this.contracts['TimeCapsule']) {
-      throw new Error('TimeCapsule contract not initialized');
+    if (!this.contracts["TimeCapsule"]) {
+      throw new Error("TimeCapsule contract not initialized");
     }
 
     try {
-      const capsule = await this.contracts['TimeCapsule'].getCapsule(capsuleId);
+      const capsule = await this.contracts["TimeCapsule"].getCapsule(capsuleId);
       return {
         id: capsuleId,
         avatarId: Number(capsule.avatarId),
@@ -202,12 +202,12 @@ class BlockchainReadService {
    * Check if a capsule can be opened
    */
   async canOpenCapsule(capsuleId: number): Promise<boolean> {
-    if (!this.contracts['TimeCapsule']) {
-      throw new Error('TimeCapsule contract not initialized');
+    if (!this.contracts["TimeCapsule"]) {
+      throw new Error("TimeCapsule contract not initialized");
     }
 
     try {
-      return await this.contracts['TimeCapsule'].canOpen(capsuleId);
+      return await this.contracts["TimeCapsule"].canOpen(capsuleId);
     } catch (error) {
       console.error(`Failed to check if capsule ${capsuleId} can be opened:`, error);
       throw error;
@@ -218,12 +218,12 @@ class BlockchainReadService {
    * Get digital legacy information
    */
   async getLegacy(legacyId: number): Promise<DigitalLegacy | null> {
-    if (!this.contracts['DigitalLegacy']) {
-      throw new Error('DigitalLegacy contract not initialized');
+    if (!this.contracts["DigitalLegacy"]) {
+      throw new Error("DigitalLegacy contract not initialized");
     }
 
     try {
-      const legacy = await this.contracts['DigitalLegacy'].getLegacy(legacyId);
+      const legacy = await this.contracts["DigitalLegacy"].getLegacy(legacyId);
       return {
         id: legacyId,
         avatarId: Number(legacy.avatarId),
@@ -241,12 +241,12 @@ class BlockchainReadService {
    * Check if an address is linked to an avatar
    */
   async isWalletLinked(walletAddress: string): Promise<boolean> {
-    if (!this.contracts['AvatarWalletLink']) {
-      throw new Error('AvatarWalletLink contract not initialized');
+    if (!this.contracts["AvatarWalletLink"]) {
+      throw new Error("AvatarWalletLink contract not initialized");
     }
 
     try {
-      return await this.contracts['AvatarWalletLink'].isLinked(walletAddress);
+      return await this.contracts["AvatarWalletLink"].isLinked(walletAddress);
     } catch (error) {
       console.error(`Failed to check if wallet ${walletAddress} is linked:`, error);
       throw error;
@@ -257,14 +257,12 @@ class BlockchainReadService {
    * Get linked avatar for a wallet address
    */
   async getLinkedAvatar(walletAddress: string): Promise<number | null> {
-    if (!this.contracts['AvatarWalletLink']) {
-      throw new Error('AvatarWalletLink contract not initialized');
+    if (!this.contracts["AvatarWalletLink"]) {
+      throw new Error("AvatarWalletLink contract not initialized");
     }
 
     try {
-      const avatarId = await this.contracts['AvatarWalletLink'].getLinkedAvatar(
-        walletAddress,
-      );
+      const avatarId = await this.contracts["AvatarWalletLink"].getLinkedAvatar(walletAddress);
       return Number(avatarId) > 0 ? Number(avatarId) : null;
     } catch (error) {
       console.error(`Failed to get linked avatar for ${walletAddress}:`, error);
@@ -293,7 +291,7 @@ class BlockchainReadService {
       const decoded = ethers.toUtf8String(hexData);
       return JSON.parse(decoded);
     } catch (error) {
-      console.error('Failed to decode registry data:', error);
+      console.error("Failed to decode registry data:", error);
       return null;
     }
   }

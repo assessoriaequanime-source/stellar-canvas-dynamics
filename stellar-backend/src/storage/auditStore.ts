@@ -65,7 +65,10 @@ export function appendAuditEvent(event: StoredAuditEvent): StoredAuditEvent {
   return event;
 }
 
-export function listAuditEvents(filters: { walletAddress?: string; avatarId?: string }): StoredAuditEvent[] {
+export function listAuditEvents(filters: {
+  walletAddress?: string;
+  avatarId?: string;
+}): StoredAuditEvent[] {
   const events = readJsonArray<StoredAuditEvent>(AUDIT_EVENTS_FILE);
 
   return events.filter((event) => {
@@ -81,10 +84,16 @@ export function listAuditEvents(filters: { walletAddress?: string; avatarId?: st
   });
 }
 
-export function markInitialCredit(walletAddress: string, mintAddress: string, txSignature: string): CreditLedgerItem {
+export function markInitialCredit(
+  walletAddress: string,
+  mintAddress: string,
+  txSignature: string,
+): CreditLedgerItem {
   const ledger = readJsonArray<CreditLedgerItem>(CREDIT_LEDGER_FILE);
 
-  const existing = ledger.find((item) => item.walletAddress === walletAddress && item.mintAddress === mintAddress);
+  const existing = ledger.find(
+    (item) => item.walletAddress === walletAddress && item.mintAddress === mintAddress,
+  );
   if (existing) {
     return existing;
   }
@@ -104,5 +113,7 @@ export function markInitialCredit(walletAddress: string, mintAddress: string, tx
 
 export function hasInitialCredit(walletAddress: string, mintAddress: string): boolean {
   const ledger = readJsonArray<CreditLedgerItem>(CREDIT_LEDGER_FILE);
-  return ledger.some((item) => item.walletAddress === walletAddress && item.mintAddress === mintAddress);
+  return ledger.some(
+    (item) => item.walletAddress === walletAddress && item.mintAddress === mintAddress,
+  );
 }

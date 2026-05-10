@@ -19,11 +19,11 @@ Módulo 3 (Tokenomics SGL)             ← base de valor, sem dependências exte
 
 ### Integrações Cross-Módulo (on-chain)
 
-| Contrato              | Chama                         | Guarda                                                    |
-|-----------------------|-------------------------------|-----------------------------------------------------------|
-| `AvatarPro`           | `ConsentRegistry.hasConsent`  | sessões bloqueadas sem consentimento LGPD (voz)           |
-| `OracleGateway`       | `WhiteLabelRegistry.isActive` | eventos bloqueados para parceiros não ativos              |
-| `InstitutionalEscrow` | `OracleGateway.hasValidEvent` | releases bloqueados sem evento oracle confirmado          |
+| Contrato              | Chama                         | Guarda                                                       |
+| --------------------- | ----------------------------- | ------------------------------------------------------------ |
+| `AvatarPro`           | `ConsentRegistry.hasConsent`  | sessões bloqueadas sem consentimento LGPD (voz)              |
+| `OracleGateway`       | `WhiteLabelRegistry.isActive` | eventos bloqueados para parceiros não ativos                 |
+| `InstitutionalEscrow` | `OracleGateway.hasValidEvent` | releases bloqueados sem evento oracle confirmado             |
 | `TimeCapsule`         | `OracleGateway.hasValidEvent` | unlock bloqueado sem evento oracle (TriggerType.OracleEvent) |
 
 ---
@@ -34,9 +34,9 @@ Módulo 3 (Tokenomics SGL)             ← base de valor, sem dependências exte
 
 **Produto**: Cápsulas de legado digital com conteúdo IPFS e desbloqueio condicional.
 
-| Contrato       | Descrição                                                                    |
-|----------------|------------------------------------------------------------------------------|
-| `TimeCapsule`  | Cria cápsulas com unlock por tempo, evento oracle ou curador designado       |
+| Contrato       | Descrição                                                                        |
+| -------------- | -------------------------------------------------------------------------------- |
+| `TimeCapsule`  | Cria cápsulas com unlock por tempo, evento oracle ou curador designado           |
 | `LegacyPolicy` | Política de herança digital com beneficiários, percentuais e cápsulas vinculadas |
 
 **Dependências**: `SGLToken` (M3), `OracleGateway` (M4, configurável pós-deploy).
@@ -48,11 +48,11 @@ Módulo 3 (Tokenomics SGL)             ← base de valor, sem dependências exte
 **Produto**: Avatares NFT com memória, links de carteira, sessões pagas e consentimento LGPD.
 
 | Contrato           | Descrição                                                                |
-|--------------------|--------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------ |
 | `AvatarBase`       | ERC721 com snapshot de memória e direito ao esquecimento (deactivate)    |
 | `AvatarWalletLink` | Vincula carteiras externas ao avatar com níveis de permissão e expiração |
 | `ConsentRegistry`  | Registro LGPD/GDPR on-chain com bitmask de consentimentos                |
-| `AvatarPro`        | Sessões pagas em SGL com verificação de consentimento e audit trail       |
+| `AvatarPro`        | Sessões pagas em SGL com verificação de consentimento e audit trail      |
 
 **Dependências**: `SGLToken` (M3), `ConsentRegistry` (próprio módulo, `setConsentRegistry`).
 
@@ -62,12 +62,12 @@ Módulo 3 (Tokenomics SGL)             ← base de valor, sem dependências exte
 
 **Produto**: Token SGL (ERC20) com economia completa: staking, escrow e gerenciamento de taxas.
 
-| Contrato        | Descrição                                                        |
-|-----------------|------------------------------------------------------------------|
-| `SGLToken`      | ERC20 + Burnable + AccessControl + Pausable; MINTER/PAUSER roles  |
-| `EscrowContract`| Posições bloqueadas com metadataHash e tempo de liberação         |
-| `FeeManager`    | Divisão de taxas entre treasury e burn com SafeERC20              |
-| `StakingPool`   | Staking com rewards proporcionais ao tempo                        |
+| Contrato         | Descrição                                                        |
+| ---------------- | ---------------------------------------------------------------- |
+| `SGLToken`       | ERC20 + Burnable + AccessControl + Pausable; MINTER/PAUSER roles |
+| `EscrowContract` | Posições bloqueadas com metadataHash e tempo de liberação        |
+| `FeeManager`     | Divisão de taxas entre treasury e burn com SafeERC20             |
+| `StakingPool`    | Staking com rewards proporcionais ao tempo                       |
 
 **Dependências**: nenhuma externa (base layer).
 
@@ -77,12 +77,12 @@ Módulo 3 (Tokenomics SGL)             ← base de valor, sem dependências exte
 
 **Produto**: Camada de confiança institucional: parceiros, eventos oracle, escrow e auditoria.
 
-| Contrato              | Descrição                                                                 |
-|-----------------------|---------------------------------------------------------------------------|
-| `WhiteLabelRegistry`  | Registro de parceiros (bancos, cartórios, seguradoras) com lifecycle/SLA  |
-| `OracleGateway`       | Registro imutável de eventos oficiais (certidões, KYC, homologações)      |
-| `InstitutionalEscrow` | Escrow oracle-triggered com verificação on-chain antes do release         |
-| `AuditLog`            | Log append-only com hashes encadeados para exportação judicial            |
+| Contrato              | Descrição                                                                |
+| --------------------- | ------------------------------------------------------------------------ |
+| `WhiteLabelRegistry`  | Registro de parceiros (bancos, cartórios, seguradoras) com lifecycle/SLA |
+| `OracleGateway`       | Registro imutável de eventos oficiais (certidões, KYC, homologações)     |
+| `InstitutionalEscrow` | Escrow oracle-triggered com verificação on-chain antes do release        |
+| `AuditLog`            | Log append-only com hashes encadeados para exportação judicial           |
 
 **Dependências**: `SGLToken` (M3); `OracleGateway` referencia `WhiteLabelRegistry` (próprio módulo).
 
@@ -162,10 +162,10 @@ Requisito: todos os módulos compilados. Endereços salvos em `modules/deployed-
 
 ## Ambiente Técnico
 
-| Item         | Versão / Configuração           |
-|--------------|---------------------------------|
-| Solidity     | `0.8.24`                        |
-| OpenZeppelin | `^5.2.0`                        |
-| EVM target   | `cancun` (todos os módulos)     |
-| Rede testnet | Sepolia                         |
-| Hardhat      | `^2.22.0`                       |
+| Item         | Versão / Configuração       |
+| ------------ | --------------------------- |
+| Solidity     | `0.8.24`                    |
+| OpenZeppelin | `^5.2.0`                    |
+| EVM target   | `cancun` (todos os módulos) |
+| Rede testnet | Sepolia                     |
+| Hardhat      | `^2.22.0`                   |

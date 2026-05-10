@@ -25,6 +25,7 @@ Run `npx vitest run src/lib/hackathon/__tests__/mvp.test.ts` before presenting t
 > A **verifiable executable on Solana** that delivers proof and earns trust over time."
 
 **[Show in code or terminal]:**
+
 ```typescript
 const result = await runMvpFlow();
 console.log(result.proofEvents); // 5 events, each with a signature and slot

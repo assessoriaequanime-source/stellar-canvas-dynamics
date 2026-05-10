@@ -40,7 +40,9 @@ export function getAuditEventsByWallet(walletAddress: string) {
     return Promise.resolve(demoAuditEvents());
   }
   return withFallback(
-    requestJson<Array<Record<string, unknown>>>(`/audit/events?walletAddress=${encodeURIComponent(walletAddress)}`),
+    requestJson<Array<Record<string, unknown>>>(
+      `/audit/events?walletAddress=${encodeURIComponent(walletAddress)}`,
+    ),
     [],
   );
 }

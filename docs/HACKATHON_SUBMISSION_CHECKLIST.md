@@ -11,24 +11,24 @@ Status: pronto para preenchimento na pre-banca e no pitch final.
 
 ## Matriz Passa/Falha
 
-| #   | Item                               | Criterio de Aprovacao                                         | Evidencia (Comando / Script)                       | Evidencia (Tx Hash / Screenshot)                             | Passa/Falha |
-| :-- | :--------------------------------- | :------------------------------------------------------------ | :------------------------------------------------- | :----------------------------------------------------------- | :---------- |
-| 1   | Rede devnet                        | solana config get retorna <https://api.devnet.solana.com>.    | comando executado; resultado: SOLANA_CLI=missing   | ver secao Saida coletada nesta sessao                        | [ ]         |
-| 2   | Rotas obrigatorias /vault e /audit | Frontend renderiza as duas telas sem erro.                    | curl -w "%{http_code}" <https://singulai.live/vault> | HTTP 200 em /vault e /audit; gate de login funcional          | [x]         |
-| 3   | Inicializacao do Avatar (PDA)      | Conta avatar_state criada com score 0 e nivel Draft.          | script tests/demo-flow.ts initialize               | Tx Hash: **\_\_\_\_**                                        | [ ]         |
-| 4   | Atualizacao PAS                    | update_particle_score altera estado on-chain e emite evento.  | script tests/demo-flow.ts update                   | Tx Hash: **\_\_\_\_**                                        | [ ]         |
-| 5   | Controle de autoridade             | outra wallet nao consegue atualizar score.                    | ts-node tests/demo-flow.ts --test unauthorized     | Tx Hash: **\_\_\_\_** (falha esperada)                       | [ ]         |
-| 6   | Prova de posse do NFT              | nao inicializa para mint sem posse do signatario.             | ts-node tests/demo-flow.ts --test no-nft           | Tx Hash: **\_\_\_\_** (falha esperada)                       | [ ]         |
-| 7   | Anti-spam com excecao inicial      | 1 atualizacao imediata permitida; depois exige janela minima. | script de spam test + roteiro formal               | Tx Hash 1: **\_\_\_\_** / Tx Hash 2: **\_\_\_\_**            | [ ]         |
-| 8   | Decay por inatividade              | score reduz proporcionalmente ao tempo sem interacao.         | validacao local com solana-test-validator          | Screenshot do teste local                                    | [ ]         |
-| 9   | Transicao de niveis                | 3000 -> Assisted; 7000 -> Trusted.                            | consulta de conta apos updates                     | Screenshot da conta                                          | [ ]         |
-| 10  | Acao critica restrita por nivel    | recurso sensivel exige Trusted.                               | teste de autorizacao por nivel                     | Tx Hash sucesso: **\_\_\_\_** / falha esperada: **\_\_\_\_** | [ ]         |
-| 11  | Zero dados privados on-chain       | sem PII em contas de estado.                                  | revisao de structs e eventos                       | Print do AvatarState                                         | [ ]         |
-| 12  | Disclaimer SGL                     | texto explicito de credito sem valor financeiro.              | validacao visual na demo/README                    | Screenshot                                                   | [ ]         |
-| 13  | Eventos de auditoria               | AvatarInitialized e ScoreUpdated visiveis no log.             | solana confirm -v <TX_HASH> \| grep "Program log:" | Print com eventos                                            | [ ]         |
-| 14  | Build e testes reproduziveis       | anchor build e anchor test sem erros em ambiente limpo.       | anchor build; anchor test                          | Log de execucao                                              | [ ]         |
-| 15  | Documentacao do modulo             | README descreve modulo de maturidade e uso.                   | secao Competition Validation Pack no README        | validado na revisao desta sessao                             | [x]         |
-| 16  | Roteiro de demo pronto             | existe roteiro executavel para banca.                         | docs/DEMO_SCRIPT.md                                | arquivo criado e validado nesta sessao                       | [x]         |
+| #   | Item                               | Criterio de Aprovacao                                         | Evidencia (Comando / Script)                         | Evidencia (Tx Hash / Screenshot)                             | Passa/Falha |
+| :-- | :--------------------------------- | :------------------------------------------------------------ | :--------------------------------------------------- | :----------------------------------------------------------- | :---------- |
+| 1   | Rede devnet                        | solana config get retorna <https://api.devnet.solana.com>.    | comando executado; resultado: SOLANA_CLI=missing     | ver secao Saida coletada nesta sessao                        | [ ]         |
+| 2   | Rotas obrigatorias /vault e /audit | Frontend renderiza as duas telas sem erro.                    | curl -w "%{http_code}" <https://singulai.live/vault> | HTTP 200 em /vault e /audit; gate de login funcional         | [x]         |
+| 3   | Inicializacao do Avatar (PDA)      | Conta avatar_state criada com score 0 e nivel Draft.          | script tests/demo-flow.ts initialize                 | Tx Hash: **\_\_\_\_**                                        | [ ]         |
+| 4   | Atualizacao PAS                    | update_particle_score altera estado on-chain e emite evento.  | script tests/demo-flow.ts update                     | Tx Hash: **\_\_\_\_**                                        | [ ]         |
+| 5   | Controle de autoridade             | outra wallet nao consegue atualizar score.                    | ts-node tests/demo-flow.ts --test unauthorized       | Tx Hash: **\_\_\_\_** (falha esperada)                       | [ ]         |
+| 6   | Prova de posse do NFT              | nao inicializa para mint sem posse do signatario.             | ts-node tests/demo-flow.ts --test no-nft             | Tx Hash: **\_\_\_\_** (falha esperada)                       | [ ]         |
+| 7   | Anti-spam com excecao inicial      | 1 atualizacao imediata permitida; depois exige janela minima. | script de spam test + roteiro formal                 | Tx Hash 1: **\_\_\_\_** / Tx Hash 2: **\_\_\_\_**            | [ ]         |
+| 8   | Decay por inatividade              | score reduz proporcionalmente ao tempo sem interacao.         | validacao local com solana-test-validator            | Screenshot do teste local                                    | [ ]         |
+| 9   | Transicao de niveis                | 3000 -> Assisted; 7000 -> Trusted.                            | consulta de conta apos updates                       | Screenshot da conta                                          | [ ]         |
+| 10  | Acao critica restrita por nivel    | recurso sensivel exige Trusted.                               | teste de autorizacao por nivel                       | Tx Hash sucesso: **\_\_\_\_** / falha esperada: **\_\_\_\_** | [ ]         |
+| 11  | Zero dados privados on-chain       | sem PII em contas de estado.                                  | revisao de structs e eventos                         | Print do AvatarState                                         | [ ]         |
+| 12  | Disclaimer SGL                     | texto explicito de credito sem valor financeiro.              | validacao visual na demo/README                      | Screenshot                                                   | [ ]         |
+| 13  | Eventos de auditoria               | AvatarInitialized e ScoreUpdated visiveis no log.             | solana confirm -v <TX_HASH> \| grep "Program log:"   | Print com eventos                                            | [ ]         |
+| 14  | Build e testes reproduziveis       | anchor build e anchor test sem erros em ambiente limpo.       | anchor build; anchor test                            | Log de execucao                                              | [ ]         |
+| 15  | Documentacao do modulo             | README descreve modulo de maturidade e uso.                   | secao Competition Validation Pack no README          | validado na revisao desta sessao                             | [x]         |
+| 16  | Roteiro de demo pronto             | existe roteiro executavel para banca.                         | docs/DEMO_SCRIPT.md                                  | arquivo criado e validado nesta sessao                       | [x]         |
 
 ## Falha esperada = passa em seguranca
 
@@ -127,6 +127,7 @@ Referencia para narrativa tecnica da banca:
 SGL é um **SPL Token** (Solana Program Library) rodando na rede **Solana Devnet**, funcionando como mecanismo de crédito de execução no sistema SingulAI AvatarPro Vault para interações com os avatares e operações on-chain.
 
 **Características:**
+
 - **Implementação:** SPL Token Standard na Solana Devnet (não é custódia centralizada; é um token on-chain auditável)
 - **Sem valor financeiro:** SGL é exclusivamente um crédito de uso interno da plataforma, sem cotação em bolsa — determinado pela banca como crédito de execução, não como ativo negociável
 - **Propósito exclusivo:** Funciona como mecanismo de controle de recursos para demonstração e testes com rastreabilidade on-chain
@@ -138,31 +139,31 @@ SGL é um **SPL Token** (Solana Program Library) rodando na rede **Solana Devnet
 1. **Acesse o dashboard:**  
    <https://singulai.live/dashboard> (ou <http://127.0.0.1:8080/dashboard> em ambiente local)
 
-2. **Conecte sua carteira Solana Devnet:**  
+2. **Conecte sua carteira Solana Devnet:**
    - Clique em "Connect Wallet" (ou similar)
    - Selecione Phantom ou outro wallet com suporte a Devnet
    - Autorize a conexão
 
-3. **Acesse o painel de Vault:**  
+3. **Acesse o painel de Vault:**
    - Clique em "Vault" no menu ou navegue para `/vault`
 
-4. **Solicite SGL do Faucet:**  
+4. **Solicite SGL do Faucet:**
    - Procure pelo botão ou link "Request SGL" / "Faucet"
    - Clique para receber tokens de teste (padrão: 10.000 SGL por solicitação)
    - Confirme a transação na carteira
 
-5. **Verifique o saldo:**  
+5. **Verifique o saldo:**
    - O saldo SGL atualiza em tempo real na interface
    - Você pode verificar a transação no Solana Explorer
 
 ### Tokens SGL para diferentes ações
 
-| Ação | Custo SGL | Observação |
-| --- | --- | --- |
-| Inicializar Avatar | 100 SGL | Primeira vez por endereço |
-| Criar Time Capsule | 50 SGL | Armazenamento e processamento |
-| Atualizar Particle Score (PAS) | 25 SGL | Operação de estado |
-| Registrar Prova de Auditoria | 10 SGL | Evento on-chain |
+| Ação                           | Custo SGL | Observação                    |
+| ------------------------------ | --------- | ----------------------------- |
+| Inicializar Avatar             | 100 SGL   | Primeira vez por endereço     |
+| Criar Time Capsule             | 50 SGL    | Armazenamento e processamento |
+| Atualizar Particle Score (PAS) | 25 SGL    | Operação de estado            |
+| Registrar Prova de Auditoria   | 10 SGL    | Evento on-chain               |
 
 ### FAQ - Token SGL
 
@@ -177,6 +178,7 @@ R: Sim. O faucet não possui limite de solicitações, permitindo testes ilimita
 
 **P: E se a solicitação falhar?**  
 R: Verifique se:
+
 - Você está conectado à Devnet (não Mainnet)
 - Sua carteira tem SOL para fees (~0.00005 SOL por transação)
 - Retente a operação
@@ -192,6 +194,7 @@ R: Verifique se:
 SGL é implementado como um **SPL Token** (Solana Program Library) seguindo o padrão open-source da Solana Foundation. A arquitetura utiliza:
 
 **Componentes Técnicos:**
+
 - **Standard:** SPL Token Standard (`@solana/spl-token` v0.4.14+)
 - **Rede:** Solana Devnet (validadores públicos da Solana Foundation)
 - **Mint Address:** Disponível no painel Audit (`sglMintAddress`) para verificação on-chain
@@ -200,6 +203,7 @@ SGL é implementado como um **SPL Token** (Solana Program Library) seguindo o pa
 - **Decimals:** 9 (padrão Solana)
 
 **Fluxo On-Chain:**
+
 1. Jurado conecta carteira Solana Devnet
 2. Sistema consulta balance do token account associado (`getSglBalance`)
 3. Faucet executa transferência via Mint Authority (`debitSglForService`)
@@ -207,10 +211,12 @@ SGL é implementado como um **SPL Token** (Solana Program Library) seguindo o pa
 5. Saldo atualizado em tempo real
 
 **Verificação em Exploradores:**
+
 - Solana Explorer: <https://explorer.solana.com/address/{MINT_ADDRESS}?cluster=devnet>
 - Solscan: <https://solscan.io/token/{MINT_ADDRESS}?cluster=devnet>
 
 **Características de Auditoria On-Chain:**
+
 - Todas as transações SGL são públicas na blockchain
 - Ledger de despesas (`getSglLedger`) com rastreabilidade completa
 - Prova de execução via `txSignature` (assinatura da transação)

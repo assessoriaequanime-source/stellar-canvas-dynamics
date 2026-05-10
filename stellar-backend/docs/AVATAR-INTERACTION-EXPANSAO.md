@@ -16,6 +16,7 @@ Status: aprovado para expansao incremental.
 Viavel. O backend atual ja suporta chamadas HTTP e autenticacao por chave.
 
 Pontos de atencao:
+
 - custo por caractere/audio
 - latencia de resposta de TTS
 - controle de consentimento para uso de voz
@@ -24,12 +25,14 @@ Pontos de atencao:
 ### 2) API propria do usuario (modelo custom)
 
 Viavel. Arquitetura com provider custom permite:
+
 - endpoint por tenant
 - headers por tenant
 - chave de API por tenant
 - fallback para provider padrao
 
 Pontos de atencao:
+
 - validacao de endpoint e timeout
 - observabilidade por tenant
 - isolamento de dados e logs
@@ -39,12 +42,14 @@ Pontos de atencao:
 Viavel e recomendado como default para reduzir atrito e custo operacional.
 
 Diretriz:
+
 - manter modelo nativo ativo por padrao
 - usar premium/terceirizados como opcao por plano
 - preservar fallback nativo para continuidade
 - manter escolha direta de modelo pelo usuario desabilitada ate contratacao de provedores premium
 
 Pendencia:
+
 - avaliar modelo nativo superior (qualidade x custo x latencia) como ajuste fino posterior
 - habilitar escolha de modelo pelo usuario somente apos contratacao, homologacao e governanca de custo/compliance
 

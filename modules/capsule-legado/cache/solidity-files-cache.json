@@ -23,22 +23,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "LegacyPolicy"
-      ]
+      "imports": ["@openzeppelin/contracts/access/AccessControl.sol"],
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["LegacyPolicy"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
       "lastModificationDate": 1776844112568,
@@ -62,9 +54,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -74,12 +64,8 @@
         "../utils/Context.sol",
         "../utils/introspection/ERC165.sol"
       ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "AccessControl"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["AccessControl"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/utils/Context.sol": {
       "lastModificationDate": 1776844112836,
@@ -103,20 +89,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Context"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Context"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/access/IAccessControl.sol": {
       "lastModificationDate": 1776844113934,
@@ -140,20 +120,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IAccessControl"
-      ]
+      "versionPragmas": [">=0.8.4"],
+      "artifacts": ["IAccessControl"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
       "lastModificationDate": 1776844113063,
@@ -177,22 +151,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC165"
-      ]
+      "imports": ["./IERC165.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ERC165"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
       "lastModificationDate": 1776844114086,
@@ -216,20 +182,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC165"
-      ]
+      "versionPragmas": [">=0.4.16"],
+      "artifacts": ["IERC165"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/interfaces/IERC165.sol": {
       "lastModificationDate": 1776844114072,
@@ -253,19 +213,13 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/introspection/IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
+      "imports": ["../utils/introspection/IERC165.sol"],
+      "versionPragmas": [">=0.4.16"],
       "artifacts": []
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/interfaces/IERC1363.sol": {
@@ -290,23 +244,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./IERC20.sol",
-        "./IERC165.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC1363"
-      ]
+      "imports": ["./IERC20.sol", "./IERC165.sol"],
+      "versionPragmas": [">=0.6.2"],
+      "artifacts": ["IERC1363"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/interfaces/IERC20.sol": {
       "lastModificationDate": 1776844114106,
@@ -330,19 +275,13 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../token/ERC20/IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
+      "imports": ["../token/ERC20/IERC20.sol"],
+      "versionPragmas": [">=0.4.16"],
       "artifacts": []
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
@@ -367,20 +306,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.4.16"
-      ],
-      "artifacts": [
-        "IERC20"
-      ]
+      "versionPragmas": [">=0.4.16"],
+      "artifacts": ["IERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
       "lastModificationDate": 1776844114138,
@@ -404,22 +337,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../IERC20.sol"
-      ],
-      "versionPragmas": [
-        ">=0.6.2"
-      ],
-      "artifacts": [
-        "IERC20Metadata"
-      ]
+      "imports": ["../IERC20.sol"],
+      "versionPragmas": [">=0.6.2"],
+      "artifacts": ["IERC20Metadata"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
       "lastModificationDate": 1776844113093,
@@ -443,9 +368,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -456,12 +379,8 @@
         "../../utils/Context.sol",
         "../../interfaces/draft-IERC6093.sol"
       ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ERC20"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
       "lastModificationDate": 1776844112907,
@@ -485,22 +404,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        ">=0.8.4"
-      ],
-      "artifacts": [
-        "IERC1155Errors",
-        "IERC20Errors",
-        "IERC721Errors"
-      ]
+      "versionPragmas": [">=0.8.4"],
+      "artifacts": ["IERC1155Errors", "IERC20Errors", "IERC721Errors"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/utils/Pausable.sol": {
       "lastModificationDate": 1776844114647,
@@ -524,22 +435,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../utils/Context.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Pausable"
-      ]
+      "imports": ["../utils/Context.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["Pausable"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/contracts/TimeCapsule.sol": {
       "lastModificationDate": 1776842181951,
@@ -563,9 +466,7 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
@@ -577,13 +478,8 @@
         "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol"
       ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "IOracleGateway",
-        "TimeCapsule"
-      ]
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["IOracleGateway", "TimeCapsule"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
       "lastModificationDate": 1776844114652,
@@ -607,22 +503,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "./StorageSlot.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ReentrancyGuard"
-      ]
+      "imports": ["./StorageSlot.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["ReentrancyGuard"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": {
       "lastModificationDate": 1776844114669,
@@ -646,23 +534,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "../IERC20.sol",
-        "../../../interfaces/IERC1363.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "SafeERC20"
-      ]
+      "imports": ["../IERC20.sol", "../../../interfaces/IERC1363.sol"],
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["SafeERC20"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
       "lastModificationDate": 1776844114704,
@@ -686,20 +565,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
       "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "StorageSlot"
-      ]
+      "versionPragmas": ["^0.8.20"],
+      "artifacts": ["StorageSlot"]
     },
     "/workspaces/stellar-canvas-dynamics/modules/capsule-legado/contracts/test/MockERC20.sol": {
       "lastModificationDate": 1776843341882,
@@ -723,22 +596,14 @@
                 "evm.methodIdentifiers",
                 "metadata"
               ],
-              "": [
-                "ast"
-              ]
+              "": ["ast"]
             }
           }
         }
       },
-      "imports": [
-        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.24"
-      ],
-      "artifacts": [
-        "MockERC20"
-      ]
+      "imports": ["@openzeppelin/contracts/token/ERC20/ERC20.sol"],
+      "versionPragmas": ["^0.8.24"],
+      "artifacts": ["MockERC20"]
     }
   }
 }

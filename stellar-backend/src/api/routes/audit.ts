@@ -124,27 +124,31 @@ router.get("/events", async (req: Request, res: Response, next: NextFunction) =>
   }
 });
 
-router.get("/judge/events", requireJudgeAccess, async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const judgeAccess = (req as RequestWithUser).judgeAccess;
-    if (!judgeAccess) {
-      throw new AppError(401, "Unauthorized judge access", "UNAUTHORIZED_JUDGE_ACCESS");
+router.get(
+  "/judge/events",
+  requireJudgeAccess,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const judgeAccess = (req as RequestWithUser).judgeAccess;
+      if (!judgeAccess) {
+        throw new AppError(401, "Unauthorized judge access", "UNAUTHORIZED_JUDGE_ACCESS");
+      }
+
+      const events = listAuditEvents({ walletAddress: judgeAccess.temporaryWalletAddress });
+
+      res.status(200).json({
+        judge: {
+          recipientName: judgeAccess.recipientName,
+          capsuleId: judgeAccess.capsuleId,
+          temporaryWalletAddress: judgeAccess.temporaryWalletAddress,
+        },
+        events,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    const events = listAuditEvents({ walletAddress: judgeAccess.temporaryWalletAddress });
-
-    res.status(200).json({
-      judge: {
-        recipientName: judgeAccess.recipientName,
-        capsuleId: judgeAccess.capsuleId,
-        temporaryWalletAddress: judgeAccess.temporaryWalletAddress,
-      },
-      events,
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+  },
+);
 
 router.post("/proof", async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -157,7 +161,11 @@ router.post("/proof", async (req: Request, res: Response, next: NextFunction) =>
     };
 
     if (!body.walletAddress || !body.eventType || !body.payloadHash) {
-      throw new AppError(400, "walletAddress, eventType and payloadHash are required", "INVALID_PAYLOAD");
+      throw new AppError(
+        400,
+        "walletAddress, eventType and payloadHash are required",
+        "INVALID_PAYLOAD",
+      );
     }
 
     const normalizedWallet = new PublicKey(body.walletAddress).toBase58();

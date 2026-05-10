@@ -5,11 +5,12 @@ Este documento detalha a implementação do sistema de verificação de integrid
 A implementação utiliza uma abordagem de **"Gatekeeper de I/O"**. Antes de iniciar o processo de hashing (que é intensivo em leitura), o script interroga o kernel sobre o estado atual de espera de entrada/saída (`iowait`). Se o sistema estiver processando transações pesadas de banco de dados no momento, o script aborta silenciosamente para preservar a latência da aplicação principal.
 
 #### Matriz de Priorização
-| Recurso | Ferramenta | Nível de Prioridade | Impacto Esperado |
-| :--- | :--- | :--- | :--- |
-| **CPU** | `nice -n 19` | Mínima (Lowest) | AIDE usará apenas ciclos de CPU ociosos. |
-| **I/O** | `ionice -c 3` | "Idle" (Ocioso) | O processo só lerá do disco se nenhum outro processo solicitar I/O. |
-| **Monitoramento** | `iostat` | Pré-verificação | Garante que a execução não inicie durante picos de carga. |
+
+| Recurso           | Ferramenta    | Nível de Prioridade | Impacto Esperado                                                    |
+| :---------------- | :------------ | :------------------ | :------------------------------------------------------------------ |
+| **CPU**           | `nice -n 19`  | Mínima (Lowest)     | AIDE usará apenas ciclos de CPU ociosos.                            |
+| **I/O**           | `ionice -c 3` | "Idle" (Ocioso)     | O processo só lerá do disco se nenhum outro processo solicitar I/O. |
+| **Monitoramento** | `iostat`      | Pré-verificação     | Garante que a execução não inicie durante picos de carga.           |
 
 ---
 
@@ -101,11 +102,13 @@ Para instalar, execute `crontab -e` e adicione a linha ao final:
 ### 4. Considerações Estratégicas e Riscos
 
 #### Por que `ionice -c 3`?
-Em sistemas com **82% de ocupação de disco**, a fragmentação é alta. O `ionice -c 3` impede que o AIDE entre na fila de busca do disco enquanto o PostgreSQL estiver tentando realizar um *checkpoint* ou gravar no WAL (Write-Ahead Log). Se o banco solicitar o disco, o AIDE é pausado instantaneamente pelo escalonador do kernel.
+
+Em sistemas com **82% de ocupação de disco**, a fragmentação é alta. O `ionice -c 3` impede que o AIDE entre na fila de busca do disco enquanto o PostgreSQL estiver tentando realizar um _checkpoint_ ou gravar no WAL (Write-Ahead Log). Se o banco solicitar o disco, o AIDE é pausado instantaneamente pelo escalonador do kernel.
 
 #### Métricas de Sucesso
-*   **Impacto no Banco:** O `iowait` durante a execução não deve exceder significativamente a média normal do sistema.
-*   **Integridade:** O arquivo `.log.gz` em `/tmp/aide_reports/` deve ser gerado diariamente, mesmo que vazio (indicando sucesso na verificação).
-*   **Recuperação:** Em caso de lentidão crítica percebida pelo monitoramento, o script pode ser interrompido com um `kill` sem risco de corrupção de dados, pois o AIDE opera em modo somente-leitura (`--check`).
+
+- **Impacto no Banco:** O `iowait` durante a execução não deve exceder significativamente a média normal do sistema.
+- **Integridade:** O arquivo `.log.gz` em `/tmp/aide_reports/` deve ser gerado diariamente, mesmo que vazio (indicando sucesso na verificação).
+- **Recuperação:** Em caso de lentidão crítica percebida pelo monitoramento, o script pode ser interrompido com um `kill` sem risco de corrupção de dados, pois o AIDE opera em modo somente-leitura (`--check`).
 
 > **Nota:** Certifique-se de que o pacote `bc` e `sysstat` estejam instalados: `apt-get install bc sysstat`.

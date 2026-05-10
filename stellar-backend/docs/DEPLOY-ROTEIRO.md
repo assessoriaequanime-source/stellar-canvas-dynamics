@@ -48,6 +48,7 @@ df -h && free -h
 ## FASE B — CLONAR / ATUALIZAR REPOSITÓRIO NA VPS
 
 ### Primeira vez (servidor novo)
+
 ```bash
 mkdir -p /var/www/stellar-backend
 cd /var/www/stellar-backend
@@ -56,6 +57,7 @@ cd stellar-backend
 ```
 
 ### Atualização (já existe)
+
 ```bash
 cd /var/www/stellar-backend
 git pull origin main
@@ -200,10 +202,10 @@ nginx -t && systemctl reload nginx
 
 > Para que o deploy funcione publicamente, confirme os registros DNS de `singulai.live`:
 >
-> | Tipo | Nome | Valor |
-> |------|------|-------|
-> | A | `@` | `72.60.147.56` |
-> | A | `www` | `72.60.147.56` |
+> | Tipo | Nome  | Valor          |
+> | ---- | ----- | -------------- |
+> | A    | `@`   | `72.60.147.56` |
+> | A    | `www` | `72.60.147.56` |
 >
 > **Resultado esperado:** `singulai.live → 72.60.147.56`
 
@@ -249,7 +251,9 @@ tar -xzf restore-points/rp-20260423-015512-capsule-legacy.tar.gz
 Após deploy validado e aprovado pelo CEO Rodrigo Alves, iniciar:
 
 ### Objetivo
+
 Integrar o backend com os smart contracts on-chain (Sepolia testnet):
+
 - Leitura de saldo SGL (`SGL_TOKEN_ADDRESS`)
 - Vinculação de avatar a wallet (`AVATAR_WALLET_LINK_ADDRESS`)
 - Registro de consentimento on-chain (`CONSENT_REGISTRY_ADDRESS`)
@@ -257,6 +261,7 @@ Integrar o backend com os smart contracts on-chain (Sepolia testnet):
 - DigitalLegacy on-chain (`DIGITAL_LEGACY_ADDRESS`)
 
 ### Entregas esperadas
+
 - Serviço `BlockchainService` com ethers.js v6
 - Endpoints para leitura de dados on-chain
 - Integração de eventos de blockchain com o AuditLog
@@ -264,15 +269,17 @@ Integrar o backend com os smart contracts on-chain (Sepolia testnet):
 - Documentação e novo ponto de restauração
 
 ### Stack
+
 - ethers.js v6 (já no projeto)
 - Sepolia Testnet RPC
 - Contratos já mapeados no `.env.example`
 
 ### Critério de entrada
+
 - Deploy da fase atual aprovado pelo CEO Rodrigo Alves
 - DNS e SSL ativos em `stellar-backend.rodrigo.run`
 - Health check da API respondendo em produção
 
 ---
 
-*Documento gerado em 2026-04-23 por Chefe Run | CEO Rodrigo Alves – validação pendente*
+_Documento gerado em 2026-04-23 por Chefe Run | CEO Rodrigo Alves – validação pendente_
