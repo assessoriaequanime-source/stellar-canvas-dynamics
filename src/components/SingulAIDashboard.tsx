@@ -1133,10 +1133,10 @@ export default function SingulAIDashboard() {
         recipientWhatsapp: hasWhatsapp ? recipientWhatsapp.trim() : undefined,
       });
 
-      setStatusMessage("Capsule criada com sucesso");
+      setStatusMessage("Capsule created successfully");
       addNotification(
-        "Cápsula criada",
-        `ID ${(result.id || "capsule").toString()} · canal ${channel}`,
+        "Capsule created",
+        `ID ${(result.id || "capsule").toString()} · channel ${channel}`,
       );
 
       const items = await listCapsules();
@@ -1157,8 +1157,8 @@ export default function SingulAIDashboard() {
       setScheduledAt("");
     } catch {
       setBackendStatus("unavailable");
-      setStatusMessage("Falha ao criar cápsula");
-      addNotification("Falha na cápsula", "Não foi possível criar a cápsula agora");
+      setStatusMessage("Failed to create capsule");
+      addNotification("Capsule failed", "Unable to create the capsule right now");
     } finally {
       setCapsuleSubmitting(false);
     }
@@ -1612,7 +1612,7 @@ export default function SingulAIDashboard() {
                         >
                           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                         </svg>
-                        Auditoria Devnet — Provas on-chain
+                        Devnet Audit — On-chain Proofs
                       </Link>
                     </div>
                   </div>

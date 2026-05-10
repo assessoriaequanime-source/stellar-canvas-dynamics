@@ -138,7 +138,7 @@ export default function VaultMvpPanel() {
         color: "#8fd3ff", fontSize: 12, textDecoration: "none",
         letterSpacing: "0.06em",
       }}>
-        Auditoria
+        Audit
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width={13} height={13}>
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
         </svg>

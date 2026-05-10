@@ -192,9 +192,9 @@ function JudgeGate({
           }}
         >
           <p style={{ margin: 0, fontSize: 11, color: "rgba(143,211,255,0.8)", lineHeight: 1.6 }}>
-            Este painel exibe provas on-chain de transações SGL na Solana Devnet.
+            This panel displays on-chain proofs of SGL transactions on Solana Devnet.
             <br />
-            Acesso exclusivo para avaliadores do hackathon.
+            Access is exclusive to hackathon judges.
           </p>
         </div>
 
@@ -217,7 +217,7 @@ function JudgeGate({
             type="text"
             value={accessCode}
             onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
-            placeholder="Digite o código recebido"
+            placeholder="Enter the code you received"
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -231,7 +231,7 @@ function JudgeGate({
               transition: "border 0.2s",
             }}
           />
-          {error && (
+            {error && (
             <p
               style={{
                 margin: 0,
@@ -240,7 +240,7 @@ function JudgeGate({
                 textAlign: "center",
               }}
             >
-              Código inválido, convite expirado ou já utilizado.
+                Invalid code, invite expired, or already used.
             </p>
           )}
           <button
@@ -256,14 +256,14 @@ function JudgeGate({
               opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? "Validando convite..." : "Acessar Painel de Auditoria →"}
+            {loading ? "Validating invite..." : "Open Audit Panel →"}
           </button>
         </form>
 
         <p
           style={{ fontSize: 10, color: "rgba(255,255,255,0.22)", textAlign: "center", margin: 0 }}
         >
-          Painel somente leitura · Nenhuma transação é executada aqui
+          Read-only panel · No transactions are executed here
         </p>
       </div>
     </div>
@@ -291,7 +291,7 @@ export default function AuditReadOnlyPanel() {
   const [balance, setBalance] = useState<number>(INITIAL_SGL_BALANCE);
   const [mintAddress, setMintAddress] = useState<string>("");
   const [judgeWalletAddress, setJudgeWalletAddress] = useState("");
-  const [message, setMessage] = useState("Carregando auditoria…");
+  const [message, setMessage] = useState("Loading audit…");
   const [copied, setCopied] = useState<string | null>(null);
   const [judgeAccessToken, setJudgeAccessToken] = useState(() => {
     return sessionStorage.getItem(JUDGE_ACCESS_TOKEN_KEY) || "";
@@ -345,9 +345,9 @@ export default function AuditReadOnlyPanel() {
           if (bd1.sglMintAddress) setMintAddress(String(bd1.sglMintAddress));
         }
 
-        setMessage(`${events.length} evento(s) verificado(s) na Solana Devnet.`);
+        setMessage(`${events.length} event(s) verified on Solana Devnet.`);
       } catch {
-        setMessage("Convite inválido, expirado ou sem permissão de auditor.");
+        setMessage("Invalid invite: expired or lacking audit permissions.");
       }
     }
 
@@ -369,9 +369,9 @@ export default function AuditReadOnlyPanel() {
   );
 
   async function reload() {
-    setMessage("Recarregando…");
+    setMessage("Reloading…");
     if (!judgeAccessToken) {
-      setMessage("Sessão de juiz ausente.");
+      setMessage("Judge session missing.");
       return;
     }
 
@@ -381,7 +381,7 @@ export default function AuditReadOnlyPanel() {
       const addr = String(judgeInfo.temporaryWalletAddress || walletAddress || "");
 
       if (!addr) {
-        setMessage("Nenhuma wallet.");
+        setMessage("No wallet.");
         return;
       }
 
@@ -393,11 +393,11 @@ export default function AuditReadOnlyPanel() {
       ]);
       setRecords(events);
       setBalance(Number(balanceData.sglBalance || INITIAL_SGL_BALANCE));
-      setMessage(`${events.length} evento(s) atualizados.`);
+      setMessage(`${events.length} events updated.`);
       const bd2 = balanceData as Record<string, unknown>;
       if (bd2.sglMintAddress) setMintAddress(String(bd2.sglMintAddress));
     } catch {
-      setMessage("Erro ao recarregar.");
+      setMessage("Error reloading.");
     }
   }
 
@@ -427,11 +427,10 @@ export default function AuditReadOnlyPanel() {
           }}
         >
           <div style={{ ...CARD, maxWidth: 520 }}>
-            <h1 style={{ margin: "0 0 10px", fontSize: 22 }}>Acesso Reservado para Juízes</h1>
-            <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.6 }}>
-              Este painel só pode ser aberto com convite de cápsula de auditoria. Solicite ao
-              organizador o link de acesso e o código único.
-            </p>
+            <h1 style={{ margin: "0 0 10px", fontSize: 22 }}>Judge Access Only</h1>
+              <p style={{ margin: 0, color: "rgba(255,255,255,0.62)", lineHeight: 1.6 }}>
+                This panel can only be opened with an audit capsule invite. Request the access link and unique code from the organizer.
+              </p>
           </div>
         </div>
       );
@@ -502,7 +501,7 @@ export default function AuditReadOnlyPanel() {
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button style={BTN} onClick={reload}>
-            ↻ Atualizar
+            ↻ Refresh
           </button>
           <Link
             to="/dashboard"
@@ -525,17 +524,17 @@ export default function AuditReadOnlyPanel() {
           <h1
             style={{ fontSize: 28, fontWeight: 900, margin: "0 0 8px", letterSpacing: "-0.02em" }}
           >
-            Painel de Auditoria — Provas On-Chain
+            Audit Panel — On-Chain Proofs
           </h1>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: 0 }}>
-            Somente leitura · Transações SGL registradas como Memo proof na Solana Devnet · Wallet:{" "}
+            Read-only · SGL transactions recorded as Memo proofs on Solana Devnet · Wallet:{" "}
             <code style={{ fontSize: 12, color: accentBlue }}>
               {walletAddress ? `${walletAddress.slice(0, 10)}…${walletAddress.slice(-6)}` : "—"}
             </code>
           </p>
           {judgeWalletAddress && (
             <p style={{ fontSize: 11, marginTop: 6, color: "rgba(143,211,255,0.78)" }}>
-              Wallet de sessão do juiz: <code>{judgeWalletAddress}</code>
+              Judge session wallet: <code>{judgeWalletAddress}</code>
             </p>
           )}
           <p
@@ -681,10 +680,10 @@ export default function AuditReadOnlyPanel() {
           )}
         </section>
 
-        {/* Registros de auditoria */}
+        {/* Audit records */}
         <section style={CARD}>
           <h2 style={{ margin: "0 0 16px", fontSize: 16, letterSpacing: "0.02em" }}>
-            Registros de Prova — Hashes e Validação no Solscan
+            Proof Records — Hashes and Solscan Validation
           </h2>
 
           {records.length === 0 ? (
@@ -692,9 +691,9 @@ export default function AuditReadOnlyPanel() {
               style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,0.35)" }}
             >
               <p style={{ fontSize: 32, margin: "0 0 8px" }}>∅</p>
-              <p style={{ margin: 0, fontSize: 13 }}>Nenhum evento registrado ainda.</p>
+              <p style={{ margin: 0, fontSize: 13 }}>No events recorded yet.</p>
               <p style={{ margin: "4px 0 0", fontSize: 11 }}>
-                Interaja no Vault para gerar transações auditáveis.
+                Interact with the Vault to generate auditable transactions.
               </p>
             </div>
           ) : (
