@@ -1,5 +1,6 @@
+// Use VITE_API_BASE_URL when available; otherwise default to production host root.
 export const ALT_API_BASE: string =
-  import.meta.env.VITE_ALT_API_BASE || "https://singulai.live/alt-api";
+  import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_ALT_API_BASE || "https://singulai.live";
 
 export interface SimpleLoginResponse {
   ok: boolean;
@@ -67,7 +68,7 @@ export async function sendAvatarMessage(
   };
 
   // Prefer new production route; fall back to legacy route for compatibility.
-  const primary = await fetch(`${ALT_API_BASE}/api/v1/avatarpro/message`, {
+  const primary = await fetch(`/api/v1/avatarpro/message`, {
     method: "POST",
     headers,
     body: payload,
@@ -76,7 +77,7 @@ export async function sendAvatarMessage(
   if (primary.ok) return primary.json();
   if (primary.status !== 404) throw new Error(`HTTP ${primary.status}`);
 
-  const legacy = await fetch(`${ALT_API_BASE}/avatar/message`, {
+  const legacy = await fetch(`/api/v1/avatar/message`, {
     method: "POST",
     headers,
     body: payload,

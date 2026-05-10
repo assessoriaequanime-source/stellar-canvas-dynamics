@@ -938,7 +938,8 @@ export default function SingulAIDashboard() {
       ).slice(-MAX_STREAM),
     );
 
-    const sessionToken = localStorage.getItem("singulai_session");
+    const sessionToken =
+      localStorage.getItem("singulai_access_token") || localStorage.getItem("singulai_session");
     let reply: string;
     try {
       if (!sessionToken) {
