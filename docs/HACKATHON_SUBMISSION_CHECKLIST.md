@@ -14,7 +14,7 @@ Status: pronto para preenchimento na pre-banca e no pitch final.
 | #   | Item                               | Criterio de Aprovacao                                         | Evidencia (Comando / Script)                       | Evidencia (Tx Hash / Screenshot)                             | Passa/Falha |
 | :-- | :--------------------------------- | :------------------------------------------------------------ | :------------------------------------------------- | :----------------------------------------------------------- | :---------- |
 | 1   | Rede devnet                        | solana config get retorna <https://api.devnet.solana.com>.    | comando executado; resultado: SOLANA_CLI=missing   | ver secao Saida coletada nesta sessao                        | [ ]         |
-| 2   | Rotas obrigatorias /vault e /audit | Frontend renderiza as duas telas sem erro.                    | curl -w "%{http_code}" https://singulai.live/vault | HTTP 200 em /vault e /audit; gate de login funcional          | [x]         |
+| 2   | Rotas obrigatorias /vault e /audit | Frontend renderiza as duas telas sem erro.                    | curl -w "%{http_code}" <https://singulai.live/vault> | HTTP 200 em /vault e /audit; gate de login funcional          | [x]         |
 | 3   | Inicializacao do Avatar (PDA)      | Conta avatar_state criada com score 0 e nivel Draft.          | script tests/demo-flow.ts initialize               | Tx Hash: **\_\_\_\_**                                        | [ ]         |
 | 4   | Atualizacao PAS                    | update_particle_score altera estado on-chain e emite evento.  | script tests/demo-flow.ts update                   | Tx Hash: **\_\_\_\_**                                        | [ ]         |
 | 5   | Controle de autoridade             | outra wallet nao consegue atualizar score.                    | ts-node tests/demo-flow.ts --test unauthorized     | Tx Hash: **\_\_\_\_** (falha esperada)                       | [ ]         |
@@ -114,6 +114,10 @@ Conclusao da fase:
 - Reprodutibilidade garantida por versoes fixadas e scripts.
 - Estado final pronto para pitch e due diligence tecnica.
 
+Referencia para narrativa tecnica da banca:
+
+- PITCH.md (domain-partitioned memory + behavioral feedback signal via PAS)
+
 ---
 
 ## 🪙 Token SGL e Faucet — Instruções para Jurados
@@ -132,7 +136,7 @@ SGL é um **SPL Token** (Solana Program Library) rodando na rede **Solana Devnet
 ### Como obter SGL (Faucet)
 
 1. **Acesse o dashboard:**  
-   https://singulai.live/dashboard (ou http://127.0.0.1:8080/dashboard em ambiente local)
+   <https://singulai.live/dashboard> (ou <http://127.0.0.1:8080/dashboard> em ambiente local)
 
 2. **Conecte sua carteira Solana Devnet:**  
    - Clique em "Connect Wallet" (ou similar)
@@ -203,8 +207,8 @@ SGL é implementado como um **SPL Token** (Solana Program Library) seguindo o pa
 5. Saldo atualizado em tempo real
 
 **Verificação em Exploradores:**
-- Solana Explorer: https://explorer.solana.com/address/{MINT_ADDRESS}?cluster=devnet
-- Solscan: https://solscan.io/token/{MINT_ADDRESS}?cluster=devnet
+- Solana Explorer: <https://explorer.solana.com/address/{MINT_ADDRESS}?cluster=devnet>
+- Solscan: <https://solscan.io/token/{MINT_ADDRESS}?cluster=devnet>
 
 **Características de Auditoria On-Chain:**
 - Todas as transações SGL são públicas na blockchain

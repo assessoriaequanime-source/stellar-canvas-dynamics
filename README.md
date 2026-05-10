@@ -94,6 +94,35 @@ PAS = (interactionFactor × 0.25)
 
 ---
 
+## Hallucination Control via Domain-Partitioned Memory
+
+AvatarPro uses domain-partitioned memory with behavioral feedback signal to reduce hallucination during long-running sessions.
+
+Routing model:
+
+- **Pedro** handles contractual and bounded topics (secure context)
+- **Laura** handles ideation and associative exploration (expansive context)
+- **Leticia** handles execution and deterministic procedures (geometric context)
+
+This modular routing prevents cross-domain contamination, a primary source of hallucination when a single context window accumulates heterogeneous tasks.
+
+### Novel Behavioral Feedback Signal (Particle Gesture -> PAS)
+
+The particle drag interaction captures divergence between avatar response and user intent without breaking conversational flow:
+
+- drag and cluster to the **left**: misalignment signal
+- drag and cluster to the **right**: resonance signal
+
+These interactions are transformed into a continuous feedback stream that updates PAS and influences maturity decisions.
+
+Why this matters for Solana UX:
+
+- near real-time interaction loop (chat + gesture + PAS adaptation)
+- on-chain proof anchoring for key execution/audit events
+- high-frequency UX with verifiable state transitions
+
+---
+
 ## Demo Flow
 
 The `runMvpFlow()` function orchestrates the complete 5-step demo:
@@ -147,14 +176,16 @@ npm run dev
 ### Run Tests
 
 ```bash
-## Competition Validation Pack
-
-- Final checklist with pass/fail evidence columns: docs/HACKATHON_SUBMISSION_CHECKLIST.md
-- 2-minute live script for judges: docs/DEMO_SCRIPT.md
 npx vitest run src/lib/hackathon/__tests__/mvp.test.ts
 ```
 
 Expected output: **16/16 tests passing**
+
+## Competition Validation Pack
+
+- Final checklist with pass/fail evidence columns: docs/HACKATHON_SUBMISSION_CHECKLIST.md
+- 2-minute live script for judges: docs/DEMO_SCRIPT.md
+- Technical pitch framing for judges: PITCH.md
 
 ### Build
 

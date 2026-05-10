@@ -195,7 +195,7 @@ export default function WalletOnboarding({ onSuccess }: Props) {
               <code className="wonb-addr-code">{walletAddress}</code>
             </div>
           </section>
-          <p className="wonb-sub" style={{ marginTop: 8 }}>Entrando no Dashboard em <strong>{countdown}s</strong>…</p>
+          <p className="wonb-sub" style={{ marginTop: 8 }}>Entering Dashboard in <strong>{countdown}s</strong>…</p>
           <div className="wonb-dots-row">
             <span className="tdot" />
             <span className="tdot" />
@@ -206,7 +206,7 @@ export default function WalletOnboarding({ onSuccess }: Props) {
             style={{ marginTop: 16 }}
             onClick={() => { onSuccess(); void navigate({ to: "/dashboard" }); }}
           >
-            Entrar agora
+              Enter now
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={14} height={14}>
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />
@@ -306,7 +306,7 @@ export default function WalletOnboarding({ onSuccess }: Props) {
         </div>
 
         <button className="wonb-enter-btn" onClick={handleEnter}>
-          Entrar no Dashboard
+            Enter Dashboard
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} width={14} height={14}>
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />

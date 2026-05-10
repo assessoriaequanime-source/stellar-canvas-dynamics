@@ -15,7 +15,7 @@ export default defineConfig({
       host: true,
       proxy: {
         "/api": {
-          target: "http://127.0.0.1:3000",
+            target: "http://127.0.0.1:8091",
           changeOrigin: true,
         },
       },
@@ -29,7 +29,7 @@ export default defineConfig({
     preview: {
       proxy: {
         "/api": {
-          target: "http://127.0.0.1:3000",
+            target: "http://127.0.0.1:8091",
           changeOrigin: true,
         },
       },

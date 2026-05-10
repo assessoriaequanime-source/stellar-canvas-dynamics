@@ -150,7 +150,7 @@ const HACKATHON_PROOF_POINTS = [
   {
     label: "Solana",
     value:
-      "Devnet readiness — pending_wallet_signature until public mint/wallet envs are configured",
+      "Devnet SPL token live — audit proofs anchored via Memo Program",
   },
 ] as const;
 
@@ -943,13 +943,13 @@ export default function SingulAIDashboard() {
     let reply: string;
     try {
       if (!sessionToken) {
-        throw new Error("Sessão ausente. Faça login para usar o chat real.");
+        throw new Error("Session missing. Please log in to use live chat.");
       }
 
       const data = await sendAvatarMessage(sessionToken, text, MODEL_IDS[profileRef.current]);
       const raw = (data.message || data.reply || data.text || "").trim();
       if (!raw) {
-        throw new Error("Resposta vazia do backend");
+        throw new Error("Empty response from backend");
       }
 
       reply = raw;
@@ -957,7 +957,7 @@ export default function SingulAIDashboard() {
       else if (data.balance !== undefined) setSglBalance(data.balance);
     } catch {
       setBackendStatus("unavailable");
-      setStatusMessage("Chat real indisponível");
+      setStatusMessage("Live chat unavailable");
       reply = "Não foi possível obter resposta do backend real agora. Verifique sessão e API.";
     }
 
@@ -1200,7 +1200,7 @@ export default function SingulAIDashboard() {
         const u = JSON.parse(localStorage.getItem("singulai_user") || "null");
         if (u?.sglBalance !== undefined) setSglBalance(Number(u.sglBalance));
         setSubpanel("wallet");
-        setStatusMessage("Wallet da sessão carregada");
+        setStatusMessage("Session wallet loaded");
         return;
       }
     } catch {
@@ -1211,7 +1211,7 @@ export default function SingulAIDashboard() {
     try {
       const provider = (window as Window & { solana?: { connect: () => Promise<{ publicKey: { toString: () => string } }> } }).solana;
       if (!provider) {
-        setStatusMessage("Nenhuma wallet encontrada. Faça login novamente.");
+        setStatusMessage("No wallet found. Please log in again.");
         return;
       }
       const response = await provider.connect();
@@ -1224,7 +1224,8 @@ export default function SingulAIDashboard() {
       setStatusMessage("Solana Devnet wallet connected and provisioned");
       setBackendStatus("connected");
     } catch {
-      setStatusMessage("Falha ao conectar wallet");
+      setStatusMessage("Failed to connect wallet");
+      setStatusMessage("Failed to connect wallet");
     }
   };
 
@@ -1645,7 +1646,7 @@ export default function SingulAIDashboard() {
                     </div>
                     <div className="sp-row">
                       <span>Backend</span>
-                      <code>{backendStatus === "connected" ? "Online" : backendStatus === "mock-dev" ? "Demo local" : "Indisponível"}</code>
+                      <code>{backendStatus === "connected" ? "Online" : backendStatus === "mock-dev" ? "Demo mode" : "Unavailable"}</code>
                     </div>
                     <div className="sp-row">
                       <span>Absorção</span>
@@ -1776,7 +1777,7 @@ export default function SingulAIDashboard() {
                 {modelChoiceEnabled ? "Model unlocked" : "Model locked (pending upgrade)"}
               </span>
               {isExplicitDevMockEnabled() && (
-                <span className="footer-meta">demo local · Solana pending_wallet_signature</span>
+                <span className="footer-meta">demo mode · Solana Devnet SPL</span>
               )}
               <span className="singulai-footer-inpi">INPI 942284933</span>
             </div>

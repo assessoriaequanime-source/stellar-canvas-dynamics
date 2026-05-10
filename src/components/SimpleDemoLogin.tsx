@@ -117,7 +117,7 @@ export default function SimpleDemoLogin({ onSuccess }: Props) {
                 <span className="tdot" />
               </span>
             ) : (
-              "Entrar no modo demonstração"
+              "Enter demo mode"
             )}
           </button>
         </form>
