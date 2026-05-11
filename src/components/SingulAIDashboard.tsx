@@ -5,7 +5,7 @@ import BrandLogo from "@/components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChatStream from "./ChatStream";
 import ActionRail, { type RailAction } from "./ActionRail";
-import { VoiceAgentCard } from "@/components/VoiceAgentCard";
+// import { VoiceAgentCard } from "@/components/VoiceAgentCard"; // Disabled until v2
 import { sendAvatarMessage } from "@/lib/altApi";
 import {
   getAvatarProStatus,
@@ -221,7 +221,8 @@ export default function SingulAIDashboard() {
   const [isVoiceSupported, setIsVoiceSupported] = useState(false);
   const [isVoiceListening, setIsVoiceListening] = useState(false);
   const [mobileKeyboardOffset, setMobileKeyboardOffset] = useState(0);
-  const [capsuleModalTab, setCapsuleModalTab] = useState<"form" | "voice">("form");
+  // const [capsuleModalTab, setCapsuleModalTab] = useState<"form" | "voice">("form"); // Voice disabled
+  const capsuleModalTab = "form"; // Only form tab enabled for v1
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<DashboardNotification[]>([]);
   const speechRecognitionRef = useRef<BrowserSpeechRecognition | null>(null);
@@ -902,12 +903,13 @@ export default function SingulAIDashboard() {
   };
 
   // Save to Capsule — opened from chat AI response button
+  // Uses same form and logic as rail "Create Capsule" for consistency
   const handleSaveToCapsule = useCallback((msgId: number, text: string) => {
     void msgId;
     setCapsuleContent(text);
-    setCapsuleCost(150);
+    setCapsuleCost(100); // Unified cost with rail create
     setModalOpen(true);
-    setStatusMessage("Save to Capsule — Cost: 150 SGL");
+    setStatusMessage("Save to Capsule — Cost: 100 SGL");
   }, []);
 
   // Profile switch
@@ -2057,41 +2059,22 @@ export default function SingulAIDashboard() {
             }}
           >
             <button
-              onClick={() => setCapsuleModalTab("form")}
+              onClick={() => {}} // Form only
               style={{
                 flex: 1,
                 padding: "12px 16px",
                 textAlign: "center",
                 fontSize: "13px",
-                fontWeight: capsuleModalTab === "form" ? "600" : "400",
-                color: capsuleModalTab === "form" ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.5)",
+                fontWeight: "600",
+                color: "rgba(255,255,255,1)",
                 border: "none",
                 background: "transparent",
                 cursor: "pointer",
-                borderBottom: capsuleModalTab === "form" ? "2px solid #26B0E2" : "none",
+                borderBottom: "2px solid #26B0E2",
                 transition: "all 200ms ease",
               }}
             >
-              ✏️ Form
-            </button>
-            <button
-              onClick={() => setCapsuleModalTab("voice")}
-              style={{
-                flex: 1,
-                padding: "12px 16px",
-                textAlign: "center",
-                fontSize: "13px",
-                fontWeight: capsuleModalTab === "voice" ? "600" : "400",
-                color:
-                  capsuleModalTab === "voice" ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.5)",
-                border: "none",
-                background: "transparent",
-                cursor: "pointer",
-                borderBottom: capsuleModalTab === "voice" ? "2px solid #26B0E2" : "none",
-                transition: "all 200ms ease",
-              }}
-            >
-              🎙️ Voice Agent
+              ✏️ Create Capsule
             </button>
           </div>
 
@@ -2236,29 +2219,20 @@ export default function SingulAIDashboard() {
             </div>
           </div>
 
-          {/* Voice Agent Tab */}
-          <div
-            style={{
-              display: capsuleModalTab === "voice" ? "flex" : "none",
-              flexDirection: "column",
-              height: "500px",
-              padding: 0,
-              overflow: "hidden",
-            }}
-          >
-            <VoiceAgentCard
-              isOpen={modalOpen && capsuleModalTab === "voice"}
-              onTranscript={(text) => {
-                // Auto-fill title from first few words of transcript
-                if (!capsuleTitle || capsuleTitle === "Audit Judge Access Capsule") {
-                  setCapsuleTitle(text.substring(0, 50));
-                }
-                // Append to message if not empty
-                setCapsuleContent((prev) => (prev ? `${prev}\n${text}` : text));
+          {/* Voice Agent Tab — Disabled until v2 */}
+          {false && (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "500px",
+                padding: 0,
+                overflow: "hidden",
               }}
-              className="flex-1"
-            />
-          </div>
+            >
+              {/* VoiceAgentCard removed */}
+            </div>
+          )}
 
           <div className="modal-ftr">
             <button
