@@ -81,7 +81,7 @@ type BrowserSpeechRecognition = {
 
 type BrowserSpeechRecognitionCtor = new () => BrowserSpeechRecognition;
 
-const MODEL_IDS: Record<Profile, string> = { pedro: "safe", laura: "diffusion", leticia: "focus" };
+const MODEL_IDS: Record<Profile, string> = { pedro: "pedro", laura: "laura", leticia: "leticia" };
 
 function isExplicitDevMockEnabled(): boolean {
   return isExplicitAvatarProDemoMode();
