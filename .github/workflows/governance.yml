@@ -1,0 +1,19 @@
+name: Governance Validation
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify governance files
+        run: |
+          test -f docs/governance/00-CONSTITUTION.md
+          test -f docs/governance/01-ENGINEERING_STANDARD.md
+          test -f docs/governance/02-ARCHITECTURE_PRINCIPLES.md
+          test -f docs/governance/03-RESTORATION_PROTOCOL.md
